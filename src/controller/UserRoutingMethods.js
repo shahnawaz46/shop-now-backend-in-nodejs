@@ -28,7 +28,13 @@ exports.signup = async (req, res) => {
 
             if (user) {
                 const token = jwt.sign({ _id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '30d' })
-                res.cookie("user_token", token, { httpOnly: true })
+
+                // if origin is same (means if client and server domain is same) then sameSite = lax, otherwise sameSite = none
+                res.cookie("user_token", token, {
+                    httpOnly: true,
+                    sameSite: "none",
+                    secure: true
+                })
 
                 return res.status(200).json({ message: "Signup Successfully" })
             }
@@ -50,7 +56,13 @@ exports.signin = async (req, res) => {
 
             if (passwordMatch) {
                 const token = jwt.sign({ _id: alreadyUser._id, role: alreadyUser.role }, process.env.JWT_SECRET, { expiresIn: '30d' })
-                res.cookie("user_token", token, { httpOnly: true })
+
+                // if the origin is same (means if client and server domain is same) then sameSite = lax, otherwise sameSite = none
+                res.cookie("user_token", token, {
+                    httpOnly: true,
+                    sameSite: "none",
+                    secure: true
+                })
 
                 return res.status(200).json({ message: "Login Successfully" })
             }
@@ -61,6 +73,7 @@ exports.signin = async (req, res) => {
         return res.status(404).json({ error: "No Account Found Please Signup First" })
 
     } catch (err) {
+        console.log(err)
         return res.status(400).json({ error: "Something Gone Wrong Please Try Again" })
     }
 }
