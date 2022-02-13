@@ -43,7 +43,11 @@ exports.signin = async (req, res) => {
 
             if (passwordMatch) {
                 const token = jwt.sign({ _id: admin._id, role: admin.role }, process.env.JWT_SECRET, { expiresIn: '24h' })
-                res.cookie("token", token, { httpOnly: true })
+                res.cookie("token", token, {
+                    httpOnly: true,
+                    sameSite: "none",
+                    secure: true
+                })
 
                 return res.status(200).json({ message: "Login Successfully" })
             }
