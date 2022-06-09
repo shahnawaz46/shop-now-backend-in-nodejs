@@ -3,8 +3,8 @@ const path = require("path");
 const fs = require("fs")
 
 // components
-// const ProductCollection = require("../model/ProductCollection");
-const ProductCollection = require("../model/TempProductCollection");
+const ProductCollection = require("../model/ProductCollection");
+// const ProductCollection = require("../model/TempProductCollection");
 const CategoryCollection = require("../model/CategoryCollection");
 
 
