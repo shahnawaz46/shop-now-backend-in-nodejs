@@ -1,11 +1,12 @@
 const slugify = require('slugify');
 const path = require("path");
 const fs = require("fs")
+const mongoose = require('mongoose')
 
 // components
-const ProductCollection = require("../model/ProductCollection");
+const ProductCollection = require("../model/product");
 // const ProductCollection = require("../model/TempProductCollection");
-const CategoryCollection = require("../model/CategoryCollection");
+const CategoryCollection = require("../model/category");
 
 
 exports.addProduct = async (req, res) => {
@@ -120,9 +121,9 @@ exports.getAllProductBySlug = async (req, res) => {
             // this condition will run when user select Men's Wardrobe or Women's Wardrobe
             else {
                 //  here i am getting list of sub categories
-                const allCategoryId = await CategoryCollection.find({ parentCategoryId: selectedCategory._id }).select('_id')
+                const allSubCategory = await CategoryCollection.find({ parentCategoryId: selectedCategory._id }).select('_id categoryName slug')
                 let allProduct = []
-                for (let cat of allCategoryId) {
+                for (let cat of allSubCategory) {
                     const products = await ProductCollection.find({ categoryId: cat._id })
 
                     if (products) {
@@ -130,7 +131,7 @@ exports.getAllProductBySlug = async (req, res) => {
                     }
                 }
                 if (allProduct) {
-                    return res.status(200).json({ products: allProduct })
+                    return res.status(200).json({ products: allProduct, subCategory:allSubCategory })
                 }
                 return res.status(404).json({ error: "product not found" })
             }
@@ -199,5 +200,19 @@ exports.writeProductReview = async (req, res) => {
 
     } catch (err) {
         return res.status(400).json({ error: "Something Gone Wrong Please Try Again" })
+    }
+}
+
+
+exports.topSellingProducts = async(req, res) =>{
+    // console.log("topSellingProducts")
+    try{
+        // Find all products that have at least two reviews.
+        const products = await ProductCollection.find({'reviews.1':{$exists:true}}).select("_id productPictures")
+        // console.log(products)
+        return res.status(200).json({products})
+    }catch(err){
+        console.log(err)
+        return res.status(400).json({error:"Something Went Wrong Please Try Again"})
     }
 }

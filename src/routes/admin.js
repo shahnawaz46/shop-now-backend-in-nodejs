@@ -2,7 +2,7 @@ const express = require("express");;
 
 
 // components
-const { signin, signup, signout } = require("../controller/AdminRoutingMethods");
+const { signin, signup, signout } = require("../controller/admin");
 
 
 const router = express.Router()

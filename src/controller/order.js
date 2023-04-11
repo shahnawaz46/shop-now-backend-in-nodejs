@@ -1,4 +1,4 @@
-const Order = require('../model/OrderCollection');
+const Order = require('../model/order');
 
 exports.addOrder = async (req,res) =>{
     try{

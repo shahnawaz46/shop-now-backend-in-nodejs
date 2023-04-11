@@ -3,7 +3,7 @@ const jwt = require("jsonwebtoken");
 
 
 // components
-const AdminCollection = require("../model/AdminCollection");
+const AdminCollection = require("../model/admin");
 
 const hashPassword = (password) => {
     console.log(bcrypt.hashSync(password, 15))

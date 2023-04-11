@@ -5,7 +5,7 @@ const router = express.Router();
 // components
 const { verification, adminMiddleware } = require('../middleware/middleware');
 const multerMiddleWare = require('../middleware/MulterMiddleWare');
-const { addBanner, getBanner, deleteBanner, editBanner } = require('../controller/BannerRoutingMethods');
+const { addBanner, getBanner, deleteBanner, editBanner } = require('../controller/banner');
 
 const upload = multerMiddleWare("BannerImages")
 

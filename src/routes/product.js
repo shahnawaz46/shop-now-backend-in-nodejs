@@ -9,7 +9,8 @@ const { addProduct,
     getAllProductBySlug,
     getSingleProductById,
     getFeaturedProducts,
-    writeProductReview } = require("../controller/ProductRoutingMethods");
+    writeProductReview, 
+    topSellingProducts} = require("../controller/product");
 const multerMiddleWare = require("../middleware/MulterMiddleWare");
 
 const router = express.Router()
@@ -27,14 +28,19 @@ router.post("/product/delete", verification('token'), adminMiddleware, deletePro
 // edit produt for admin
 router.post("/product/edit", verification('token'), adminMiddleware, editProduct)
 
-// getting products for user
-router.post("/product/show/:slug", getAllProductBySlug)
+
+
+// getting all products for user bases on slug
+// slug mean -> men or women
+router.get("/product/:slug", getAllProductBySlug)
 
 // getting single product by id
-router.post("/product/single/:productId", getSingleProductById)
+router.get("/product/single/:productId", getSingleProductById)
 
 // getting high rating products for homepage
 router.post("/product/featured-product", getFeaturedProducts)
+
+router.get("/product/top/selling", topSellingProducts)
 
 router.post("/product/write_review", verification("user_token"), writeProductReview)
 

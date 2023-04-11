@@ -5,7 +5,7 @@ const fs = require("fs")
 
 
 // components
-const UserCollection = require("../model/UserCollection")
+const UserCollection = require("../model/user")
 
 
 exports.signup = async (req, res) => {

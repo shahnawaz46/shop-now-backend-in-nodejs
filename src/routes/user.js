@@ -7,7 +7,7 @@ const { signup,
     signout,
     userProfile,
     updateProfilePic,
-    editUserProfileDetail } = require("../controller/UserRoutingMethods");
+    editUserProfileDetail } = require("../controller/user");
 const { verification } = require("../middleware/middleware");
 const multerMiddleWare = require("../middleware/MulterMiddleWare");
 const { validateRequest, isRequestValid } = require("../validation/validation");

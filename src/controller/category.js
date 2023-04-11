@@ -2,7 +2,7 @@ const slugify = require('slugify')
 
 
 // components
-const CategoryCollection = require("../model/CategoryCollection");
+const CategoryCollection = require("../model/category");
 
 
 // here i am using recursive approach to get all categories in the array

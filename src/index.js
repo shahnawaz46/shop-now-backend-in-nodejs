@@ -5,14 +5,14 @@ const cookieParser = require("cookie-parser");
 
 // componenets  
 const Connection = require("./db/Connection");
-const userRouter = require("./routes/UserRouter");
-const adminRouter = require("./routes/AdminRouter");
-const categoryRoute = require("./routes/CategoryRouter");
-const productRoute = require("./routes/ProductRouter");
-const bannerRoute = require("./routes/BannerRouter");
-const cartRoute = require("./routes/CartRouter");
-const addressRoute = require("./routes/AddressRouter")
-const orderRoute = require("./routes/OrderRouter")
+const userRouter = require("./routes/user");
+const adminRouter = require("./routes/admin");
+const categoryRoute = require("./routes/category");
+const productRoute = require("./routes/product");
+const bannerRoute = require("./routes/banner");
+const cartRoute = require("./routes/cart");
+const addressRoute = require("./routes/address")
+const orderRoute = require("./routes/order")
 
 const app = express()
 dotenv.config()

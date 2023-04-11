@@ -1,4 +1,4 @@
-const UserAddress = require('../model/AddressCollection')
+const UserAddress = require('../model/address')
 
 exports.addAddress = async (req, res) => {
     const userAddress = req.body;

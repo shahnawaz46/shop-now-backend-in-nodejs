@@ -2,7 +2,7 @@ const express = require("express");
 
 // components
 const { verification, userMiddleware } = require("../middleware/middleware");
-const { addToCart, getCartItem, removeCartItem } = require("../controller/CartRoutingMethods");
+const { addToCart, getCartItem, removeCartItem } = require("../controller/cart");
 
 const router = express.Router()
 

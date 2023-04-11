@@ -1,7 +1,7 @@
 const express = require("express");
 
 // components
-const { createCategory, getCategory, deleteCategory, editCategory } = require("../controller/CategoryRoutingMethods");
+const { createCategory, getCategory, deleteCategory, editCategory } = require("../controller/category");
 const { verification, adminMiddleware } = require("../middleware/middleware");
 
 

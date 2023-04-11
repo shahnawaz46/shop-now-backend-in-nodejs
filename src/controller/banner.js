@@ -2,7 +2,7 @@ const path = require('path')
 const fs = require("fs")
 
 // components
-const BannerCollection = require('../model/BannerCollection');
+const BannerCollection = require('../model/banner');
 
 
 exports.addBanner = async (req, res) => {

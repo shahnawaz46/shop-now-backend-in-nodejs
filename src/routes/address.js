@@ -2,7 +2,7 @@ const express = require('express')
 
 // components
 const { verification, userMiddleware } = require('../middleware/middleware')
-const { addAddress, getAddress, editAddress } = require('../controller/AddressRoutingMethod')
+const { addAddress, getAddress, editAddress } = require('../controller/address')
 
 const router = express.Router()
 
