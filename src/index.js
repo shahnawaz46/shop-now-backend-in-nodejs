@@ -19,7 +19,7 @@ dotenv.config()
 
 Connection()
 
-app.use(cors({ origin: "https://fuzicon-ecommerce.netlify.app/", credentials: true }));
+app.use(cors({ origin: "https://fuzicon-ecommerce.netlify.app", credentials: true }));
 app.use(cookieParser())
 app.use(express.json());
 app.use(express.static('public'));
