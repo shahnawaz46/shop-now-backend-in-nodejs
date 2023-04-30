@@ -14,34 +14,28 @@ exports.signup = async (req, res) => {
     try {
         const alreadyUser = await UserCollection.findOne({ email })
         if (alreadyUser) {
-            return res.status(400).json({ error: "User Already Exist" })
+            return res.status(400).json({ msg: "User Already Exist Please Signin" })
         }
 
         if (password !== cpassword) {
-            return res.status(400).json({ error: "Password and Confirm Password not Matched" })
+            return res.status(400).json({ msg: "Password and Confirm Password not Matched" })
         }
 
-        const user = new UserCollection({ firstName, lastName, email, phoneNo, password, cpassword })
-        await user.save((error, user) => {
-            if (error)
-                return res.status(400).json({ error })
+        // const user = new UserCollection({ firstName, lastName, email, phoneNo, password, cpassword })
+        const user = await UserCollection.create({ firstName, lastName, email, phoneNo, password, cpassword})
+        const token = jwt.sign({ _id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '30d' })
 
-            if (user) {
-                const token = jwt.sign({ _id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '30d' })
-
-                // if origin is same (means if client and server domain is same) then sameSite = lax, otherwise sameSite = none
-                res.cookie("user_token", token, {
-                    httpOnly: true,
-                    sameSite: "none",
-                    secure: true
-                })
-
-                return res.status(200).json({ message: "Signup Successfully" })
-            }
+        // if origin is same (means if client and server domain is same) then sameSite = lax, otherwise sameSite = none
+        res.cookie("user_token", token, {
+            httpOnly: true,
+            sameSite: "none",
+            secure: true
         })
 
+        return res.status(200).json({ msg: "Signup Successfully", userId:user._id })
+
     } catch (err) {
-        return res.status(400).json({ error: "Something Gone Wrong Please Try Again" })
+        return res.status(500).json({ msg: "Something Gone Wrong Please Try Again" })
     }
 }
 
@@ -64,17 +58,17 @@ exports.signin = async (req, res) => {
                     secure: true
                 })
 
-                return res.status(200).json({ message: "Login Successfully" })
+                return res.status(200).json({ msg: "Login Successfully" , userId:alreadyUser._id})
             }
 
-            return res.status(401).json({ error: "Invalid credential" })
+            return res.status(401).json({ msg: "Invalid credential" })
         }
 
-        return res.status(404).json({ error: "No Account Found Please Signup First" })
+        return res.status(404).json({ msg: "No Account Found Please Signup First" })
 
     } catch (err) {
         console.log(err)
-        return res.status(400).json({ error: "Something Gone Wrong Please Try Again" })
+        return res.status(500).json({ msg: "Something Gone Wrong Please Try Again" })
     }
 }
 

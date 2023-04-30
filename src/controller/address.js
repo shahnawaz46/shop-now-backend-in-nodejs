@@ -44,7 +44,8 @@ exports.addAddress = async (req, res) => {
 
 exports.getAddress = async (req, res) => {
     try {
-        const getUserAddress = await UserAddress.findOne({ userId: req.data._id })
+        // const getUserAddress = await UserAddress.findOne({ userId: req.data._id })
+        const getUserAddress = await UserAddress.findOne({ userId: req.body._id })
         if (getUserAddress) {
             return res.status(200).json({ userAddress: getUserAddress.address })
         } else {
