@@ -21,8 +21,8 @@ router.post('/user/signup', validateRequest, isRequestValid, signup)
 router.post('/user/signin', signin)
 router.post('/user/signout', signout)
 
-router.get('/user/profile', verification("user_token"), userProfile)
-router.post('/user/updateDetail', verification("user_token"), editUserProfileDetail)
-router.post('/user/updateProfilePic', verification("user_token"), upload.single("profilePicture"), updateProfilePic)
+router.get('/user/profile', verification("_f_id"), userProfile)
+router.patch('/user/updateProfile', verification("_f_id"), editUserProfileDetail)
+router.post('/user/updateProfilePic', verification("_f_id"), upload.single("profilePicture"), updateProfilePic)
 
 module.exports = router;
