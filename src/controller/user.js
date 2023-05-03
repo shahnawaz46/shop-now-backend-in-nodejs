@@ -81,11 +81,11 @@ exports.signin = async (req, res) => {
 exports.userProfile = async (req, res) => {
     try {
         const userDetail = await UserCollection.findOne({ _id: req.data._id }).select("firstName lastName email phoneNo profilePicture location")
-        const getUserAddress = await UserAddress.findOne({ userId: req.data._id })
+        // const getUserAddress = await UserAddress.findOne({ userId: req.data._id })
         // console.log(getUserAddress)
-        const address = getUserAddress ?  getUserAddress.address : []
+        // const address = getUserAddress ?  getUserAddress.address : []
         
-        return res.status(200).json({ userDetail, userAddress: address })
+        return res.status(200).json({ userDetail})
 
     } catch (err) {
         // console.log(err)
@@ -122,14 +122,14 @@ exports.editUserProfileDetail = async (req, res) => {
         // }
         const result = await UserCollection.findByIdAndUpdate( req.data._id , userDetail, {new: true}).select("firstName lastName email phoneNo profilePicture location")
         // console.log(result)
-        return res.status(200).json({ message: "Profile Update Successfully", userDetail: result })
+        return res.status(200).json({ msg: "Profile Update Successfully", userDetail: result })
 
     } catch (err) {
         console.log(err)
         if (err.codeName == "DuplicateKey") {
-            return res.status(400).json({ error: "This Email Already Exist" })
+            return res.status(400).json({ msg: "This Email Already Exist" })
         }
-        return res.status(400).json({ error: "Something Gone Wrong Please Try Again" })
+        return res.status(400).json({ msg: "Something Gone Wrong Please Try Again" })
     }
 }
 

@@ -5,36 +5,20 @@ exports.addAddress = async (req, res) => {
     try {
         const userAddressAlready = await UserAddress.findOne({ userId: req.data._id })
         if (userAddressAlready) {
-            if (userAddress._id) {
-                console.log("if")
-                console.log(userAddress)
-                const a = await UserAddress.findOneAndUpdate({ userId: req.data._id, 'address._id': userAddress._id }, {
-                    "$set": {
-                        "address.$": userAddress
-                    }
-                }, { new: true, upsert: true })
-                console.log(a)
-                return res.status(201).json({ message: "Address Edit Successfully" })
-            } else {
-                console.log("else")
-                await UserAddress.findOneAndUpdate({ userId: req.data._id }, {
-                    "$push": {
-                        "address": userAddress
-                    }
-                })
-                return res.status(201).json({ message: "Address Add Successfully" })
-            }
+            const updatedAddress = await UserAddress.findOneAndUpdate({ userId: req.data._id }, {
+                $push: {
+                    "address": userAddress
+                }
+            }, { new: true })
+
+            return res.status(200).json({ msg: "Address Add Successfully", address:updatedAddress.address})
+            // }
 
         } else {
-            const address = new UserAddress({ userId: req.data._id, userAddress })
-            await address.save((error, addres) => {
-                if (error) {
-                    return res.status(400).json({ error: "Address Not Added Please Try Again" })
-                }
-                if (addres) {
-                    return res.status(201).json({ message: "Address Add Successfully" })
-                }
-            })
+            const newAddress = await UserAddress.create({ userId: req.data._id, userAddress })
+            // console.log(address)
+
+            return res.status(201).json({ msg: "Address Add Successfully", address:newAddress.address})
         }
     } catch (error) {
         console.log(error)
@@ -44,27 +28,40 @@ exports.addAddress = async (req, res) => {
 
 exports.getAddress = async (req, res) => {
     try {
-        // const getUserAddress = await UserAddress.findOne({ userId: req.data._id })
-        const getUserAddress = await UserAddress.findOne({ userId: req.body._id })
+        const getUserAddress = await UserAddress.findOne({ userId: req.data._id })
         if (getUserAddress) {
             return res.status(200).json({ userAddress: getUserAddress.address })
         } else {
-            return res.status(400).json({ error: "don't have address" })
+            return res.status(200).json({ userAddress: [] })
         }
     } catch (error) {
-        return res.status(400).json({ message: "something gone wrong please try again" })
+        return res.status(400).json({ msg: "something gone wrong please try again" })
     }
 }
 
-exports.editAddress = async (req, res) => {
+exports.updateAddress = async (req, res) => {
+    // console.log(req.body)
     try {
-        await UserAddress.findOneAndUpdate({ userId: req.data._id }, {
-            "$pull": {
-                address: { _id: req.body.addressId }
-            }
-        })
-        return res.status(200).json({ message: "Address deleted Successfully" })
+        const updatedAddress = await UserAddress.findOneAndUpdate({ userId: req.data._id, 'address._id': req.body._id },
+            { $set: { 'address.$': req.body } },
+            { new: true })
+
+        return res.status(200).json({ msg: "Address Update Successfully", address: updatedAddress.address })
     } catch (error) {
-        return res.status(400).json({ message: "something gone wrong please try again" })
+        return res.status(400).json({ msg: "something gone wrong please try again" })
+    }
+}
+
+exports.deleteAddress = async (req, res) => {
+    try {
+        const updatedAddress = await UserAddress.findOneAndUpdate({ userId: req.data._id },
+            { $pull: { address: { _id: req.params._id } } },
+            { new: true })
+
+        return res.status(200).json({ msg: "Address Remove Successfully", address: updatedAddress.address })
+
+    } catch (error) {
+        console.log(error)
+        return res.status(400).json({ msg: "something gone wrong please try again" })
     }
 }
