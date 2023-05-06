@@ -23,6 +23,6 @@ router.post('/user/signout', signout)
 
 router.get('/user/profile', verification("_f_id"), userProfile)
 router.patch('/user/updateProfile', verification("_f_id"), editUserProfileDetail)
-router.post('/user/updateProfilePic', verification("_f_id"), upload.single("profilePicture"), updateProfilePic)
+router.patch('/user/updateProfilePic', verification("_f_id"), updateProfilePic)
 
 module.exports = router;

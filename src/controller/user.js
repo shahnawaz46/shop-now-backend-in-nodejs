@@ -7,6 +7,7 @@ const fs = require("fs")
 // components
 const UserCollection = require("../model/user")
 const UserAddress = require('../model/address')
+const uploadImages = require("../utils/Cloudinary")
 
 
 exports.signup = async (req, res) => {
@@ -26,7 +27,7 @@ exports.signup = async (req, res) => {
         const hashPassword = await bcrypt.hash(password, 12)
 
         // const user = new UserCollection({ firstName, lastName, email, phoneNo, password, cpassword })
-        const user = await UserCollection.create({ firstName, lastName, email, phoneNo, password:hashPassword})
+        const user = await UserCollection.create({ firstName, lastName, email, phoneNo, password: hashPassword })
 
         const token = jwt.sign({ _id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '30d' })
 
@@ -37,7 +38,7 @@ exports.signup = async (req, res) => {
             secure: true
         })
 
-        return res.status(200).json({ msg: "Signup Successfully", userId:user._id })
+        return res.status(200).json({ msg: "Signup Successfully", userId: user._id })
 
     } catch (err) {
         console.log(err)
@@ -64,7 +65,7 @@ exports.signin = async (req, res) => {
                     secure: true
                 })
 
-                return res.status(200).json({ msg: "Login Successfully" , userId:alreadyUser._id})
+                return res.status(200).json({ msg: "Login Successfully", userId: alreadyUser._id })
             }
 
             return res.status(401).json({ msg: "Invalid credential" })
@@ -81,11 +82,11 @@ exports.signin = async (req, res) => {
 exports.userProfile = async (req, res) => {
     try {
         const userDetail = await UserCollection.findOne({ _id: req.data._id }).select("firstName lastName email phoneNo profilePicture location")
-        // const getUserAddress = await UserAddress.findOne({ userId: req.data._id })
+        const getUserAddress = await UserAddress.findOne({ userId: req.data._id })
         // console.log(getUserAddress)
-        // const address = getUserAddress ?  getUserAddress.address : []
-        
-        return res.status(200).json({ userDetail})
+        const address = getUserAddress ? getUserAddress.address : []
+
+        return res.status(200).json({ userDetail, address })
 
     } catch (err) {
         // console.log(err)
@@ -95,20 +96,19 @@ exports.userProfile = async (req, res) => {
 
 exports.updateProfilePic = async (req, res) => {
     try {
-        const profilePicture = req.file
+        const { imageBase64, userName } = req.body
+
         let userDetail = await UserCollection.findOne({ _id: req.data._id })
         if (userDetail) {
-            // console.log(userDetail)
-            if (userDetail.profilePicture)
-                fs.unlinkSync(path.join(__dirname + '../../../' + '/public/profileImages' + `/${userDetail.profilePicture}`))
+            const imageUrl = await uploadImages(JSON.parse(imageBase64), userName)
+            userDetail.profilePicture = imageUrl
 
-            userDetail.profilePicture = profilePicture.filename
-
-            await UserCollection.findByIdAndUpdate({ _id: req.data._id }, userDetail)
-            return res.status(200).json({ message: "Profile Pic Update Successfully" })
+            const result = await UserCollection.findByIdAndUpdate({ _id: req.data._id }, userDetail, { new: true }).select("firstName lastName email phoneNo profilePicture location")
+            return res.status(200).json({ msg: "Profile Pic Update Successfully", userDetails: result })
         }
+
     } catch (err) {
-        console.log(err)
+        // console.log(err)
         return res.status(400).json({ error: "Something Gone Wrong Please Try Again" })
     }
 }
@@ -120,7 +120,7 @@ exports.editUserProfileDetail = async (req, res) => {
         // if ((userDetail.phoneNo).toString().length != 10) {
         //     return res.status(400).json({ error: "Phone No Must Be 10 Digit Long" })
         // }
-        const result = await UserCollection.findByIdAndUpdate( req.data._id , userDetail, {new: true}).select("firstName lastName email phoneNo profilePicture location")
+        const result = await UserCollection.findByIdAndUpdate(req.data._id, userDetail, { new: true }).select("firstName lastName email phoneNo profilePicture location")
         // console.log(result)
         return res.status(200).json({ msg: "Profile Update Successfully", userDetail: result })
 

@@ -22,7 +22,9 @@ Connection()
 // app.use(cors({ origin: "https://fuzicon-ecommerce.netlify.app", credentials: true }));
 app.use(cors({ origin: true, credentials: true }));
 app.use(cookieParser())
-app.use(express.json());
+app.use(express.json({limit:'200mb'}));
+app.use(express.urlencoded({limit: '200mb', extended: true}));
+app.use(express.text({ limit: '200mb' }));
 app.use(express.static('public'));
 
 app.use('/api', userRouter);
