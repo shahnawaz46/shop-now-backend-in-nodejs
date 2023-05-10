@@ -7,8 +7,8 @@ const { addToCart, getCartItem, removeCartItem } = require("../controller/cart")
 const router = express.Router()
 
 
-router.post('/user/product/add_to_cart', verification('user_token'), userMiddleware, addToCart)
-router.get('/user/carItem/get', verification('user_token'), userMiddleware, getCartItem)
-router.post('/user/carItem/remove', verification('user_token'), userMiddleware, removeCartItem)
+router.post('/user/cartItem/add', verification('_f_id'), userMiddleware, addToCart)
+router.get('/user/cartItem/get', verification('_f_id'), userMiddleware, getCartItem)
+router.delete('/user/cartItem/remove', verification('_f_id'), userMiddleware, removeCartItem)
 
 module.exports = router;

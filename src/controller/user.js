@@ -109,7 +109,7 @@ exports.updateProfilePic = async (req, res) => {
 
     } catch (err) {
         // console.log(err)
-        return res.status(400).json({ error: "Something Gone Wrong Please Try Again" })
+        return res.status(400).json({ msg: "Something Gone Wrong Please Try Again" })
     }
 }
 

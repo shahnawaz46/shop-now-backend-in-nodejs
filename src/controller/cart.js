@@ -4,74 +4,71 @@ const CartCollection = require("../model/cart");
 exports.addToCart = async (req, res) => {
     try {
         const cartItem = req.body
-        const cartData = await CartCollection.findOne({ userId: req.data._id })
-        if (cartData) {
+        // console.log(cartItem)
+        const isCartCreated = await CartCollection.findOne({ userId: req.data._id })
+       
+        if (isCartCreated) {
+            // You can use the $ operator to update the first element that matches the query document:
+            const isItemAlreadyExist = await CartCollection.findOneAndUpdate(
+                { userId: req.data._id, cartItems: { $elemMatch: { productId: cartItem.productId, size: cartItem.size } } },
+                {$inc: {'cartItems.$.qty': cartItem.qty}},
+            )
+            // console.log(isItemAlreadyExist)
 
-            for (let item of cartItem) {
-                let isItemAvailableInCart = cartData.cartItems.find((value) => value.productId == item.productId && value.size === item.size)
-
-                if (isItemAvailableInCart) {
-                    const qty = isItemAvailableInCart.qty + item.qty
-                    if (qty == 0) {
-                        return res.status(400).json({ error: "Minimum 1 Product Required" })
-                    }
-
-                    // You can use the $–operator to update the first element that matches the query document:
-                    await CartCollection.findOneAndUpdate({ userId: req.data._id, cartItems: { $elemMatch: { productId: item.productId, size: item.size } } }, {
-                        $set: {
-                            "cartItems.$.qty": qty
-                        }
-                    })
-
-                } else {
-                    await CartCollection.findOneAndUpdate({ userId: req.data._id }, {
-                        '$push': {
-                            "cartItems": item
-                        }
-                    })
-                }
+            if(isItemAlreadyExist){
+                return res.status(200).json({ msg: "Item Updated in Cart Successfully" })
             }
-            return res.status(200).json({ message: "Product Add to Cart Successfully" })
+
+            await CartCollection.findOneAndUpdate({userId:req.data._id},{
+                $push:{cartItems:cartItem}
+            })
+            return res.status(200).json({ msg: "Item Added in Cart Successfully" })
         }
 
         // when cart is not exist then create a new cart
         else {
-            const product = new CartCollection({ userId: req.data._id, cartItems: cartItem })
-            await product.save((error, product) => {
-                if (error) {
-                    return res.status(400).json({ error: "New user Cart not Created" })
-                }
-                if (product) {
-                    return res.status(201).json({ message: "New user Cart Created and product added" })
-                }
-            })
+            await CartCollection.create({ userId: req.data._id, cartItems: cartItem })
+            return res.status(201).json({ msg: "Cart Created Successfully" })
+           
         }
     } catch (err) {
-        return res.status(400).json({ error: "Something Gone Wrong Please Try Again" })
+        // console.log(err)
+        return res.status(400).json({ msg: "Something Gone Wrong Please Try Again" })
     }
 }
 
 exports.getCartItem = async (req, res) => {
     try {
-        const userCart = await CartCollection.findOne({ userId: req.data._id }).select("cartItems").populate({ path: "cartItems.productId", select: "productName sellingPrice actualPrice productPictures" })
+        const userCart = await CartCollection.findOne({ userId: req.data._id }).select("cartItems").populate({ path: "cartItems.productId", select: "productName sellingPrice productPictures" })
         if (userCart) {
-            return res.status(200).json({ allCartItem: userCart.cartItems })
+            const cartItem = userCart.cartItems.map((item)=>{
+                return {qty:item.qty, 
+                        size:item.size,
+                        _id:item.productId._id,
+                        productName:item.productId.productName,
+                        sellingPrice:item.productId.sellingPrice,
+                        productImage:item.productId.productPictures[0]?.img
+                    }
+            })
+            // console.log(cartItem)
+            return res.status(200).json({ allCartItem: cartItem })
         }
-        return res.status(401).json({ error: "Not Item in Cart" })
+        return res.status(401).json({ msg: "Not Item in Cart" })
 
     } catch (err) {
-        return res.status(400).json({ error: "Something Gone Wrong Please Try Again" })
+        return res.status(400).json({ msg: "Something Gone Wrong Please Try Again" })
     }
 }
 
 exports.removeCartItem = async (req, res) => {
+    const {_id, size} = req.body.product
     try {
         await CartCollection.findOneAndUpdate({ userId: req.data._id }, {
-            '$pull': { cartItems: { productId: req.body.productId, size: req.body.size } }
+            '$pull': { cartItems: { productId: _id, size } }
         })
-        return res.status(200).json({ message: "Cart Item deleted Successfully" })
+        return res.status(200).json({ msg: "Cart Item deleted Successfully" })
 
     } catch (err) {
-        return res.status(400).json({ error: "Something Gone Wrong Please Try Again" })
+        return res.status(400).json({ msg: "Something Gone Wrong Please Try Again" })
     }
 }
