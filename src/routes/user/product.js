@@ -16,17 +16,17 @@ const router = express.Router();
 
 // getting all products for user bases on slug
 // slug mean -> men or women
-router.get('/product/:slug', getAllProductBySlug);
+router.get('/product/all/:slug', getAllProductBySlug);
 
 // getting single product by id
 router.get('/product/single/:productId', getSingleProductById);
 
 // router.post('/product/featured-product', getFeaturedProducts);
-router.post('/product/top/trending', updateTopTrendingProduct);
-router.get('/product/top/trending', getTopTrendingProducts);
+router.post('/product/top-trending', updateTopTrendingProduct);
+router.get('/product/top-trending', getTopTrendingProducts);
 
-// getting top rating products for homepage
-router.get('/product/top/rating', topRatingProducts);
+// getting top rated products for homepage
+router.get('/product/top-rated', topRatingProducts);
 
 router.post(
   '/product/write_review',

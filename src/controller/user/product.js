@@ -130,7 +130,6 @@ exports.getTopTrendingProducts = async (req, res) => {
       {
         $sort: { count: -1 },
       },
-
       {
         $lookup: {
           from: 'products', // model name
@@ -168,7 +167,7 @@ exports.getTopTrendingProducts = async (req, res) => {
     ]);
     return res.status(200).json({ products });
   } catch (err) {
-    console.log(err);
+    // console.log(err);
     return res.status(400).json({
       error: 'Something Went Wrong Please Try Again',
       msg: err.message,
@@ -213,7 +212,7 @@ exports.topRatingProducts = async (req, res) => {
     ]);
     return res.status(200).json({ products });
   } catch (err) {
-    console.log(err);
+    // console.log(err);
     return res
       .status(400)
       .json({ error: 'Something Went Wrong Please Try Again' });

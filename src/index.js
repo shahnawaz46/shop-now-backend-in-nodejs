@@ -21,8 +21,12 @@ dotenv.config();
 
 Connection();
 
-// app.use(cors({ origin: "https://fuzicon-ecommerce.netlify.app", credentials: true }));
-app.use(cors({ origin: true, credentials: true }));
+const origin =
+  process.env.NODE_ENV === 'production'
+    ? 'https://fuzicon-ecommerce.netlify.app'
+    : true;
+
+app.use(cors({ origin, credentials: true }));
 app.use(cookieParser());
 app.use(express.json({ limit: '200mb' }));
 app.use(express.urlencoded({ limit: '200mb', extended: true }));
