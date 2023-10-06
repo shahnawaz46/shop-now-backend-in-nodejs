@@ -1,70 +1,72 @@
-const mongoose = require("mongoose")
-
+const mongoose = require('mongoose');
 
 const productSchema = new mongoose.Schema({
-    productName: {
-        type: String,
-        required: true,
-        trim: true
+  productName: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  slug: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  actualPrice: {
+    type: Number,
+    required: true,
+  },
+  sellingPrice: {
+    type: Number,
+    required: true,
+  },
+  description: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  stocks: {
+    type: Number,
+    required: true,
+  },
+  offer: {
+    type: Number,
+  },
+  productPictures: [
+    {
+      img: { type: String, required: true },
     },
-    slug: {
-        type: String,
-        required: true,
-        unique: true
-    },
-    actualPrice: {
-        type: Number,
-        required: true
-    },
-    sellingPrice: {
-        type: Number,
-        required: true
-    },
-    description: {
-        type: String,
-        required: true,
-        trim: true
-    },
-    stocks: {
-        type: Number,
-        required: true
-    },
-    offer: {
-        type: Number
-    },
-    productPictures: [
-        {
-            img: { type: String, required: true }
-        }
-    ],
-    reviews: [
-        {
-            userId: {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: 'users'
-            },
-            rating: Number,
-            message: String,
-            create_date: Date,
-            update_date: Date
-        }
-    ],
-    categoryId: {
+  ],
+  targetAudience: {
+    type: String,
+    required: true,
+  },
+  reviews: [
+    {
+      userId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'categories',
-        required: true
+        ref: 'users',
+      },
+      rating: Number,
+      message: String,
+      create_date: Date,
+      update_date: Date,
     },
-    createdBy: {
-        AdminId: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'admin',
-            required: true
-        }
+  ],
+  categoryId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'categories',
+    required: true,
+  },
+  createdBy: {
+    AdminId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'admin',
+      required: true,
     },
-    updatedAt: Date
-})
+  },
+  updatedAt: Date,
+});
 
-
-const ProductCollection = mongoose.model("products", productSchema)
+const ProductCollection = mongoose.model('products', productSchema);
 
 module.exports = ProductCollection;

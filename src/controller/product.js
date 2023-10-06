@@ -265,7 +265,7 @@ exports.writeProductReview = async (req, res) => {
   }
 };
 
-exports.topSellingProducts = async (req, res) => {
+exports.topRatingProducts = async (req, res) => {
   try {
     // Finding top 20 products that have highest rating by using aggregate pipeline.
     const products = await ProductCollection.aggregate([
