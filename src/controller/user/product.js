@@ -3,49 +3,60 @@ const ProductCollection = require('../../model/product');
 const CategoryCollection = require('../../model/category');
 const TrendingProductCollection = require('../../model/trendingProduct');
 
-exports.getAllProductBySlug = async (req, res) => {
+exports.getAllProducts = async (req, res) => {
   const { slug } = req.params;
+  try {
+    const allProducts = await ProductCollection.find({
+      targetAudience: slug,
+    }).select('productName productPictures actualPrice sellingPrice');
+
+    if (allProducts.length > 0) return res.status(200).json({ allProducts });
+    return res.status(404).json({ error: 'product not found' });
+  } catch (error) {
+    return res
+      .status(400)
+      .json({ error: 'Something Gone Wrong Please Try Again' });
+  }
+};
+
+// fetching filtered products (sub category products and price range)
+exports.getFilteredProducts = async (req, res) => {
+  const { category, price, targetAudience } = req.query;
 
   try {
-    const selectedCategory = await CategoryCollection.findOne({ slug: slug });
-    if (selectedCategory) {
-      // this condition will run when user select sub Category like (top wears, bottom wears, etc)
-      if (selectedCategory.parentCategoryId) {
-        const products = await ProductCollection.find({
-          categoryId: selectedCategory._id,
+    if (price) {
+      const [minPrice, maxPrice] = price.split('-');
+      const sellingPrice =
+        maxPrice === 2500
+          ? { $gte: minPrice }
+          : {
+              $gte: minPrice,
+              $lte: maxPrice,
+            };
+
+      if (category) {
+        const subCategory = await CategoryCollection.findOne({
+          slug: category,
         });
-
-        if (products) {
-          return res.status(200).json({ products });
-        }
-        return res.status(404).json({ error: 'product not found' });
+        const subCategoryProducts = await ProductCollection.find({
+          categoryId: subCategory._id,
+          sellingPrice,
+        }).select('productName productPictures actualPrice sellingPrice');
+        return res.status(200).json({ subCategoryProducts });
       }
-
-      // this condition will run when user select Men's Wardrobe or Women's Wardrobe
-      else {
-        //  here i am getting list of sub categories
-        const allSubCategory = await CategoryCollection.find({
-          parentCategoryId: selectedCategory._id,
-        }).select('_id categoryName slug');
-        let allProduct = [];
-        for (let cat of allSubCategory) {
-          const products = await ProductCollection.find({
-            categoryId: cat._id,
-          });
-
-          if (products) {
-            allProduct.push(...products);
-          }
-        }
-        if (allProduct) {
-          return res
-            .status(200)
-            .json({ products: allProduct, subCategory: allSubCategory });
-        }
-        return res.status(404).json({ error: 'product not found' });
-      }
+      const subCategoryProducts = await ProductCollection.find({
+        sellingPrice,
+        targetAudience,
+      }).select('productName productPictures actualPrice sellingPrice');
+      return res.status(200).json({ subCategoryProducts });
     }
-    return res.status(404).json({ error: 'product not found' });
+    if (category) {
+      const subCategory = await CategoryCollection.findOne({ slug: category });
+      const subCategoryProducts = await ProductCollection.find({
+        categoryId: subCategory._id,
+      }).select('productName productPictures actualPrice sellingPrice');
+      return res.status(200).json({ subCategoryProducts });
+    }
   } catch (error) {
     return res
       .status(400)
@@ -111,7 +122,7 @@ exports.updateTopTrendingProduct = async (req, res) => {
 };
 
 exports.getTopTrendingProducts = async (req, res) => {
-  const trendDuration = 7;
+  const trendDuration = 30;
   // 24 -> hours, 60 -> minutes, 60 -> seconds, 1000 -> milliseconds
   // calcuting the last 14 days
   const cutoffDate = new Date(Date.now() - trendDuration * 24 * 60 * 60 * 1000);

@@ -3,20 +3,24 @@ const express = require('express');
 // components
 const { verification } = require('../../middleware/middleware');
 const {
-  getAllProductBySlug,
+  getAllProducts,
+  getFilteredProducts,
   getSingleProductById,
   getFeaturedProducts,
   writeProductReview,
   topRatingProducts,
   getTopTrendingProducts,
   updateTopTrendingProduct,
+  // getAllProductByPrice,
 } = require('../../controller/user/product');
 
 const router = express.Router();
 
-// getting all products for user bases on slug
+// getting all products for user bases on slug/targetAudience
 // slug mean -> men or women
-router.get('/product/all/:slug', getAllProductBySlug);
+router.get('/product/all/:slug', getAllProducts);
+
+router.get('/product/filtered', getFilteredProducts);
 
 // getting single product by id
 router.get('/product/single/:productId', getSingleProductById);

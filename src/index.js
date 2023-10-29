@@ -7,10 +7,13 @@ const Connection = require('./db/Connection');
 
 // users components
 const userProductRoute = require('./routes/user/product');
+const userCategoryRoute = require('./routes/user/category');
+
+// admin components
+const adminCategoryRoute = require('./routes/admin/category');
 
 const userRouter = require('./routes/user');
 const adminRouter = require('./routes/admin');
-const categoryRoute = require('./routes/category');
 const bannerRoute = require('./routes/banner');
 const cartRoute = require('./routes/cart');
 const addressRoute = require('./routes/address');
@@ -33,14 +36,15 @@ app.use(express.urlencoded({ limit: '200mb', extended: true }));
 app.use(express.text({ limit: '200mb' }));
 app.use(express.static('public'));
 
-// admins routes
+// admin routes
+app.use('/api', adminCategoryRoute);
 
 // user routes
 app.use('/api', userProductRoute);
+app.use('/api', userCategoryRoute);
 
 app.use('/api', userRouter);
 app.use('/api', adminRouter);
-app.use('/api', categoryRoute);
 app.use('/api', bannerRoute);
 app.use('/api', cartRoute);
 app.use('/api', addressRoute);
