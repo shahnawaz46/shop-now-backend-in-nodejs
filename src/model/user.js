@@ -1,46 +1,47 @@
-const mongoose = require("mongoose")
-const bcrypt = require("bcryptjs")
+const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
 
-const userSchema = new mongoose.Schema({
-    firstName: {
-        type: String,
-        required: true,
-        trim: true
+const userSchema = new mongoose.Schema(
+  {
+    first_name: {
+      type: String,
+      required: true,
+      trim: true,
     },
-    lastName: {
-        type: String,
-        required: true,
-        trim: true
+    last_name: {
+      type: String,
+      required: true,
+      trim: true,
     },
     email: {
-        type: String,
-        required: true,
-        trim: true,
-        unique: true
+      type: String,
+      required: true,
+      trim: true,
+      unique: true,
     },
-    phoneNo: {
-        type: Number,
-        required: true
+    phone_no: {
+      type: Number,
+      required: true,
     },
     password: {
-        type: String,
-        required: true
+      type: String,
+      required: true,
     },
     role: {
-        type: String,
-        default: 'user'
+      type: String,
+      default: 'user',
     },
-    profilePicture: {
-        type: String,
-        default: null
+    profile_picture: {
+      type: String,
+      default: null,
     },
     location: {
-        type: String,
-        default:null
-    }
-
-}, { timestamps: true })
-
+      type: String,
+      default: null,
+    },
+  },
+  { timestamps: true }
+);
 
 // userSchema.pre('save', async function (next) {
 //     if (this.isModified("password")) {
@@ -50,7 +51,6 @@ const userSchema = new mongoose.Schema({
 //     next()
 // })
 
-
-const UserCollection = mongoose.model("users", userSchema)
+const UserCollection = mongoose.model('users', userSchema);
 
 module.exports = UserCollection;

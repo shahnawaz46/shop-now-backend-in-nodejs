@@ -8,11 +8,11 @@ const Connection = require('./db/Connection');
 // users components
 const userProductRoute = require('./routes/user/product');
 const userCategoryRoute = require('./routes/user/category');
+const userProfile = require('./routes/user/profile');
 
 // admin components
 const adminCategoryRoute = require('./routes/admin/category');
 
-const userRouter = require('./routes/user');
 const adminRouter = require('./routes/admin');
 const bannerRoute = require('./routes/banner');
 const cartRoute = require('./routes/cart');
@@ -42,8 +42,8 @@ app.use('/api', adminCategoryRoute);
 // user routes
 app.use('/api', userProductRoute);
 app.use('/api', userCategoryRoute);
+app.use('/api', userProfile);
 
-app.use('/api', userRouter);
 app.use('/api', adminRouter);
 app.use('/api', bannerRoute);
 app.use('/api', cartRoute);
