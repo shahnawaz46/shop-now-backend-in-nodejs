@@ -1,8 +1,8 @@
-const express = require('express');
+import { Router } from 'express';
 
-// components
-const { verification, adminMiddleware } = require('../middleware/middleware');
-const {
+// internal
+import { verification, adminMiddleware } from '../middleware/middleware.js';
+import {
   addProduct,
   showProducts,
   deleteProduct,
@@ -12,10 +12,10 @@ const {
   getFeaturedProducts,
   writeProductReview,
   topRatingProducts,
-} = require('../controller/product');
-const multerMiddleWare = require('../middleware/MulterMiddleWare');
+} from '../controller/product.controller.js';
+import multerMiddleWare from '../middleware/MulterMiddleWare.js';
 
-const router = express.Router();
+const router = Router();
 
 const upload = multerMiddleWare('productImages');
 

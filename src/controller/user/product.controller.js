@@ -1,12 +1,14 @@
-// components
-const ProductCollection = require('../../model/product');
-const CategoryCollection = require('../../model/category');
-const TrendingProductCollection = require('../../model/trendingProduct');
+// internal
+import { Product } from '../../model/product.model.js';
+import { Category } from '../../model/category.model.js';
+import { TrendingProduct } from '../../model/trendingProduct.model.js';
 
-exports.getAllProducts = async (req, res) => {
+// fetching all products based on targetAudience (Men, Women)
+export const getAllProducts = async (req, res) => {
+  // slug can be Men and Women
   const { slug } = req.params;
   try {
-    const allProducts = await ProductCollection.find({
+    const allProducts = await Product.find({
       targetAudience: slug,
     }).select('productName productPictures actualPrice sellingPrice');
 
@@ -20,12 +22,14 @@ exports.getAllProducts = async (req, res) => {
 };
 
 // fetching filtered products (sub category products and price range)
-exports.getFilteredProducts = async (req, res) => {
+export const getFilteredProducts = async (req, res) => {
   const { category, price, targetAudience } = req.query;
-
+  console.log(category, price, targetAudience);
   try {
     if (price) {
       const [minPrice, maxPrice] = price.split('-');
+      // if maxPrice is 2500(default value) that's means user only selected minPrice So, i am returning all the products that is greater than minPrice.
+      // if maxPrice is not 2500(default value) then i am returning all the products that price is between minPrice and maxPrice
       const sellingPrice =
         maxPrice === 2500
           ? { $gte: minPrice }
@@ -35,24 +39,28 @@ exports.getFilteredProducts = async (req, res) => {
             };
 
       if (category) {
-        const subCategory = await CategoryCollection.findOne({
+        // first i am fetching subCategory, because i need subCategory-Id for fetching products based on subCategory
+        const subCategory = await Category.findOne({
           slug: category,
         });
-        const subCategoryProducts = await ProductCollection.find({
+        // here i am fetching products based on subCategory id and price
+        const subCategoryProducts = await Product.find({
           categoryId: subCategory._id,
           sellingPrice,
         }).select('productName productPictures actualPrice sellingPrice');
         return res.status(200).json({ subCategoryProducts });
       }
-      const subCategoryProducts = await ProductCollection.find({
+      const subCategoryProducts = await Product.find({
         sellingPrice,
         targetAudience,
       }).select('productName productPictures actualPrice sellingPrice');
       return res.status(200).json({ subCategoryProducts });
     }
+
+    // if price is not selected then fetching products based on subCategory only.
     if (category) {
-      const subCategory = await CategoryCollection.findOne({ slug: category });
-      const subCategoryProducts = await ProductCollection.find({
+      const subCategory = await Category.findOne({ slug: category });
+      const subCategoryProducts = await Product.find({
         categoryId: subCategory._id,
       }).select('productName productPictures actualPrice sellingPrice');
       return res.status(200).json({ subCategoryProducts });
@@ -64,10 +72,11 @@ exports.getFilteredProducts = async (req, res) => {
   }
 };
 
-exports.getSingleProductById = async (req, res) => {
+// fetching single product based on productId and also fetching review data from different model by using populate method.
+export const getSingleProductById = async (req, res) => {
   const { productId } = req.params;
   try {
-    const product = await ProductCollection.findOne({
+    const product = await Product.findOne({
       _id: productId,
     }).populate('reviews.userId', 'firstName lastName profilePicture');
 
@@ -82,9 +91,10 @@ exports.getSingleProductById = async (req, res) => {
   }
 };
 
-exports.getFeaturedProducts = async (req, res) => {
+// fetching featured products based on rating if the rating is greater than 2
+export const getFeaturedProducts = async (req, res) => {
   try {
-    const allProducts = await ProductCollection.find({}).populate('categoryId');
+    const allProducts = await Product.find({}).populate('categoryId');
     if (allProducts) {
       const featuredProducts = allProducts.filter(
         (product) =>
@@ -100,13 +110,15 @@ exports.getFeaturedProducts = async (req, res) => {
   }
 };
 
-exports.updateTopTrendingProduct = async (req, res) => {
+// updating topTrendingProducts based on event(like visit).
+// when(only) loggedin user will click on any product then i am updating topTrendingProducts count
+export const updateTopTrendingProduct = async (req, res) => {
   try {
     const { productId, userId, eventType } = req.body;
     if (!userId || !productId) {
       return res.status(200).json({ msg: 'unsuccessfully' });
     }
-    await TrendingProductCollection.findOneAndUpdate(
+    await TrendingProduct.findOneAndUpdate(
       { productId, userId },
       { $set: { productId, userId, eventType } },
       { upsert: true }
@@ -121,14 +133,14 @@ exports.updateTopTrendingProduct = async (req, res) => {
   }
 };
 
-exports.getTopTrendingProducts = async (req, res) => {
+export const getTopTrendingProducts = async (req, res) => {
   const trendDuration = 30;
   // 24 -> hours, 60 -> minutes, 60 -> seconds, 1000 -> milliseconds
   // calcuting the last 14 days
   const cutoffDate = new Date(Date.now() - trendDuration * 24 * 60 * 60 * 1000);
 
   try {
-    const products = await TrendingProductCollection.aggregate([
+    const products = await TrendingProduct.aggregate([
       {
         $match: { updatedAt: { $gt: cutoffDate }, eventType: 'visit' },
       },
@@ -186,10 +198,10 @@ exports.getTopTrendingProducts = async (req, res) => {
   }
 };
 
-exports.topRatingProducts = async (req, res) => {
+export const topRatingProducts = async (req, res) => {
   try {
     // Finding top 20 products that have highest rating by using aggregate pipeline.
-    const products = await ProductCollection.aggregate([
+    const products = await Product.aggregate([
       {
         $unwind: '$reviews', // Split the array of reviews into separate documents.
       },
@@ -230,16 +242,16 @@ exports.topRatingProducts = async (req, res) => {
   }
 };
 
-exports.writeProductReview = async (req, res) => {
+export const writeProductReview = async (req, res) => {
   const { product_id, message, rating, date } = req.body;
   try {
-    const product = await ProductCollection.findOne({ _id: product_id });
+    const product = await Product.findOne({ _id: product_id });
     if (product) {
       const reviewIsAlready = product.reviews.find(
         (value) => value.userId == req.data._id
       );
       if (reviewIsAlready) {
-        await ProductCollection.findOneAndUpdate(
+        await Product.findOneAndUpdate(
           { _id: product_id, 'reviews.userId': req.data._id },
           {
             $set: {
@@ -251,7 +263,7 @@ exports.writeProductReview = async (req, res) => {
         );
         return res.status(200).json({ message: 'Review Edit Successfully' });
       } else {
-        await ProductCollection.findOneAndUpdate(
+        await Product.findOneAndUpdate(
           { _id: product_id },
           {
             $push: {

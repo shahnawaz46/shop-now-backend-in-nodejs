@@ -1,23 +1,23 @@
-const express = require('express');
-const dotenv = require('dotenv');
-const cors = require('cors');
-const cookieParser = require('cookie-parser');
+import express from 'express';
+import dotenv from 'dotenv';
+import cors from 'cors';
+import cookieParser from 'cookie-parser';
 
-const Connection = require('./db/Connection');
+// db connection
+import Connection from './db/Connection.js';
 
-// users components
-const userProductRoute = require('./routes/user/product');
-const userCategoryRoute = require('./routes/user/category');
-const userProfile = require('./routes/user/profile');
+// user router
+import userRouter from './routes/user/user.routes.js';
+import userProductRouter from './routes/user/product.routes..js';
+import userCategoryRouter from './routes/user/category.routes.js';
 
-// admin components
-const adminCategoryRoute = require('./routes/admin/category');
-
-const adminRouter = require('./routes/admin');
-const bannerRoute = require('./routes/banner');
-const cartRoute = require('./routes/cart');
-const addressRoute = require('./routes/address');
-const orderRoute = require('./routes/order');
+// admin router
+import adminCategoryRoute from './routes/admin/category.routes.js';
+import adminRouter from './routes/admin/admin.routes.js';
+import bannerRoute from './routes/banner.routes.js';
+import cartRoute from './routes/cart.routes.js';
+import addressRoute from './routes/address.routes.js';
+import orderRoute from './routes/order.routes.js';
 
 const app = express();
 dotenv.config();
@@ -40,9 +40,9 @@ app.use(express.static('public'));
 app.use('/api', adminCategoryRoute);
 
 // user routes
-app.use('/api', userProductRoute);
-app.use('/api', userCategoryRoute);
-app.use('/api', userProfile);
+app.use('/api', userRouter);
+app.use('/api', userProductRouter);
+app.use('/api', userCategoryRouter);
 
 app.use('/api', adminRouter);
 app.use('/api', bannerRoute);

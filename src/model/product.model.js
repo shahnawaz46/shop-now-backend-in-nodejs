@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const productSchema = new mongoose.Schema({
   productName: {
@@ -67,6 +67,4 @@ const productSchema = new mongoose.Schema({
   updatedAt: Date,
 });
 
-const ProductCollection = mongoose.model('products', productSchema);
-
-module.exports = ProductCollection;
+export const Product = mongoose.model('Product', productSchema);

@@ -1,22 +1,22 @@
-const express = require('express');
+import { Router } from 'express';
 
-// components
-const {
+// internal,
+import {
   signup,
   signin,
   signout,
   userProfile,
-  updateProfilePic,
   editUserProfileDetail,
-} = require('../../controller/user/profile');
-const { verification } = require('../../middleware/middleware');
-const multerMiddleWare = require('../../middleware/MulterMiddleWare');
-const {
+  updateProfilePic,
+} from '../../controller/user/user.controller.js';
+import { verification } from '../../middleware/middleware.js';
+import multerMiddleWare from '../../middleware/MulterMiddleWare.js';
+import {
   validateRequest,
   isRequestValid,
-} = require('../../validation/validation');
+} from '../../validation/validation.js';
 
-const router = express.Router();
+const router = Router();
 
 const upload = multerMiddleWare('profileImages');
 
@@ -32,4 +32,4 @@ router.patch(
 );
 router.patch('/user/updateProfilePic', verification('_f_id'), updateProfilePic);
 
-module.exports = router;
+export default router;

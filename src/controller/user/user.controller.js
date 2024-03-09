@@ -1,17 +1,17 @@
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 
-// components
-const UserCollection = require('../../model/user');
-const UserAddress = require('../../model/address');
-const uploadImages = require('../../utils/Cloudinary');
+// internal
+import { User } from '../../model/user.model.js';
+import { UserAddress } from '../../model/address.model.js';
+import uploadImages from '../../utils/Cloudinary.js';
 
-exports.signup = async (req, res) => {
+export const signup = async (req, res) => {
   const { first_name, last_name, email, phone_no, password, confirm_password } =
     req.body;
 
   try {
-    const alreadyUser = await UserCollection.findOne({ email });
+    const alreadyUser = await User.findOne({ email });
     if (alreadyUser) {
       return res
         .status(409)
@@ -27,8 +27,8 @@ exports.signup = async (req, res) => {
     // hasing the password
     const hashPassword = await bcrypt.hash(password, 12);
 
-    // const user = new UserCollection({ firstName, lastName, email, phoneNo, password, cpassword })
-    const user = await UserCollection.create({
+    // const user = new User({ firstName, lastName, email, phoneNo, password, cpassword })
+    const user = await User.create({
       first_name,
       last_name,
       email,
@@ -59,11 +59,11 @@ exports.signup = async (req, res) => {
   }
 };
 
-exports.signin = async (req, res) => {
+export const signin = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const alreadyUser = await UserCollection.findOne({ email });
+    const alreadyUser = await User.findOne({ email });
     if (alreadyUser && alreadyUser.role === 'user') {
       const passwordMatch = await bcrypt.compare(
         password,
@@ -102,9 +102,9 @@ exports.signin = async (req, res) => {
   }
 };
 
-exports.userProfile = async (req, res) => {
+export const userProfile = async (req, res) => {
   try {
-    const userDetail = await UserCollection.findOne({
+    const userDetail = await User.findOne({
       _id: req.data._id,
     }).select('first_name last_name email phone_no profile_picture location');
     const getUserAddress = await UserAddress.findOne({ userId: req.data._id });
@@ -119,16 +119,16 @@ exports.userProfile = async (req, res) => {
   }
 };
 
-exports.updateProfilePic = async (req, res) => {
+export const updateProfilePic = async (req, res) => {
   try {
     const { imageBase64, userName } = req.body;
 
-    let userDetail = await UserCollection.findOne({ _id: req.data._id });
+    let userDetail = await User.findOne({ _id: req.data._id });
     if (userDetail) {
       const imageUrl = await uploadImages(JSON.parse(imageBase64), userName);
       userDetail.profilePicture = imageUrl;
 
-      const result = await UserCollection.findByIdAndUpdate(
+      const result = await User.findByIdAndUpdate(
         { _id: req.data._id },
         userDetail,
         { new: true }
@@ -146,18 +146,16 @@ exports.updateProfilePic = async (req, res) => {
   }
 };
 
-exports.editUserProfileDetail = async (req, res) => {
+export const editUserProfileDetail = async (req, res) => {
   const userDetail = req.body.userDetail;
 
   try {
     // if ((userDetail.phoneNo).toString().length != 10) {
     //     return res.status(400).json({ error: "Phone No Must Be 10 Digit Long" })
     // }
-    const result = await UserCollection.findByIdAndUpdate(
-      req.data._id,
-      userDetail,
-      { new: true }
-    ).select('firstName lastName email phoneNo profilePicture location');
+    const result = await User.findByIdAndUpdate(req.data._id, userDetail, {
+      new: true,
+    }).select('firstName lastName email phoneNo profilePicture location');
     // console.log(result)
     return res
       .status(200)
@@ -173,7 +171,7 @@ exports.editUserProfileDetail = async (req, res) => {
   }
 };
 
-exports.signout = (req, res) => {
+export const signout = (req, res) => {
   res.clearCookie('_f_id');
   return res.status(200).json({ msg: 'Signout Successfully' });
 };

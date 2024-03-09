@@ -1,14 +1,14 @@
-const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
+import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
 
 const userSchema = new mongoose.Schema(
   {
-    first_name: {
+    fistName: {
       type: String,
       required: true,
       trim: true,
     },
-    last_name: {
+    lastName: {
       type: String,
       required: true,
       trim: true,
@@ -19,7 +19,7 @@ const userSchema = new mongoose.Schema(
       trim: true,
       unique: true,
     },
-    phone_no: {
+    phoneNo: {
       type: Number,
       required: true,
     },
@@ -31,7 +31,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: 'user',
     },
-    profile_picture: {
+    profilePicture: {
       type: String,
       default: null,
     },
@@ -51,6 +51,4 @@ const userSchema = new mongoose.Schema(
 //     next()
 // })
 
-const UserCollection = mongoose.model('users', userSchema);
-
-module.exports = UserCollection;
+export const User = mongoose.model('User', userSchema);

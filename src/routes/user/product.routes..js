@@ -1,8 +1,8 @@
-const express = require('express');
+import { Router } from 'express';
 
-// components
-const { verification } = require('../../middleware/middleware');
-const {
+// internal
+import { verification } from '../../middleware/middleware.js';
+import {
   getAllProducts,
   getFilteredProducts,
   getSingleProductById,
@@ -12,9 +12,9 @@ const {
   getTopTrendingProducts,
   updateTopTrendingProduct,
   // getAllProductByPrice,
-} = require('../../controller/user/product');
+} from '../../controller/user/product.controller.js';
 
-const router = express.Router();
+const router = Router();
 
 // getting all products for user bases on slug/targetAudience
 // slug mean -> men or women
@@ -38,4 +38,4 @@ router.post(
   writeProductReview
 );
 
-module.exports = router;
+export default router;

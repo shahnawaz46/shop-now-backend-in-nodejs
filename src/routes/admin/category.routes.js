@@ -1,19 +1,16 @@
-const express = require('express');
+import { Router } from 'express';
 
-// components
-const {
+// internal
+import {
   createCategory,
   getCategory,
   deleteCategory,
   editCategory,
-} = require('../../controller/admin/category');
+} from '../../controller/admin/category.controller.js';
 
-const {
-  verification,
-  adminMiddleware,
-} = require('../../middleware/middleware');
+import { verification, adminMiddleware } from '../../middleware/middleware.js';
 
-const router = express.Router();
+const router = Router();
 
 router.post(
   '/category/create',
@@ -38,4 +35,4 @@ router.post(
   editCategory
 );
 
-module.exports = router;
+export default router;

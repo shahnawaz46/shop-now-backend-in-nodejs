@@ -1,14 +1,12 @@
-const slugify = require('slugify');
-const path = require('path');
-const fs = require('fs');
-const mongoose = require('mongoose');
+import slugify from 'slugify';
+import path from 'path';
+import fs from 'fs';
 
-// components
-const ProductCollection = require('../model/product');
-// const ProductCollection = require("../model/TempProductCollection");
-const CategoryCollection = require('../model/category');
+// internal
+import { Product } from '../model/product.model.js';
+import { Category } from '../model/category.model.js';
 
-exports.addProduct = async (req, res) => {
+export const addProduct = async (req, res) => {
   const {
     productName,
     actualPrice,
@@ -32,7 +30,7 @@ exports.addProduct = async (req, res) => {
   }
 
   try {
-    const product = new ProductCollection({
+    const product = new Product({
       productName,
       slug: slugify(productName),
       actualPrice,
@@ -62,9 +60,9 @@ exports.addProduct = async (req, res) => {
 };
 
 // for admin
-exports.showProducts = async (req, res) => {
+export const showProducts = async (req, res) => {
   try {
-    const allProducts = await ProductCollection.find({})
+    const allProducts = await Product.find({})
       .select(
         '_id productName actualPrice sellingPrice stocks categoryId description productPictures'
       )
@@ -82,9 +80,9 @@ exports.showProducts = async (req, res) => {
   }
 };
 
-exports.deleteProduct = async (req, res) => {
+export const deleteProduct = async (req, res) => {
   try {
-    const deletedProduct = await ProductCollection.findByIdAndDelete({
+    const deletedProduct = await Product.findByIdAndDelete({
       _id: req.body.productId,
     });
     deletedProduct.productPictures.forEach((image) => {
@@ -102,7 +100,7 @@ exports.deleteProduct = async (req, res) => {
   }
 };
 
-exports.editProduct = async (req, res) => {
+export const editProduct = async (req, res) => {
   const {
     _id,
     productName,
@@ -125,7 +123,7 @@ exports.editProduct = async (req, res) => {
       categoryId,
       createdBy: { AdminId: req.data._id },
     };
-    await ProductCollection.findByIdAndUpdate({ _id }, product);
+    await Product.findByIdAndUpdate({ _id }, product);
     return res.status(200).json({ message: 'Product Edit Successfully' });
   } catch (err) {
     return res
@@ -134,15 +132,15 @@ exports.editProduct = async (req, res) => {
   }
 };
 
-exports.getAllProductBySlug = async (req, res) => {
+export const getAllProductBySlug = async (req, res) => {
   const { slug } = req.params;
 
   try {
-    const selectedCategory = await CategoryCollection.findOne({ slug: slug });
+    const selectedCategory = await Category.findOne({ slug: slug });
     if (selectedCategory) {
       // this condition will run when user select sub Category like (top wears, bottom wears, etc)
       if (selectedCategory.parentCategoryId) {
-        const products = await ProductCollection.find({
+        const products = await Product.find({
           categoryId: selectedCategory._id,
         });
 
@@ -155,12 +153,12 @@ exports.getAllProductBySlug = async (req, res) => {
       // this condition will run when user select Men's Wardrobe or Women's Wardrobe
       else {
         //  here i am getting list of sub categories
-        const allSubCategory = await CategoryCollection.find({
+        const allSubCategory = await Category.find({
           parentCategoryId: selectedCategory._id,
         }).select('_id categoryName slug');
         let allProduct = [];
         for (let cat of allSubCategory) {
-          const products = await ProductCollection.find({
+          const products = await Product.find({
             categoryId: cat._id,
           });
 
@@ -184,10 +182,10 @@ exports.getAllProductBySlug = async (req, res) => {
   }
 };
 
-exports.getSingleProductById = async (req, res) => {
+export const getSingleProductById = async (req, res) => {
   const { productId } = req.params;
   try {
-    const product = await ProductCollection.findOne({
+    const product = await Product.findOne({
       _id: productId,
     }).populate('reviews.userId', 'firstName lastName profilePicture');
     if (product) {
@@ -201,9 +199,9 @@ exports.getSingleProductById = async (req, res) => {
   }
 };
 
-exports.getFeaturedProducts = async (req, res) => {
+export const getFeaturedProducts = async (req, res) => {
   try {
-    const allProducts = await ProductCollection.find({}).populate('categoryId');
+    const allProducts = await Product.find({}).populate('categoryId');
     if (allProducts) {
       const featuredProducts = allProducts.filter(
         (product) =>
@@ -219,16 +217,16 @@ exports.getFeaturedProducts = async (req, res) => {
   }
 };
 
-exports.writeProductReview = async (req, res) => {
+export const writeProductReview = async (req, res) => {
   const { product_id, message, rating, date } = req.body;
   try {
-    const product = await ProductCollection.findOne({ _id: product_id });
+    const product = await Product.findOne({ _id: product_id });
     if (product) {
       const reviewIsAlready = product.reviews.find(
         (value) => value.userId == req.data._id
       );
       if (reviewIsAlready) {
-        await ProductCollection.findOneAndUpdate(
+        await Product.findOneAndUpdate(
           { _id: product_id, 'reviews.userId': req.data._id },
           {
             $set: {
@@ -240,7 +238,7 @@ exports.writeProductReview = async (req, res) => {
         );
         return res.status(200).json({ message: 'Review Edit Successfully' });
       } else {
-        await ProductCollection.findOneAndUpdate(
+        await Product.findOneAndUpdate(
           { _id: product_id },
           {
             $push: {
@@ -265,10 +263,10 @@ exports.writeProductReview = async (req, res) => {
   }
 };
 
-exports.topRatingProducts = async (req, res) => {
+export const topRatingProducts = async (req, res) => {
   try {
     // Finding top 20 products that have highest rating by using aggregate pipeline.
-    const products = await ProductCollection.aggregate([
+    const products = await Product.aggregate([
       {
         $unwind: '$reviews', // Split the array of reviews into separate documents.
       },

@@ -1,6 +1,6 @@
-const { check, validationResult } = require('express-validator');
+import { check, validationResult } from 'express-validator';
 
-exports.validateRequest = [
+export const validateRequest = [
   check('first_name').notEmpty().withMessage('first name is required'),
 
   check('last_name').notEmpty().withMessage('last name is required'),
@@ -16,7 +16,7 @@ exports.validateRequest = [
     .withMessage('password must be at least 8 character long'),
 ];
 
-exports.isRequestValid = (req, res, next) => {
+export const isRequestValid = (req, res, next) => {
   const errors = validationResult(req);
   console.log(errors);
   if (errors.array().length > 0) {

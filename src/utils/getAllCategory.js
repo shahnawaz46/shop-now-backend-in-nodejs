@@ -30,4 +30,4 @@ const getAllCategory = (categories, parentId = null, targetAudience = null) => {
   return categoryList;
 };
 
-module.exports = getAllCategory;
+export default getAllCategory;

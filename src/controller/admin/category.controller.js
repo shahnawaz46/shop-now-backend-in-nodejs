@@ -1,10 +1,10 @@
-const slugify = require('slugify');
+import slugify from 'slugify';
 
-// components
-const CategoryCollection = require('../../model/category');
-const getAllCategory = require('../../utils/getAllCategory');
+// internal
+import { Category } from '../../model/category.model.js';
+import getAllCategory from '../../utils/getAllCategory.js';
 
-exports.createCategory = async (req, res) => {
+export const createCategory = async (req, res) => {
   try {
     const categoryObj = {
       categoryName: req.body.categoryName,
@@ -15,7 +15,7 @@ exports.createCategory = async (req, res) => {
       categoryObj.parentCategoryId = req.body.parentCategoryId;
     }
 
-    const category = new CategoryCollection(categoryObj);
+    const category = new Category(categoryObj);
     category.save((error, product) => {
       if (error) {
         return res
@@ -35,9 +35,9 @@ exports.createCategory = async (req, res) => {
   }
 };
 
-exports.getCategory = async (req, res) => {
+export const getCategory = async (req, res) => {
   try {
-    const allCategory = await CategoryCollection.find({});
+    const allCategory = await Category.find({});
     if (allCategory) {
       const categoryList = getAllCategory(allCategory);
 
@@ -52,9 +52,9 @@ exports.getCategory = async (req, res) => {
   }
 };
 
-exports.deleteCategory = async (req, res) => {
+export const deleteCategory = async (req, res) => {
   try {
-    await CategoryCollection.findByIdAndDelete({ _id: req.body.categoryId });
+    await Category.findByIdAndDelete({ _id: req.body.categoryId });
     return res.status(200).json({ message: 'Category Deleted Successfully' });
   } catch (error) {
     return res
@@ -63,7 +63,7 @@ exports.deleteCategory = async (req, res) => {
   }
 };
 
-exports.editCategory = async (req, res) => {
+export const editCategory = async (req, res) => {
   const { _id, categoryName, parentCategoryId } = req.body;
   try {
     const categoryObj = {
@@ -73,7 +73,7 @@ exports.editCategory = async (req, res) => {
     if (parentCategoryId) {
       categoryObj.parentCategoryId = parentCategoryId;
     }
-    await CategoryCollection.findByIdAndUpdate({ _id }, categoryObj, {
+    await Category.findByIdAndUpdate({ _id }, categoryObj, {
       new: true,
     });
     return res.status(200).json({ message: 'Category Edit Successfully' });

@@ -1,20 +1,19 @@
-const multer = require("multer");
-const shortid = require("shortid");
-const path = require("path")
-
+import multer from 'multer';
+import shortid from 'shortid';
+import path from 'path';
 
 const multerMiddleWare = (folderName) => {
-    const storage = multer.diskStorage({
-        destination: function (req, file, cb) {
-            cb(null, path.join((__dirname), '../../', `./public/${folderName}/`))
-        },
-        filename: function (req, file, cb) {
-            const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
-            cb(null, shortid.generate() + '-' + file.originalname)
-        }
-    })
+  const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+      cb(null, path.join(__dirname, '../../', `./public/${folderName}/`));
+    },
+    filename: function (req, file, cb) {
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+      cb(null, shortid.generate() + '-' + file.originalname);
+    },
+  });
 
-    return multer({ storage })
-}
+  return multer({ storage });
+};
 
-module.exports = multerMiddleWare;
+export default multerMiddleWare;

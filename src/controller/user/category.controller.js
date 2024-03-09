@@ -1,11 +1,11 @@
-// components
-const CategoryCollection = require('../../model/category');
-const getAllCategory = require('../../utils/getAllCategory');
+// internal
+import { Category } from '../../model/category.model.js';
+import getAllCategory from '../../utils/getAllCategory.js';
 
-exports.getCategory = async (req, res) => {
+export const getCategory = async (req, res) => {
   const { slug } = req.params;
   try {
-    const allCategory = await CategoryCollection.find({});
+    const allCategory = await Category.find({});
     if (allCategory) {
       const categoryList = getAllCategory(allCategory, null, slug);
 
