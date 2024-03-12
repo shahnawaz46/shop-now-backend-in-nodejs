@@ -1,5 +1,5 @@
 // internal
-import { Order } from '../model/order.model.js';
+import { Order } from '../../model/order.model.js';
 
 export const addOrder = async (req, res) => {
   try {

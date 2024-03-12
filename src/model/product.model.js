@@ -44,7 +44,7 @@ const productSchema = new mongoose.Schema({
     {
       userId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'users',
+        ref: 'User',
       },
       rating: Number,
       message: String,
@@ -54,13 +54,13 @@ const productSchema = new mongoose.Schema({
   ],
   categoryId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'categories',
+    ref: 'Category',
     required: true,
   },
   createdBy: {
     AdminId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'admin',
+      ref: 'Admin',
       required: true,
     },
   },

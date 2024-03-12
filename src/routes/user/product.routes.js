@@ -32,10 +32,6 @@ router.get('/product/top-trending', getTopTrendingProducts);
 // getting top rated products for homepage
 router.get('/product/top-rated', topRatingProducts);
 
-router.post(
-  '/product/write_review',
-  verification('user_token'),
-  writeProductReview
-);
+router.post('/product/write_review', verification('_f_id'), writeProductReview);
 
 export default router;

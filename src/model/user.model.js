@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs';
 
 const userSchema = new mongoose.Schema(
   {
-    fistName: {
+    firstName: {
       type: String,
       required: true,
       trim: true,
@@ -39,6 +39,13 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    lastLogin: [
+      {
+        date: Date,
+        device: String,
+        location: String,
+      },
+    ],
   },
   { timestamps: true }
 );

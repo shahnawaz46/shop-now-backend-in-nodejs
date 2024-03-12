@@ -8,16 +8,20 @@ import Connection from './db/Connection.js';
 
 // user router
 import userRouter from './routes/user/user.routes.js';
-import userProductRouter from './routes/user/product.routes..js';
+import userProductRouter from './routes/user/product.routes.js';
 import userCategoryRouter from './routes/user/category.routes.js';
+import cartRoute from './routes/user/cart.routes.js';
+import addressRoute from './routes/user/address.routes.js';
+import orderRoute from './routes/user/order.routes.js';
 
 // admin router
 import adminCategoryRoute from './routes/admin/category.routes.js';
 import adminRouter from './routes/admin/admin.routes.js';
+
 import bannerRoute from './routes/banner.routes.js';
-import cartRoute from './routes/cart.routes.js';
-import addressRoute from './routes/address.routes.js';
-import orderRoute from './routes/order.routes.js';
+
+// import { deleteAllReviews } from './controller/admin/product.controller.js';
+// deleteAllReviews();
 
 const app = express();
 dotenv.config();

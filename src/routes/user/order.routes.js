@@ -1,8 +1,8 @@
 import { Router } from 'express';
 
 // internal
-import { verification, userMiddleware } from '../middleware/middleware.js';
-import { addOrder, getOrder } from '../controller/order.controller.js';
+import { verification, userMiddleware } from '../../middleware/middleware.js';
+import { addOrder, getOrder } from '../../controller/user/order.controller.js';
 
 const router = Router();
 

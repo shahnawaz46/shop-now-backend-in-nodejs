@@ -1,5 +1,5 @@
 // internal
-import { UserAddress } from '../model/address.model.js';
+import { UserAddress } from '../../model/address.model.js';
 
 export const addAddress = async (req, res) => {
   const userAddress = req.body;
@@ -7,6 +7,8 @@ export const addAddress = async (req, res) => {
     const userAddressAlready = await UserAddress.findOne({
       userId: req.data._id,
     });
+
+    // if address is already present then push new address
     if (userAddressAlready) {
       const updatedAddress = await UserAddress.findOneAndUpdate(
         { userId: req.data._id },
@@ -19,16 +21,14 @@ export const addAddress = async (req, res) => {
       );
 
       return res.status(200).json({
-        msg: 'Address Add Successfully',
+        msg: 'Address Added Successfully',
         address: updatedAddress.address,
       });
-      // }
     } else {
       const newAddress = await UserAddress.create({
         userId: req.data._id,
-        userAddress,
+        address: [userAddress],
       });
-      // console.log(address)
 
       return res
         .status(201)
@@ -67,7 +67,7 @@ export const updateAddress = async (req, res) => {
     );
 
     return res.status(200).json({
-      msg: 'Address Update Successfully',
+      msg: 'Address Updated Successfully',
       address: updatedAddress.address,
     });
   } catch (error) {

@@ -1,13 +1,13 @@
 import { Router } from 'express';
 
 // internal
-import { userMiddleware, verification } from '../middleware/middleware.js';
+import { userMiddleware, verification } from '../../middleware/middleware.js';
 import {
   addAddress,
   getAddress,
   updateAddress,
   deleteAddress,
-} from '../controller/address.controller.js';
+} from '../../controller/user/address.controller.js';
 
 const router = Router();
 

@@ -24,7 +24,6 @@ export const getAllProducts = async (req, res) => {
 // fetching filtered products (sub category products and price range)
 export const getFilteredProducts = async (req, res) => {
   const { category, price, targetAudience } = req.query;
-  console.log(category, price, targetAudience);
   try {
     if (price) {
       const [minPrice, maxPrice] = price.split('-');
@@ -85,6 +84,7 @@ export const getSingleProductById = async (req, res) => {
     }
     return res.status(404).json({ error: 'product not found' });
   } catch (error) {
+    console.log(error);
     return res
       .status(400)
       .json({ error: 'Something Gone Wrong Please Try Again' });
@@ -111,7 +111,7 @@ export const getFeaturedProducts = async (req, res) => {
 };
 
 // updating topTrendingProducts based on event(like visit).
-// when(only) loggedin user will click on any product then i am updating topTrendingProducts count
+// if loggedin user click on any product then i am updating topTrendingProducts count
 export const updateTopTrendingProduct = async (req, res) => {
   try {
     const { productId, userId, eventType } = req.body;
@@ -133,64 +133,82 @@ export const updateTopTrendingProduct = async (req, res) => {
   }
 };
 
-export const getTopTrendingProducts = async (req, res) => {
-  const trendDuration = 30;
-  // 24 -> hours, 60 -> minutes, 60 -> seconds, 1000 -> milliseconds
-  // calcuting the last 14 days
-  const cutoffDate = new Date(Date.now() - trendDuration * 24 * 60 * 60 * 1000);
-
-  try {
-    const products = await TrendingProduct.aggregate([
-      {
-        $match: { updatedAt: { $gt: cutoffDate }, eventType: 'visit' },
+const trendingProductsPipeLine = async (cutoffDate = null) => {
+  const pipeLine = [
+    {
+      $group: {
+        _id: '$productId',
+        count: { $sum: 1 },
       },
-      {
-        $group: {
-          _id: '$productId',
-          count: { $sum: 1 },
-        },
+    },
+    {
+      $sort: { count: -1 },
+    },
+    {
+      $lookup: {
+        from: 'products', // model name
+        localField: '_id',
+        foreignField: '_id',
+        as: 'productDetails',
       },
-      {
-        $sort: { count: -1 },
-      },
-      {
-        $lookup: {
-          from: 'products', // model name
-          localField: '_id',
-          foreignField: '_id',
-          as: 'productDetails',
-        },
-      },
-      {
-        $unwind: '$productDetails',
-      },
-      {
-        $group: {
-          _id: '$productDetails.targetAudience',
-          trendingProducts: {
-            $push: {
-              productId: '$_id',
-              totalCount: '$count',
-              productPicture: {
-                $arrayElemAt: ['$productDetails.productPictures', 0], // Extract the first image from the productPictures array and also renaming the field from productPictures to productPicture.
-              },
+    },
+    {
+      $unwind: '$productDetails',
+    },
+    {
+      $group: {
+        _id: '$productDetails.targetAudience',
+        trendingProducts: {
+          $push: {
+            productId: '$_id',
+            totalCount: '$count',
+            productPicture: {
+              $arrayElemAt: ['$productDetails.productPictures', 0], // Extract the first image from the productPictures array and also renaming the field from productPictures to productPicture.
             },
           },
         },
       },
-      {
-        $project: {
-          _id: 0, // removing the _id field
-          targetAudience: '$_id', // renaming the _id field to targetAudience field
-          trendingProducts: {
-            $slice: ['$trendingProducts', 15], // here i am slicing the 15 products
-          },
+    },
+    {
+      $project: {
+        _id: 0, // removing the _id field
+        targetAudience: '$_id', // renaming the _id field to targetAudience field
+        trendingProducts: {
+          $slice: ['$trendingProducts', 15], // here i am slicing the 15 products
         },
       },
-    ]);
-    return res.status(200).json({ products });
+    },
+  ];
+
+  // if cutoffDate is present then i am fetching topTrendingProducts based on cutoffDate(it can be last 14 days, 30 days)
+  if (cutoffDate) {
+    pipeLine.unshift({
+      $match: { updatedAt: { $gt: cutoffDate }, eventType: 'visit' },
+    });
+  }
+
+  const products = await TrendingProduct.aggregate(pipeLine);
+  return products;
+};
+
+export const getTopTrendingProducts = async (req, res) => {
+  const trendDuration = 30;
+  // 24 -> hours, 60 -> minutes, 60 -> seconds, 1000 -> milliseconds
+  // calcuting the last 30 days
+  const cutoffDate = new Date(Date.now() - trendDuration * 24 * 60 * 60 * 1000);
+
+  try {
+    const productResult = await trendingProductsPipeLine(cutoffDate);
+    //  If there are at least 5 trending products in the last 30 days, then returning that products
+    if (productResult[0]?.trendingProducts?.length >= 5) {
+      return res.status(200).json({ products: productResult });
+    }
+    // Otherwise, fetching all-time trending products
+    else {
+      const productResult = await trendingProductsPipeLine();
+      return res.status(200).json({ products: productResult });
+    }
   } catch (err) {
-    // console.log(err);
     return res.status(400).json({
       error: 'Something Went Wrong Please Try Again',
       msg: err.message,
@@ -224,6 +242,7 @@ export const topRatingProducts = async (req, res) => {
       {
         // $project is used for Reshapes a document stream by renaming, adding, or removing fields
         // $project stage is used for return only the fields you need in the result.
+        // 1 means add and 0 mean remove fields
         $project: {
           _id: 1,
           productPicture: {
@@ -245,13 +264,18 @@ export const topRatingProducts = async (req, res) => {
 export const writeProductReview = async (req, res) => {
   const { product_id, message, rating, date } = req.body;
   try {
+    // checking product is exist or not
     const product = await Product.findOne({ _id: product_id });
+    // checking review is already added by user or not
     if (product) {
       const reviewIsAlready = product.reviews.find(
         (value) => value.userId == req.data._id
       );
+
+      // if review is already added then i am updating preview review with new review
+      // and also returning list of updated review
       if (reviewIsAlready) {
-        await Product.findOneAndUpdate(
+        const review = await Product.findOneAndUpdate(
           { _id: product_id, 'reviews.userId': req.data._id },
           {
             $set: {
@@ -259,11 +283,20 @@ export const writeProductReview = async (req, res) => {
               'reviews.$.rating': rating,
               'reviews.$.update_date': date,
             },
-          }
-        );
-        return res.status(200).json({ message: 'Review Edit Successfully' });
-      } else {
-        await Product.findOneAndUpdate(
+          },
+          { new: true }
+        )
+          .select('reviews')
+          .populate('reviews.userId', 'firstName lastName profilePicture');
+
+        return res.status(200).json({
+          message: 'Review Edit Successfully',
+          allReviews: review.reviews,
+        });
+      }
+      // if there is no review is added by user then pushing new review in product review array
+      else {
+        const review = await Product.findOneAndUpdate(
           { _id: product_id },
           {
             $push: {
@@ -275,9 +308,16 @@ export const writeProductReview = async (req, res) => {
                 update_date: date,
               },
             },
-          }
-        );
-        return res.status(200).json({ message: 'Review Add Successfully' });
+          },
+          { new: true }
+        )
+          .select('reviews')
+          .populate('reviews.userId', 'firstName lastName profilePicture');
+
+        return res.status(200).json({
+          message: 'Review Add Successfully',
+          allReviews: review.reviews,
+        });
       }
     }
     return res.status(400).json({ error: 'No Product Found' });

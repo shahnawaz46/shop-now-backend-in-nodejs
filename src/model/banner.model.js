@@ -23,7 +23,7 @@ const bannerSchema = new mongoose.Schema(
     createdBy: {
       AdminId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'admin',
+        ref: 'Admin',
         required: true,
       },
     },

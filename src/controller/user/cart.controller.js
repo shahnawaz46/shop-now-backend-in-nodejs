@@ -1,5 +1,5 @@
 // internal
-import { Cart } from '../model/cart.model.js';
+import { Cart } from '../../model/cart.model.js';
 
 export const addToCart = async (req, res) => {
   try {
