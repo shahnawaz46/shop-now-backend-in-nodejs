@@ -45,9 +45,9 @@ export const signup = async (req, res) => {
 
     // if origin is same (means if client and server domain is same) then sameSite = lax, otherwise sameSite = none
     res.cookie('_f_id', token, {
-      httpOnly: true,
+      // httpOnly: true,
       sameSite: 'none',
-      secure: true,
+      // secure: true,
     });
 
     return res
@@ -84,9 +84,9 @@ export const signin = async (req, res) => {
 
         // if the origin is same (means if client and server domain are same) then sameSite = lax, otherwise sameSite = none
         res.cookie('_f_id', token, {
-          httpOnly: true,
+          // httpOnly: true,
           sameSite: 'none',
-          secure: true,
+          // secure: true,
         });
 
         return res
