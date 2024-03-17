@@ -91,25 +91,6 @@ export const getSingleProductById = async (req, res) => {
   }
 };
 
-// fetching featured products based on rating if the rating is greater than 2
-export const getFeaturedProducts = async (req, res) => {
-  try {
-    const allProducts = await Product.find({}).populate('categoryId');
-    if (allProducts) {
-      const featuredProducts = allProducts.filter(
-        (product) =>
-          product.reviews.reduce((total, value) => value.rating + total, 0) > 2
-      );
-      return res.status(200).json({ product: featuredProducts });
-    }
-    return res.status(400).json({ error: 'product not found' });
-  } catch (error) {
-    return res
-      .status(400)
-      .json({ error: 'Something Gone Wrong Please Try Again' });
-  }
-};
-
 // updating topTrendingProducts based on event(like visit).
 // if loggedin user click on any product then i am updating topTrendingProducts count
 export const updateTopTrendingProduct = async (req, res) => {
@@ -133,6 +114,7 @@ export const updateTopTrendingProduct = async (req, res) => {
   }
 };
 
+// pipeline for get trending products
 const trendingProductsPipeLine = async (cutoffDate = null) => {
   const pipeLine = [
     {
@@ -185,6 +167,10 @@ const trendingProductsPipeLine = async (cutoffDate = null) => {
     pipeLine.unshift({
       $match: { updatedAt: { $gt: cutoffDate }, eventType: 'visit' },
     });
+  } else {
+    pipeLine.unshift({
+      $match: { eventType: 'visit' },
+    });
   }
 
   const products = await TrendingProduct.aggregate(pipeLine);
@@ -216,6 +202,7 @@ export const getTopTrendingProducts = async (req, res) => {
   }
 };
 
+// fetchig topRated products based on reviews/rating
 export const topRatingProducts = async (req, res) => {
   try {
     // Finding top 20 products that have highest rating by using aggregate pipeline.
@@ -242,7 +229,7 @@ export const topRatingProducts = async (req, res) => {
       {
         // $project is used for Reshapes a document stream by renaming, adding, or removing fields
         // $project stage is used for return only the fields you need in the result.
-        // 1 means add and 0 mean remove fields
+        // 1 means add and 0 means remove fields
         $project: {
           _id: 1,
           productPicture: {
@@ -261,6 +248,35 @@ export const topRatingProducts = async (req, res) => {
   }
 };
 
+// fetching top selling products
+export const getTopSellingProducts = async (req, res) => {
+  try {
+    // const product = await SellingProduct.aggregate([
+    //   {
+    //     $group: {
+    //       _id: '$productId',
+    //       totalSale: { $sum: 1 },
+    //     },
+    //   },
+    //   {
+    //     $sort: {
+    //       totalSale: -1,
+    //     },
+    //   },
+    //   {
+    //     $limit: 20,
+    //   },
+    // ]);
+
+    return res.status(200).json({ topSellingProducts: [] });
+  } catch (err) {
+    return res
+      .status(400)
+      .json({ error: 'Something Went Wrong Please Try Again' });
+  }
+};
+
+// for writing product reviews
 export const writeProductReview = async (req, res) => {
   const { product_id, message, rating, date } = req.body;
   try {

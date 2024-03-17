@@ -6,12 +6,11 @@ import {
   getAllProducts,
   getFilteredProducts,
   getSingleProductById,
-  getFeaturedProducts,
   writeProductReview,
   topRatingProducts,
   getTopTrendingProducts,
   updateTopTrendingProduct,
-  // getAllProductByPrice,
+  getTopSellingProducts,
 } from '../../controller/user/product.controller.js';
 
 const router = Router();
@@ -25,12 +24,15 @@ router.get('/product/filtered', getFilteredProducts);
 // getting single product by id
 router.get('/product/single/:productId', getSingleProductById);
 
-// router.post('/product/featured-product', getFeaturedProducts);
+// top trending products
 router.post('/product/top-trending', updateTopTrendingProduct);
 router.get('/product/top-trending', getTopTrendingProducts);
 
 // getting top rated products for homepage
 router.get('/product/top-rated', topRatingProducts);
+
+// getting top selling products
+router.get('/product/top-selling', getTopSellingProducts);
 
 router.post('/product/write_review', verification('_f_id'), writeProductReview);
 
