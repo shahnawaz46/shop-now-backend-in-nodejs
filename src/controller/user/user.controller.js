@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 
 // internal
 import { User } from '../../model/user.model.js';
-import { UserAddress } from '../../model/address.model.js';
+import { Address } from '../../model/address.model.js';
 import uploadImages from '../../utils/Cloudinary.js';
 
 export const signup = async (req, res) => {
@@ -45,7 +45,7 @@ export const signup = async (req, res) => {
 
     // if origin is same (means if client and server domain is same) then sameSite = lax, otherwise sameSite = none
     res.cookie('_f_id', token, {
-      // httpOnly: true,
+      httpOnly: true,
       sameSite: 'none',
       secure: true,
     });
@@ -84,7 +84,7 @@ export const signin = async (req, res) => {
 
         // if the origin is same (means if client and server domain are same) then sameSite = lax, otherwise sameSite = none
         res.cookie('_f_id', token, {
-          // httpOnly: true,
+          httpOnly: true,
           sameSite: 'none',
           secure: true,
         });
@@ -113,8 +113,7 @@ export const userProfile = async (req, res) => {
     const userDetail = await User.findOne({
       _id: req.data._id,
     }).select('firstName lastName email phoneNo profilePicture location');
-    const getUserAddress = await UserAddress.findOne({ userId: req.data._id });
-    const address = getUserAddress ? getUserAddress.address : [];
+    const address = await Address.find({ userId: req.data._id });
 
     return res.status(200).json({ userDetail, address });
   } catch (err) {
