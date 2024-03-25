@@ -65,8 +65,12 @@ const orderSchema = new mongoose.Schema(
       enum: ['pending', 'success', 'failed'],
       default: 'pending',
     },
+    paymentDetails: {
+      type: Object, // for storing razorpay_payment_id, razorpay_order_id and razorpay_signature (if paymentMethod is card)
+      default: {},
+    },
   },
-  { timeStamps: true }
+  { timestamps: true }
 );
 
 export const Order = mongoose.model('Order', orderSchema);
