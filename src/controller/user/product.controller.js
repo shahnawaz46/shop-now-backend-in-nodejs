@@ -1,16 +1,33 @@
 // internal
 import { Product } from '../../model/product.model.js';
 import { Category } from '../../model/category.model.js';
+import { Order } from '../../model/order.model.js';
 import { TrendingProduct } from '../../model/trendingProduct.model.js';
+
+// find method in Mongoose takes three arguments:
+// 1st -> filter
+// 2nd(Optional) -> Specifies which fields to include or exclude from the retrieved documents. By default (null) means including all fields.
+// 3rd(Optinal) -> Where you can define sorting, limiting, and other options for the find operation
 
 // fetching all products based on targetAudience (Men, Women)
 export const getAllProducts = async (req, res) => {
   // slug can be Men and Women
   const { slug } = req.params;
+
   try {
-    const allProducts = await Product.find({
-      targetAudience: slug,
-    }).select('productName productPictures actualPrice sellingPrice');
+    const allProducts = await Product.find(
+      {
+        targetAudience: slug,
+      },
+      // selecting these field to be return from database
+      {
+        productName: 1,
+        productPictures: { $slice: 1 }, // Get the first element using projection operator
+        actualPrice: 1,
+        sellingPrice: 1,
+      }
+    );
+    // .select('productName productPictures actualPrice sellingPrice');
 
     if (allProducts.length > 0) return res.status(200).json({ allProducts });
     return res.status(404).json({ error: 'product not found' });
@@ -250,29 +267,137 @@ export const topRatingProducts = async (req, res) => {
 
 // fetching top selling products
 export const getTopSellingProducts = async (req, res) => {
-  try {
-    // const product = await SellingProduct.aggregate([
-    //   {
-    //     $group: {
-    //       _id: '$productId',
-    //       totalSale: { $sum: 1 },
-    //     },
-    //   },
-    //   {
-    //     $sort: {
-    //       totalSale: -1,
-    //     },
-    //   },
-    //   {
-    //     $limit: 20,
-    //   },
-    // ]);
+  const { category, price } = req.query;
 
-    return res.status(200).json({ topSellingProducts: [] });
+  // logic for price range
+  let priceQuery;
+  if (price) {
+    const [minPrice, maxPrice] = price.split('-');
+    // if maxPrice is 2500(default value) that's means user only selected minPrice So, i am returning all the products that is greater than minPrice.
+    // if maxPrice is not 2500(default value) then i am returning all the products that price is between minPrice and maxPrice
+    priceQuery =
+      maxPrice == 2500
+        ? { 'productDetails.sellingPrice': { $gte: Number(minPrice) } }
+        : {
+            'productDetails.sellingPrice': {
+              $gte: Number(minPrice),
+              $lt: Number(maxPrice),
+            },
+          };
+  }
+
+  try {
+    const product = await Order.aggregate([
+      { $match: { status: 'delivered' } },
+      {
+        $unwind: '$items',
+      },
+      {
+        $group: {
+          _id: '$items.product',
+          totalSale: { $sum: 1 },
+        },
+      },
+
+      {
+        $sort: {
+          totalSale: -1,
+        },
+      },
+      {
+        $lookup: {
+          from: 'products', // model name
+          localField: '_id',
+          foreignField: '_id',
+          as: 'productDetails',
+        },
+      },
+      {
+        $unwind: '$productDetails',
+      },
+      {
+        $match: {
+          $and: [
+            category ? { 'productDetails.targetAudience': category } : {},
+            price ? priceQuery : {},
+          ],
+        },
+      },
+
+      {
+        $project: {
+          totalSale: 1,
+          productName: '$productDetails.productName',
+          actualPrice: '$productDetails.actualPrice',
+          sellingPrice: '$productDetails.sellingPrice',
+          productPictures: {
+            $slice: ['$productDetails.productPictures', 1],
+          },
+        },
+      },
+    ]);
+
+    return res.status(200).json({ topSellingProducts: product });
+  } catch (err) {
+    console.log(err);
+    return res
+      .status(400)
+      .json({ error: 'Something Went Wrong Please Try Again', err });
+  }
+};
+
+// fetching newest products
+export const getNewestProducts = async (req, res) => {
+  const { category, price } = req.query;
+
+  // logic for price range
+  let priceQuery;
+  if (price) {
+    const [minPrice, maxPrice] = price.split('-');
+    // if maxPrice is 2500(default value) that's means user only selected minPrice So, i am returning all the products that is greater than minPrice.
+    // if maxPrice is not 2500(default value) then i am returning all the products that price is between minPrice and maxPrice
+    priceQuery =
+      maxPrice == 2500
+        ? { sellingPrice: { $gte: Number(minPrice) } }
+        : {
+            sellingPrice: {
+              $gte: Number(minPrice),
+              $lt: Number(maxPrice),
+            },
+          };
+  }
+  // console.log(category, priceQuery);
+
+  try {
+    // filter based on category and price
+    const filter =
+      category && price
+        ? { targetAudience: category, ...priceQuery }
+        : category
+        ? { targetAudience: category }
+        : price
+        ? { ...priceQuery }
+        : {};
+
+    const newestProducts = await Product.find(
+      filter,
+      {
+        productName: 1,
+        productPictures: { $slice: 1 }, // Get the first element using projection operator
+        actualPrice: 1,
+        sellingPrice: 1,
+      },
+      {
+        sort: { createdAt: -1 },
+        limit: 20,
+      }
+    );
+
+    return res.status(200).json({ newestProducts });
   } catch (err) {
     return res
       .status(400)
-      .json({ error: 'Something Went Wrong Please Try Again' });
+      .json({ error: 'Something Went Wrong Please Try Again', err });
   }
 };
 

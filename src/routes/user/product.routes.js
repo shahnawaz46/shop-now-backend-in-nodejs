@@ -11,6 +11,7 @@ import {
   getTopTrendingProducts,
   updateTopTrendingProduct,
   getTopSellingProducts,
+  getNewestProducts,
 } from '../../controller/user/product.controller.js';
 
 const router = Router();
@@ -33,6 +34,9 @@ router.get('/product/top-rated', topRatingProducts);
 
 // getting top selling products
 router.get('/product/top-selling', getTopSellingProducts);
+
+// getting newest products
+router.get('/product/newest', getNewestProducts);
 
 router.post('/product/write_review', verification('_f_id'), writeProductReview);
 

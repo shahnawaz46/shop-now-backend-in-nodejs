@@ -3,10 +3,11 @@ import { Product } from '../model/product.model.js';
 
 export const migration = async () => {
   // await Order.updateMany({}, { $set: { deliveredDate: null } });
-  await Order.updateMany(
-    {},
-    { $set: { paymentMethod: 'cod', paymentStatus: 'pending' } }
-  );
+  // await Order.updateMany(
+  //   {},
+  //   { $set: { paymentMethod: 'cod', paymentStatus: 'pending' } }
+  // );
+  await Product.updateMany({}, { $set: { createdAt: null } });
   console.log('migration done');
 };
 
