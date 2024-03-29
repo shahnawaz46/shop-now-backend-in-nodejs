@@ -3,6 +3,7 @@ import { Product } from '../../model/product.model.js';
 import { Category } from '../../model/category.model.js';
 import { Order } from '../../model/order.model.js';
 import { TrendingProduct } from '../../model/trendingProduct.model.js';
+import { LIMIT } from '../../constant/pagination.js';
 
 // find method in Mongoose takes three arguments:
 // 1st -> filter
@@ -13,6 +14,7 @@ import { TrendingProduct } from '../../model/trendingProduct.model.js';
 export const getAllProducts = async (req, res) => {
   // slug can be Men and Women
   const { slug } = req.params;
+  const { page = 1 } = req.query;
 
   try {
     const allProducts = await Product.find(
@@ -26,11 +28,19 @@ export const getAllProducts = async (req, res) => {
         actualPrice: 1,
         sellingPrice: 1,
       }
-    );
-    // .select('productName productPictures actualPrice sellingPrice');
+    )
+      .skip((page - 1) * LIMIT)
+      .limit(LIMIT);
 
-    if (allProducts.length > 0) return res.status(200).json({ allProducts });
-    return res.status(404).json({ error: 'product not found' });
+    // creating route for send to client for fetching more data(pagination)
+    const currentRoute = `${req.protocol}://${req.get(
+      'host'
+    )}/api/product/all/${slug}?page=${Number(page) + 1}`;
+
+    return res.status(200).json({
+      next: allProducts.length < LIMIT ? null : currentRoute,
+      data: allProducts,
+    });
   } catch (error) {
     return res
       .status(400)
@@ -40,7 +50,7 @@ export const getAllProducts = async (req, res) => {
 
 // fetching filtered products (sub category products and price range)
 export const getFilteredProducts = async (req, res) => {
-  const { category, price, targetAudience } = req.query;
+  const { category, price, targetAudience, page = 1 } = req.query;
   try {
     if (price) {
       const [minPrice, maxPrice] = price.split('-');
@@ -63,23 +73,66 @@ export const getFilteredProducts = async (req, res) => {
         const subCategoryProducts = await Product.find({
           categoryId: subCategory._id,
           sellingPrice,
-        }).select('productName productPictures actualPrice sellingPrice');
-        return res.status(200).json({ subCategoryProducts });
+        })
+          .select('productName productPictures actualPrice sellingPrice')
+          .skip((page - 1) * LIMIT)
+          .limit(LIMIT);
+
+        // creating route for send to client for fetching more data(pagination)
+        const currentRoute = `${req.protocol}://${req.get(
+          'host'
+        )}/api/product/filtered?category=${category}&price=${price}&targetAudience=${targetAudience}&page=${
+          Number(page) + 1
+        }`;
+
+        return res.status(200).json({
+          next: subCategoryProducts.length < LIMIT ? null : currentRoute,
+          subCategoryProducts,
+        });
       }
+
+      // if price is selected but category is not selected
       const subCategoryProducts = await Product.find({
         sellingPrice,
         targetAudience,
-      }).select('productName productPictures actualPrice sellingPrice');
-      return res.status(200).json({ subCategoryProducts });
+      })
+        .select('productName productPictures actualPrice sellingPrice')
+        .skip((page - 1) * LIMIT)
+        .limit(LIMIT);
+
+      // creating route for send to client for fetching more data(pagination)
+      const currentRoute = `${req.protocol}://${req.get(
+        'host'
+      )}/api/product/filtered?&price=${price}&targetAudience=${targetAudience}&page=${
+        Number(page) + 1
+      }`;
+
+      return res.status(200).json({
+        next: subCategoryProducts.length < LIMIT ? null : currentRoute,
+        subCategoryProducts,
+      });
     }
 
-    // if price is not selected then fetching products based on subCategory only.
+    // if price is not selected only category is seleced then fetching products based on subCategory only.
     if (category) {
       const subCategory = await Category.findOne({ slug: category });
       const subCategoryProducts = await Product.find({
         categoryId: subCategory._id,
-      }).select('productName productPictures actualPrice sellingPrice');
-      return res.status(200).json({ subCategoryProducts });
+      })
+        .select('productName productPictures actualPrice sellingPrice')
+        .skip((page - 1) * LIMIT)
+        .limit(LIMIT);
+
+      const currentRoute = `${req.protocol}://${req.get(
+        'host'
+      )}/api/product/filtered?category=${category}&targetAudience=${targetAudience}&page=${
+        Number(page) + 1
+      }`;
+
+      return res.status(200).json({
+        next: subCategoryProducts.length < LIMIT ? null : currentRoute,
+        subCategoryProducts,
+      });
     }
   } catch (error) {
     return res
@@ -101,7 +154,6 @@ export const getSingleProductById = async (req, res) => {
     }
     return res.status(404).json({ error: 'product not found' });
   } catch (error) {
-    console.log(error);
     return res
       .status(400)
       .json({ error: 'Something Gone Wrong Please Try Again' });
@@ -258,7 +310,6 @@ export const topRatingProducts = async (req, res) => {
     ]);
     return res.status(200).json({ products });
   } catch (err) {
-    // console.log(err);
     return res
       .status(400)
       .json({ error: 'Something Went Wrong Please Try Again' });
@@ -267,7 +318,7 @@ export const topRatingProducts = async (req, res) => {
 
 // fetching top selling products
 export const getTopSellingProducts = async (req, res) => {
-  const { category, price } = req.query;
+  const { category, price, page = 1 } = req.query;
 
   // logic for price range
   let priceQuery;
@@ -288,6 +339,7 @@ export const getTopSellingProducts = async (req, res) => {
 
   try {
     const product = await Order.aggregate([
+      { $skip: (page - 1) * LIMIT },
       { $match: { status: 'delivered' } },
       {
         $unwind: '$items',
@@ -298,7 +350,6 @@ export const getTopSellingProducts = async (req, res) => {
           totalSale: { $sum: 1 },
         },
       },
-
       {
         $sort: {
           totalSale: -1,
@@ -323,7 +374,6 @@ export const getTopSellingProducts = async (req, res) => {
           ],
         },
       },
-
       {
         $project: {
           totalSale: 1,
@@ -335,11 +385,30 @@ export const getTopSellingProducts = async (req, res) => {
           },
         },
       },
+      {
+        $limit: LIMIT,
+      },
     ]);
 
-    return res.status(200).json({ topSellingProducts: product });
+    // creating route for send to client for fetching more data(pagination)
+    const isExist =
+      category && price
+        ? `category=${category}&price=${price}&page=${Number(page) + 1}`
+        : category
+        ? `category=${category}&page=${Number(page) + 1}`
+        : price
+        ? `price=${price}&page=${Number(page) + 1}`
+        : `page=${Number(page) + 1}`;
+
+    const currentRoute = `${req.protocol}://${req.get(
+      'host'
+    )}/api/product/top-selling?${isExist}`;
+
+    return res.status(200).json({
+      next: product.length < LIMIT ? null : currentRoute,
+      item: product,
+    });
   } catch (err) {
-    console.log(err);
     return res
       .status(400)
       .json({ error: 'Something Went Wrong Please Try Again', err });
@@ -348,7 +417,7 @@ export const getTopSellingProducts = async (req, res) => {
 
 // fetching newest products
 export const getNewestProducts = async (req, res) => {
-  const { category, price } = req.query;
+  const { category, price, page = 1 } = req.query;
 
   // logic for price range
   let priceQuery;
@@ -366,7 +435,6 @@ export const getNewestProducts = async (req, res) => {
             },
           };
   }
-  // console.log(category, priceQuery);
 
   try {
     // filter based on category and price
@@ -387,13 +455,29 @@ export const getNewestProducts = async (req, res) => {
         actualPrice: 1,
         sellingPrice: 1,
       },
-      {
-        sort: { createdAt: -1 },
-        limit: 20,
-      }
-    );
+      { sort: { createdAt: -1 } }
+    )
+      .skip((page - 1) * LIMIT)
+      .limit(LIMIT);
 
-    return res.status(200).json({ newestProducts });
+    // creating route for send to client for fetching more data(pagination)
+    const isExist =
+      category && price
+        ? `category=${category}&price=${price}&page=${Number(page) + 1}`
+        : category
+        ? `category=${category}&page=${Number(page) + 1}`
+        : price
+        ? `price=${price}&page=${Number(page) + 1}`
+        : `page=${Number(page) + 1}`;
+
+    const currentRoute = `${req.protocol}://${req.get(
+      'host'
+    )}/api/product/newest?${isExist}`;
+
+    return res.status(200).json({
+      next: newestProducts.length < LIMIT ? null : currentRoute,
+      item: newestProducts,
+    });
   } catch (err) {
     return res
       .status(400)

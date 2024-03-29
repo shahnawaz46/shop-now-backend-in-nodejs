@@ -2,6 +2,8 @@ import multer from 'multer';
 import shortid from 'shortid';
 import path from 'path';
 
+// const storage = multer.memoryStorage()
+
 const multerMiddleWare = (folderName) => {
   const storage = multer.diskStorage({
     destination: function (req, file, cb) {

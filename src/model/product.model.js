@@ -65,7 +65,6 @@ const productSchema = new mongoose.Schema(
         required: true,
       },
     },
-    updatedAt: Date,
   },
   { timestamps: true }
 );

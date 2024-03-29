@@ -153,7 +153,8 @@ export const getOrder = async (req, res) => {
   try {
     const orders = await Order.find({ customer: req.data._id })
       .populate('items.product', 'productName productPictures')
-      .populate('address', 'address locality cityDistrictTown pinCode state');
+      .populate('address', 'address locality cityDistrictTown pinCode state')
+      .sort({ createdAt: -1 });
 
     return res.status(200).json({ orders });
   } catch (error) {

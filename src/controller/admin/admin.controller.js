@@ -8,7 +8,7 @@ const hashPassword = (password) => {
   console.log(bcrypt.hashSync(password, 15));
 };
 
-// hashPassword("somyadev")
+// hashPassword('shanudev');
 
 // export const signup = async (req, res) => {
 //     const { fullName, email, phoneNo, password, cpassword } = req.body

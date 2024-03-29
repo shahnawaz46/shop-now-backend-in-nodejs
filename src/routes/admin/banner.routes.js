@@ -1,14 +1,14 @@
 import { Router } from 'express';
 
 // internal
-import { verification, adminMiddleware } from '../middleware/middleware.js';
-import multerMiddleWare from '../middleware/MulterMiddleWare.js';
+import { verification, adminMiddleware } from '../../middleware/middleware.js';
+import multerMiddleWare from '../../middleware/MulterMiddleWare.js';
 import {
   addBanner,
   getBanner,
   deleteBanner,
   editBanner,
-} from '../controller/banner.controller.js';
+} from '../../controller/banner.controller.js';
 
 const router = Router();
 
