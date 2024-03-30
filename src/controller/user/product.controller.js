@@ -33,7 +33,7 @@ export const getAllProducts = async (req, res) => {
       .limit(LIMIT);
 
     // creating route for send to client for fetching more data(pagination)
-    const currentRoute = `${req.protocol}://${req.get(
+    const currentRoute = `${req.secure ? 'https' : 'http'}://${req.get(
       'host'
     )}/api/product/all/${slug}?page=${Number(page) + 1}`;
 
@@ -79,7 +79,7 @@ export const getFilteredProducts = async (req, res) => {
           .limit(LIMIT);
 
         // creating route for send to client for fetching more data(pagination)
-        const currentRoute = `${req.protocol}://${req.get(
+        const currentRoute = `${req.secure ? 'https' : 'http'}://${req.get(
           'host'
         )}/api/product/filtered?category=${category}&price=${price}&targetAudience=${targetAudience}&page=${
           Number(page) + 1
@@ -101,7 +101,7 @@ export const getFilteredProducts = async (req, res) => {
         .limit(LIMIT);
 
       // creating route for send to client for fetching more data(pagination)
-      const currentRoute = `${req.protocol}://${req.get(
+      const currentRoute = `${req.secure ? 'https' : 'http'}://${req.get(
         'host'
       )}/api/product/filtered?&price=${price}&targetAudience=${targetAudience}&page=${
         Number(page) + 1
@@ -123,7 +123,7 @@ export const getFilteredProducts = async (req, res) => {
         .skip((page - 1) * LIMIT)
         .limit(LIMIT);
 
-      const currentRoute = `${req.protocol}://${req.get(
+      const currentRoute = `${req.secure ? 'https' : 'http'}://${req.get(
         'host'
       )}/api/product/filtered?category=${category}&targetAudience=${targetAudience}&page=${
         Number(page) + 1
@@ -400,7 +400,7 @@ export const getTopSellingProducts = async (req, res) => {
         ? `price=${price}&page=${Number(page) + 1}`
         : `page=${Number(page) + 1}`;
 
-    const currentRoute = `${req.protocol}://${req.get(
+    const currentRoute = `${req.secure ? 'https' : 'http'}://${req.get(
       'host'
     )}/api/product/top-selling?${isExist}`;
 
@@ -470,7 +470,7 @@ export const getNewestProducts = async (req, res) => {
         ? `price=${price}&page=${Number(page) + 1}`
         : `page=${Number(page) + 1}`;
 
-    const currentRoute = `${req.protocol}://${req.get(
+    const currentRoute = `${req.secure ? 'https' : 'http'}://${req.get(
       'host'
     )}/api/product/newest?${isExist}`;
 
