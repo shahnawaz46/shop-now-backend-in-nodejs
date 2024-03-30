@@ -4,6 +4,7 @@ import { Category } from '../../model/category.model.js';
 import { Order } from '../../model/order.model.js';
 import { TrendingProduct } from '../../model/trendingProduct.model.js';
 import { LIMIT } from '../../constant/pagination.js';
+import { generateURL } from '../../utils/GenerateURL.js';
 
 // find method in Mongoose takes three arguments:
 // 1st -> filter
@@ -32,13 +33,11 @@ export const getAllProducts = async (req, res) => {
       .skip((page - 1) * LIMIT)
       .limit(LIMIT);
 
-    // creating route for send to client for fetching more data(pagination)
-    const currentRoute = `${req.secure ? 'https' : 'http'}://${req.get(
-      'host'
-    )}/api/product/all/${slug}?page=${Number(page) + 1}`;
+    // generate nextUrl for pagination
+    const nextRoute = generateURL(req, `page=${Number(page) + 1}`);
 
     return res.status(200).json({
-      next: allProducts.length < LIMIT ? null : currentRoute,
+      next: allProducts.length < LIMIT ? null : nextRoute,
       data: allProducts,
     });
   } catch (error) {
@@ -78,15 +77,16 @@ export const getFilteredProducts = async (req, res) => {
           .skip((page - 1) * LIMIT)
           .limit(LIMIT);
 
-        // creating route for send to client for fetching more data(pagination)
-        const currentRoute = `${req.secure ? 'https' : 'http'}://${req.get(
-          'host'
-        )}/api/product/filtered?category=${category}&price=${price}&targetAudience=${targetAudience}&page=${
-          Number(page) + 1
-        }`;
+        // generate nextUrl for pagination
+        const nextRoute = generateURL(
+          req,
+          `category=${category}&price=${price}&targetAudience=${targetAudience}&page=${
+            Number(page) + 1
+          }`
+        );
 
         return res.status(200).json({
-          next: subCategoryProducts.length < LIMIT ? null : currentRoute,
+          next: subCategoryProducts.length < LIMIT ? null : nextRoute,
           subCategoryProducts,
         });
       }
@@ -100,15 +100,16 @@ export const getFilteredProducts = async (req, res) => {
         .skip((page - 1) * LIMIT)
         .limit(LIMIT);
 
-      // creating route for send to client for fetching more data(pagination)
-      const currentRoute = `${req.secure ? 'https' : 'http'}://${req.get(
-        'host'
-      )}/api/product/filtered?&price=${price}&targetAudience=${targetAudience}&page=${
-        Number(page) + 1
-      }`;
+      // generate nextUrl for pagination
+      const nextRoute = generateURL(
+        req,
+        `price=${price}&targetAudience=${targetAudience}&page=${
+          Number(page) + 1
+        }`
+      );
 
       return res.status(200).json({
-        next: subCategoryProducts.length < LIMIT ? null : currentRoute,
+        next: subCategoryProducts.length < LIMIT ? null : nextRoute,
         subCategoryProducts,
       });
     }
@@ -123,14 +124,16 @@ export const getFilteredProducts = async (req, res) => {
         .skip((page - 1) * LIMIT)
         .limit(LIMIT);
 
-      const currentRoute = `${req.secure ? 'https' : 'http'}://${req.get(
-        'host'
-      )}/api/product/filtered?category=${category}&targetAudience=${targetAudience}&page=${
-        Number(page) + 1
-      }`;
+      // generate nextUrl for pagination
+      const nextRoute = generateURL(
+        req,
+        `category=${category}&targetAudience=${targetAudience}&page=${
+          Number(page) + 1
+        }`
+      );
 
       return res.status(200).json({
-        next: subCategoryProducts.length < LIMIT ? null : currentRoute,
+        next: subCategoryProducts.length < LIMIT ? null : nextRoute,
         subCategoryProducts,
       });
     }
@@ -400,12 +403,11 @@ export const getTopSellingProducts = async (req, res) => {
         ? `price=${price}&page=${Number(page) + 1}`
         : `page=${Number(page) + 1}`;
 
-    const currentRoute = `${req.secure ? 'https' : 'http'}://${req.get(
-      'host'
-    )}/api/product/top-selling?${isExist}`;
+    // generate nextUrl for pagination
+    const nextRoute = generateURL(req, isExist);
 
     return res.status(200).json({
-      next: product.length < LIMIT ? null : currentRoute,
+      next: product.length < LIMIT ? null : nextRoute,
       item: product,
     });
   } catch (err) {
@@ -461,7 +463,7 @@ export const getNewestProducts = async (req, res) => {
       .limit(LIMIT);
 
     // creating route for send to client for fetching more data(pagination)
-    const isExist =
+    const isQueryExist =
       category && price
         ? `category=${category}&price=${price}&page=${Number(page) + 1}`
         : category
@@ -470,12 +472,11 @@ export const getNewestProducts = async (req, res) => {
         ? `price=${price}&page=${Number(page) + 1}`
         : `page=${Number(page) + 1}`;
 
-    const currentRoute = `${req.secure ? 'https' : 'http'}://${req.get(
-      'host'
-    )}/api/product/newest?${isExist}`;
+    // generate nextUrl for pagination
+    const nextRoute = generateURL(req, isQueryExist);
 
     return res.status(200).json({
-      next: newestProducts.length < LIMIT ? null : currentRoute,
+      next: newestProducts.length < LIMIT ? null : nextRoute,
       item: newestProducts,
     });
   } catch (err) {
