@@ -15,10 +15,9 @@ import {
   validateRequest,
   isRequestValid,
 } from '../../validation/validation.js';
+import upload from '../../middleware/multer.js';
 
 const router = Router();
-
-const upload = multerMiddleWare('profileImages');
 
 router.post('/user/signup', validateRequest, isRequestValid, signup);
 router.post('/user/signin', signin);
@@ -30,6 +29,12 @@ router.patch(
   verification('_f_id'),
   editUserProfileDetail
 );
-router.patch('/user/updateProfilePic', verification('_f_id'), updateProfilePic);
+
+router.patch(
+  '/user/updateProfilePic',
+  verification('_f_id'),
+  upload.single('profilePicture'),
+  updateProfilePic
+);
 
 export default router;

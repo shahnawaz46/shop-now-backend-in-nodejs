@@ -6,26 +6,30 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-const options = (userName) => {
+const uploadProfilePicturesOptions = (firstName, lastName) => {
   return {
-    upload_preset: 'fuzicon-profile-pic',
-    public_id: `${userName}/profile-pic`,
-    allowed_formats: ['png', 'jpg', 'jpeg', 'svg', 'webp', 'ico'],
+    upload_preset: 'shop-now-profile-images',
+    public_id: `user_${firstName}_${lastName}_${Date.now()}`,
+    allowed_formats: ['png', 'jpg', 'jpeg', 'webp', 'ico', 'avif'],
   };
 };
 
-const uploadImages = async (image, userName) => {
+export const uploadProfilePictures = async (image, firstName, lastName) => {
   return new Promise((resolve, reject) => {
-    cloudinary.uploader.upload(image, options(userName), (error, result) => {
-      if (result && result.secure_url) {
-        // console.log("Result: ",result)
-        return resolve(result.secure_url);
+    cloudinary.uploader.upload(
+      image,
+      uploadProfilePicturesOptions(firstName, lastName),
+      (error, result) => {
+        if (result && result.secure_url) {
+          // console.log("Result: ",result)
+          return resolve(result.secure_url);
+        }
+        if (error) {
+          // console.log("Error: ",error)
+          return reject(error.message);
+        }
       }
-      if (error) {
-        // console.log("Error: ",error)
-        return reject(error.message);
-      }
-    });
+    );
   });
 };
 
@@ -55,5 +59,3 @@ export const uploadProductPictures = async (image, userName) => {
     );
   });
 };
-
-export default uploadImages;

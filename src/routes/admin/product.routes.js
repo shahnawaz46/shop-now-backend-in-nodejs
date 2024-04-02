@@ -9,18 +9,14 @@ import {
   editProduct,
   getSingleProductById,
 } from '../../controller/admin/product.controller.js';
-import multerMiddleWare from '../../middleware/MulterMiddleWare.js';
 import upload from '../../middleware/multer.js';
 
 const router = Router();
-
-// const upload = multerMiddleWare('productImages');
 
 router.post(
   '/product/add',
   verification('token'),
   adminMiddleware,
-  // upload.array('productPictures'),
   upload.array('productPictures'),
   addProduct
 );

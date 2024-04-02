@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 // internal
 import { User } from '../../model/user.model.js';
 import { Address } from '../../model/address.model.js';
-import uploadImages from '../../utils/Cloudinary.js';
+import { uploadProfilePictures } from '../../utils/Cloudinary.js';
 
 export const signup = async (req, res) => {
   const { firstName, lastName, email, phoneNo, password, confirm_password } =
@@ -126,19 +126,20 @@ export const userProfile = async (req, res) => {
 
 export const updateProfilePic = async (req, res) => {
   try {
-    const { imageBase64, userName } = req.body;
-
     // first checking user is exist or not
     let userDetail = await User.findOne({ _id: req.data._id });
-    if (userDetail) {
-      // here i am uploading profile pic to cloudinary and getting url in res
-      const imageUrl = await uploadImages(JSON.parse(imageBase64), userName);
-      userDetail.profilePicture = imageUrl;
+    if (userDetail && req.file) {
+      // here i am uploading profile picture to cloudinary and getting url in res
+      const imageUrl = await uploadProfilePictures(
+        req.file.path,
+        userDetail?.firstName,
+        userDetail?.lastName
+      );
 
       // then updating user model with profile picture url
       const result = await User.findByIdAndUpdate(
         { _id: req.data._id },
-        userDetail,
+        { profilePicture: imageUrl },
         { new: true }
       ).select('firstName lastName email phoneNo profilePicture location');
 
@@ -158,18 +159,14 @@ export const editUserProfileDetail = async (req, res) => {
   const userDetail = req.body.userDetail;
 
   try {
-    // if ((userDetail.phoneNo).toString().length != 10) {
-    //     return res.status(400).json({ error: "Phone No Must Be 10 Digit Long" })
-    // }
     const result = await User.findByIdAndUpdate(req.data._id, userDetail, {
       new: true,
     }).select('firstName lastName email phoneNo profilePicture location');
-    // console.log(result)
+
     return res
       .status(200)
       .json({ msg: 'Profile Update Successfully', userDetail: result });
   } catch (err) {
-    console.log(err);
     if (err.codeName == 'DuplicateKey') {
       return res.status(400).json({ error: 'This Email Already Exist' });
     }
