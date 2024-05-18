@@ -32,7 +32,7 @@ Connection();
 
 const origin =
   process.env.NODE_ENV === 'production'
-    ? 'https://fuzicon-ecommerce.netlify.app'
+    ? 'https://shop-now-reactjs.netlify.app'
     : true;
 
 app.use(cors({ origin, credentials: true }));
