@@ -8,7 +8,7 @@ export const verification = (token) => {
       req.data = verified;
       next();
     } catch (err) {
-      return res.status(401).json({ msg: 'Authorization denied' });
+      return res.status(401).json({ error: 'Authorization denied' });
     }
   };
 };

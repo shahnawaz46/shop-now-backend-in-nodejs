@@ -10,13 +10,13 @@ import Connection from './db/Connection.js';
 import userRouter from './routes/user/user.routes.js';
 import userProductRouter from './routes/user/product.routes.js';
 import userCategoryRouter from './routes/user/category.routes.js';
-import userCartRoute from './routes/user/cart.routes.js';
-import userAddressRoute from './routes/user/address.routes.js';
-import userOrderRoute from './routes/user/order.routes.js';
+import userCartRouter from './routes/user/cart.routes.js';
+import userAddressRouter from './routes/user/address.routes.js';
+import userOrderRouter from './routes/user/order.routes.js';
 
 // admin router
-import adminRouter from './routes/admin/admin.routes.js';
-import adminCategoryRoute from './routes/admin/category.routes.js';
+import adminRouter from './routes/admin/user.routes.js';
+import adminCategoryRouter from './routes/admin/category.routes.js';
 import adminProductRouter from './routes/admin/product.routes.js';
 
 // import bannerRoute from './routes/banner.routes.js';
@@ -44,16 +44,16 @@ app.use(express.static('public'));
 
 // admin routes
 app.use('/api/admin', adminRouter);
-app.use('/api/admin', adminCategoryRoute);
+// app.use('/api/admin', adminCategoryRoute);
 app.use('/api/admin', adminProductRouter);
 
 // user routes
 app.use('/api', userRouter);
 app.use('/api', userProductRouter);
 app.use('/api', userCategoryRouter);
-app.use('/api', userCartRoute);
-app.use('/api', userAddressRoute);
-app.use('/api', userOrderRoute);
+app.use('/api', userCartRouter);
+app.use('/api', userAddressRouter);
+app.use('/api', userOrderRouter);
 
 // app.use('/api', bannerRoute);
 
