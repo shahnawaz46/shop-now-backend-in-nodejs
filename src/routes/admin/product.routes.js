@@ -36,7 +36,13 @@ router.delete(
 );
 
 // edit product for admin
-router.patch('/product', verification('_a_tn'), adminMiddleware, editProduct);
+router.patch(
+  '/product',
+  verification('_a_tn'),
+  adminMiddleware,
+  upload.array('productPictures'),
+  editProduct
+);
 
 // getting single product by id
 router.get('/product/single/:productId', getSingleProductById);

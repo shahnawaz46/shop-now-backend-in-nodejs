@@ -37,7 +37,11 @@ export const createCategory = async (req, res) => {
 
 export const getCategory = async (req, res) => {
   try {
-    const allCategory = await Category.find({}).select('categoryName');
+    const allCategory = await Category.find({
+      categoryName: {
+        $nin: ["Men's Wardrobe", "Women's Wardrobe"],
+      },
+    }).select('categoryName');
     if (allCategory) {
       // const categoryList = getAllCategory(allCategory);
 

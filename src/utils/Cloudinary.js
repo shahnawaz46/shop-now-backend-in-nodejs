@@ -37,7 +37,7 @@ const uploadProductPicturesOptions = (userName) => {
   return {
     upload_preset: 'shop-now-product-images',
     // public_id: `${userName}/profile-pic`,
-    allowed_formats: ['png', 'jpg', 'jpeg', 'webp', 'ico', 'avif'],
+    allowed_formats: ['png', 'jpg', 'jpeg', 'webp', 'ico', 'avif', 'svg'],
   };
 };
 
@@ -55,7 +55,7 @@ export const uploadProductPictures = async (image, userName) => {
           });
         }
         if (error) {
-          // console.log('Error: ', error);
+          console.log('Error: ', error);
           return reject(error.message);
         }
       }

@@ -65,7 +65,7 @@ export const getAllProducts = async (req, res) => {
   try {
     const allProducts = await Product.find({})
       .select(
-        '_id productName actualPrice sellingPrice stocks categoryId description productPictures'
+        '_id productName actualPrice sellingPrice stocks categoryId targetAudience description productPictures'
       )
       .populate({ path: 'categoryId', select: '_id categoryName' })
       .skip((page - 1) * LIMIT)
@@ -221,29 +221,33 @@ export const deleteProduct = async (req, res) => {
 };
 
 export const editProduct = async (req, res) => {
-  const {
-    _id,
-    productName,
-    actualPrice,
-    sellingPrice,
-    description,
-    stocks,
-    productPictures,
-    categoryId,
-  } = req.body;
+  let { _id, ...rest } = req.body;
+
+  // if images edited by user then removing previous image and uploading new image
+  if (req.files && req.files.length > 0) {
+    const product = await Product.findById(_id);
+
+    // first removing previous productPictures from cloudinary
+    await deleteProductPictures(product.productPictures);
+
+    // then uploading new product pictures
+    const productPictures = [];
+    for (const file of req.files) {
+      const result = await uploadProductPictures(file.path);
+      productPictures.push(result);
+    }
+
+    // then updating state for upload in mongodb
+    rest = { ...rest, productPictures: productPictures };
+  }
+
+  if (rest?.productName) {
+    rest = { ...rest, slug: slugify(rest?.productName) };
+  }
+
   try {
-    const product = {
-      productName,
-      slug: slugify(productName),
-      actualPrice,
-      sellingPrice,
-      description,
-      stocks,
-      productPictures,
-      categoryId,
-      createdBy: { AdminId: req.data._id },
-    };
-    await Product.findByIdAndUpdate({ _id }, product);
+    // finally updting mongodb
+    await Product.findByIdAndUpdate({ _id }, rest);
     return res.status(200).json({ message: 'Product Edit Successfully' });
   } catch (err) {
     return res
