@@ -32,7 +32,10 @@ Connection();
 
 const origin =
   process.env.NODE_ENV === 'production'
-    ? 'https://shop-now-reactjs.netlify.app'
+    ? [
+        'https://shop-now-reactjs.netlify.app',
+        'https://shop-now-admin-panel.vercel.app',
+      ]
     : true;
 
 app.use(cors({ origin, credentials: true }));

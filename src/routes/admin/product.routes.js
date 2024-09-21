@@ -8,39 +8,40 @@ import {
   deleteProduct,
   editProduct,
   getSingleProductById,
+  searchProducts,
+  productSalesDetails,
 } from '../../controller/admin/product.controller.js';
 import upload from '../../middleware/multer.js';
 
 const router = Router();
 
+// getting products for admin
+router.get('/all-products', getAllProducts);
+router.get('/product-sales-details', productSalesDetails);
+
 router.post(
-  '/product/add',
-  verification('token'),
+  '/product',
+  verification('_a_tn'),
   adminMiddleware,
   upload.array('productPictures'),
   addProduct
 );
 
-// getting products for admin
-router.get('/all-product', getAllProducts);
-
 // delete product for admin
-router.post(
-  '/product/delete',
-  verification('token'),
+router.delete(
+  '/product',
+  verification('_a_tn'),
   adminMiddleware,
   deleteProduct
 );
 
 // edit product for admin
-router.post(
-  '/product/edit',
-  verification('token'),
-  adminMiddleware,
-  editProduct
-);
+router.patch('/product', verification('_a_tn'), adminMiddleware, editProduct);
 
 // getting single product by id
 router.get('/product/single/:productId', getSingleProductById);
+
+// search products
+router.get('/product/search', searchProducts);
 
 export default router;

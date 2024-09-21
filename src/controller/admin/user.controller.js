@@ -99,7 +99,7 @@ export const signin = async (req, res) => {
 };
 
 export const signout = (req, res) => {
-  res.clearCookie('token');
+  res.clearCookie('_a_tn');
   return res.status(200).json({ msg: 'Signout Successfully' });
 };
 
@@ -110,7 +110,7 @@ export const userProfile = async (req, res) => {
       _id: req.data._id,
     }).select('firstName lastName email phoneNo profilePicture location');
 
-    return res.status(200).json({ userDetail });
+    return res.status(200).json({ details: userDetail });
   } catch (err) {
     console.log(err);
     return res
