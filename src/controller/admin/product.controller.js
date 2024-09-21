@@ -1,10 +1,11 @@
 import slugify from 'slugify';
-import path from 'path';
-import fs from 'fs';
 
 // internal
 import { Product } from '../../model/product.model.js';
-import { uploadProductPictures } from '../../utils/Cloudinary.js';
+import {
+  deleteProductPictures,
+  uploadProductPictures,
+} from '../../utils/Cloudinary.js';
 import { Order } from '../../model/order.model.js';
 import { LIMIT } from '../../constant/pagination.js';
 import { generateURL } from '../../utils/GenerateURL.js';
@@ -21,7 +22,7 @@ export const addProduct = async (req, res) => {
   } = req.body;
 
   // if no images uploaded by user then throw error
-  if (req.files.length === 0) {
+  if (!req.files || req.files.length === 0) {
     return res
       .status(404)
       .json({ error: 'Image not Found Please Select Images' });
@@ -30,7 +31,7 @@ export const addProduct = async (req, res) => {
   const productPictures = [];
   for (const file of req.files) {
     const result = await uploadProductPictures(file.path);
-    productPictures.push({ img: result });
+    productPictures.push(result);
   }
 
   try {
@@ -47,7 +48,9 @@ export const addProduct = async (req, res) => {
       createdBy: { AdminId: req.data._id },
     });
 
-    return res.status(200).json({ message: 'Product Added Successfully' });
+    return res
+      .status(200)
+      .json({ message: 'Product Added Successfully', product });
   } catch (err) {
     console.log(err);
     return res
@@ -192,16 +195,23 @@ export const productSalesDetails = async (req, res) => {
 
 export const deleteProduct = async (req, res) => {
   try {
-    const deletedProduct = await Product.findByIdAndDelete({
-      _id: req.body.productId,
+    // first find product so i can get productPictures public_id
+    const deletedProduct = await Product.findOne({ _id: req.body.productId });
+
+    if (!deleteProduct) {
+      return res
+        .status(404)
+        .json({ error: 'Product not found please check again' });
+    }
+
+    // then i am deleting productPictures from cloudinary
+    await deleteProductPictures(deletedProduct.productPictures);
+
+    // finally i am deleting product from mongodb
+    await Product.findByIdAndDelete({
+      _id: deletedProduct._id,
     });
-    deletedProduct.productPictures.forEach((image) => {
-      fs.unlinkSync(
-        path.join(
-          __dirname + '../../../' + '/public/productImages' + `/${image.img}`
-        )
-      );
-    });
+
     return res.status(200).json({ message: 'Product Deleted Successfully' });
   } catch (error) {
     return res

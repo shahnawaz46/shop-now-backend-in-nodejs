@@ -48,14 +48,30 @@ export const uploadProductPictures = async (image, userName) => {
       uploadProductPicturesOptions(userName),
       (error, result) => {
         if (result && result.secure_url) {
-          // console.log("Result: ",result)
-          return resolve(result.secure_url);
+          // console.log('Result: ', result);
+          return resolve({
+            img: result.secure_url,
+            public_id: result.public_id,
+          });
         }
         if (error) {
-          // console.log("Error: ",error)
+          // console.log('Error: ', error);
           return reject(error.message);
         }
       }
     );
   });
+};
+
+export const deleteProductPictures = async (productImages) => {
+  // delete the image from Cloudinary
+  try {
+    productImages &&
+      productImages.length > 0 &&
+      productImages.forEach(
+        async (image) => await cloudinary.uploader.destroy(image.public_id) // Use the public_id stored in the product
+      );
+  } catch (err) {
+    throw new Error('Problem with deleting product pictures please try again');
+  }
 };

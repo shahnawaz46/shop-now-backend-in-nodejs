@@ -2,6 +2,7 @@
 const getAllCategory = (categories, parentId = null, targetAudience = null) => {
   const categoryList = [];
   let filterCategory;
+
   if (parentId === null) {
     filterCategory =
       targetAudience === null

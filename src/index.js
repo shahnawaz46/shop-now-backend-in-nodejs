@@ -26,7 +26,7 @@ import { allScript } from './script/AllScript.js';
 allScript();
 
 const app = express();
-dotenv.config();
+dotenv.config({});
 
 Connection();
 
@@ -47,7 +47,7 @@ app.use(express.static('public'));
 
 // admin routes
 app.use('/api/admin', adminRouter);
-// app.use('/api/admin', adminCategoryRoute);
+app.use('/api/admin', adminCategoryRouter);
 app.use('/api/admin', adminProductRouter);
 
 // user routes

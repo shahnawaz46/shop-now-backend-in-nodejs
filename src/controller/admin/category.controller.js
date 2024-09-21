@@ -37,11 +37,14 @@ export const createCategory = async (req, res) => {
 
 export const getCategory = async (req, res) => {
   try {
-    const allCategory = await Category.find({});
+    const allCategory = await Category.find({}).select('categoryName');
     if (allCategory) {
-      const categoryList = getAllCategory(allCategory);
+      // const categoryList = getAllCategory(allCategory);
 
-      return res.status(200).json({ categories: categoryList });
+      return res.status(200).json({
+        categories: allCategory,
+        targetAudience: [{ name: 'Men' }, { name: 'Women' }],
+      });
     }
 
     return res.status(404).json({ error: 'No Category Found' });
