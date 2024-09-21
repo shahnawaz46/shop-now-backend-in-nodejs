@@ -6,6 +6,8 @@ import fs from 'fs';
 import { Product } from '../../model/product.model.js';
 import { uploadProductPictures } from '../../utils/Cloudinary.js';
 import { Order } from '../../model/order.model.js';
+import { LIMIT } from '../../constant/pagination.js';
+import { generateURL } from '../../utils/GenerateURL.js';
 
 export const addProduct = async (req, res) => {
   const {
@@ -56,14 +58,22 @@ export const addProduct = async (req, res) => {
 
 // getting all products along with the other details like total sales, total stock, total revenue etc
 export const getAllProducts = async (req, res) => {
+  const { page = 1 } = req.query;
   try {
     const allProducts = await Product.find({})
       .select(
         '_id productName actualPrice sellingPrice stocks categoryId description productPictures'
       )
-      .populate({ path: 'categoryId', select: '_id categoryName' });
+      .populate({ path: 'categoryId', select: '_id categoryName' })
+      .skip((page - 1) * LIMIT)
+      .limit(LIMIT);
 
-    return res.status(200).json({ allProducts });
+    const nextURL = generateURL(req, `page=${parseInt(page) + 1}`, true);
+
+    return res.status(200).json({
+      next: allProducts.length < LIMIT ? null : nextURL,
+      products: allProducts,
+    });
   } catch (err) {
     return res
       .status(500)
@@ -250,7 +260,7 @@ export const getSingleProductById = async (req, res) => {
 };
 
 export const searchProducts = async (req, res) => {
-  const { query } = req.query;
+  const { query, page = 1 } = req.query;
 
   try {
     // 'i': This option makes the regex search case-insensitive ex: PANT, Pant, pant
@@ -260,9 +270,17 @@ export const searchProducts = async (req, res) => {
       .select(
         '_id productName actualPrice sellingPrice stocks categoryId description productPictures'
       )
-      .populate('categoryId', '_id categoryName');
-    return res.status(200).json({ products });
+      .populate('categoryId', '_id categoryName')
+      .skip((page - 1) * LIMIT)
+      .limit(LIMIT);
+
+    const nextURL = generateURL(req, `query=${query}&page=${page + 1}`, true);
+
+    return res
+      .status(200)
+      .json({ next: products.length < LIMIT ? null : nextURL, products });
   } catch (err) {
+    console.log(err);
     return res
       .status(500)
       .json({ error: 'Something Gone Wrong Please Try Again' });

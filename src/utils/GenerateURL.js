@@ -1,9 +1,15 @@
-export const generateURL = (req, query) => {
+export const generateURL = (req, query, admin = false) => {
   //   console.log(req.route);
 
   const protocal = req.get('host').includes('localhost') ? 'http' : 'https';
   const host = req.get('host');
-  let apiPath = `/api${req.route.path}`;
+  let apiPath = '';
+
+  if (admin) {
+    apiPath = `/api/admin${req.route.path}`;
+  } else {
+    apiPath = `/api${req.route.path}`;
+  }
 
   if (apiPath.includes(':slug')) {
     apiPath = apiPath.replace(':slug', req.params.slug);
