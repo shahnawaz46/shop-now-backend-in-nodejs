@@ -15,9 +15,10 @@ import userAddressRouter from './routes/user/address.routes.js';
 import userOrderRouter from './routes/user/order.routes.js';
 
 // admin router
-import adminRouter from './routes/admin/user.routes.js';
+import adminUserRouter from './routes/admin/user.routes.js';
 import adminCategoryRouter from './routes/admin/category.routes.js';
 import adminProductRouter from './routes/admin/product.routes.js';
+import adminOrderRouter from './routes/admin/order.routes.js';
 
 // import bannerRoute from './routes/banner.routes.js';
 
@@ -46,9 +47,10 @@ app.use(express.text({ limit: '200mb' }));
 app.use(express.static('public'));
 
 // admin routes
-app.use('/api/admin', adminRouter);
+app.use('/api/admin', adminUserRouter);
 app.use('/api/admin', adminCategoryRouter);
 app.use('/api/admin', adminProductRouter);
+app.use('/api/admin', adminOrderRouter);
 
 // user routes
 app.use('/api', userRouter);

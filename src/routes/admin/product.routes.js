@@ -16,8 +16,12 @@ import upload from '../../middleware/multer.js';
 const router = Router();
 
 // getting products for admin
-router.get('/all-products', getAllProducts);
-router.get('/product-sales-details', productSalesDetails);
+router.get('/all-products', verification('_a_tn'), getAllProducts);
+router.get(
+  '/product-sales-details',
+  verification('_a_tn'),
+  productSalesDetails
+);
 
 router.post(
   '/product',

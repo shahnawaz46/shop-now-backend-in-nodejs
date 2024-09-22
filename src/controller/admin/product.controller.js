@@ -299,6 +299,4 @@ export const searchProducts = async (req, res) => {
       .status(500)
       .json({ error: 'Something Gone Wrong Please Try Again' });
   }
-
-  // return status
 };
