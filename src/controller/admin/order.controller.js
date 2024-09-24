@@ -3,6 +3,7 @@ import moment from 'moment';
 // internal
 import { LIMIT } from '../../constant/pagination.js';
 import { Order } from '../../model/order.model.js';
+import { Product } from '../../model/product.model.js';
 import { generateURL } from '../../utils/GenerateURL.js';
 
 export const getAllOrders = async (req, res) => {
@@ -212,16 +213,75 @@ export const getOrderById = async (req, res) => {
   }
 };
 
-export const updateOrderDeliveryStatus = async (req, res) => {
+export const updateOrderStatus = async (req, res) => {
   try {
-    const order = await Order.findOneAndUpdate(
+    // first updating order status
+    const orderUpdated = await Order.findOneAndUpdate(
       { orderId: req.body?.orderId },
       req.body
     );
 
-    return res
-      .status(200)
-      .json({ msg: 'Delivery Status Updated Successfully' });
+    // order status is delivered then i am updating product stock
+    if (req?.body?.status === 'delivered') {
+      orderUpdated.items.forEach(async (prod) => {
+        const product = await Product.findById(prod.product);
+        if (product) {
+          product.stocks -= prod.qty;
+          await product.save();
+        }
+      });
+    }
+
+    // then calculating orderStats like (totalOrders, pendingOrders, completedOrder, processingOrders, shippedOrders, totalRevenue)
+    const orderStats = await Order.aggregate([
+      {
+        $group: {
+          _id: null,
+          totalOrders: { $sum: 1 },
+          pendingOrders: {
+            $sum: {
+              $cond: [{ $ne: ['$status', 'delivered'] }, 1, 0],
+            },
+          },
+          completedOrders: {
+            $sum: {
+              $cond: [{ $eq: ['$status', 'delivered'] }, 1, 0],
+            },
+          },
+          processingOrders: {
+            $sum: {
+              $cond: [{ $eq: ['$status', 'processing'] }, 1, 0],
+            },
+          },
+          shippedOrders: {
+            $sum: {
+              $cond: [{ $eq: ['$status', 'shipped'] }, 1, 0],
+            },
+          },
+          totalRevenue: {
+            $sum: {
+              $cond: [{ $eq: ['$status', 'delivered'] }, '$totalPrice', 0],
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          totalOrders: 1,
+          pendingOrders: 1,
+          completedOrders: 1,
+          processingOrders: 1,
+          shippedOrders: 1,
+          totalRevenue: 1,
+        },
+      },
+    ]);
+
+    return res.status(200).json({
+      msg: 'Order Status Updated Successfully',
+      orderStats: orderStats?.[0] || {},
+    });
   } catch (err) {
     console.log(err);
     return res
