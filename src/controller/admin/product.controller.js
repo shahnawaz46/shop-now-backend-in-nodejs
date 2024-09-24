@@ -84,105 +84,127 @@ export const getAllProducts = async (req, res) => {
   }
 };
 
+const aggregateForProductsAndOrders = async () => {
+  // first calculating total stocks, total products and category distribution
+  const productData = await Product.aggregate([
+    {
+      $group: {
+        _id: null,
+        totalStocks: { $sum: '$stocks' },
+        totalProducts: { $sum: 1 },
+        menProductsCount: {
+          $sum: {
+            $cond: [{ $eq: ['$targetAudience', 'Men'] }, 1, 0],
+          },
+        },
+        womenProductsCount: {
+          $sum: {
+            $cond: [{ $eq: ['$targetAudience', 'Women'] }, 1, 0],
+          },
+        },
+      },
+    },
+  ]);
+
+  // $facet Operator allows us to run multiple pipelines in parallel and return multiple sets of data in a single aggregation.
+  // 1st facets is orderStats(for getting totalOrders, pendingOrder, etc)
+  // and 2nd facets is dailyOrders(for getting last 7 day sales)
+  const orderData = await Order.aggregate([
+    {
+      $facet: {
+        orderStats: [
+          {
+            $match: { status: 'delivered' }, // match orders with 'delivered' status
+          },
+          {
+            $group: {
+              _id: null,
+              totalRevenue: { $sum: '$totalPrice' }, // sum total price of all order
+              totalSellings: { $sum: 1 }, // sum total order(status delivered) of all order
+            },
+          },
+          {
+            // $project is used for Reshapes a document stream by renaming, adding, or removing fields
+            // $project stage is used for return only the fields you need in the result.
+            // 1 means add and 0 means remove fields
+            $project: {
+              _id: 0,
+            },
+          },
+        ],
+        monthlySales: [
+          {
+            $match: { status: 'delivered' }, // match orders with 'delivered' status
+          },
+          {
+            $group: {
+              _id: { $month: '$createdAt' }, // group by month
+              sales: { $sum: '$totalPrice' }, // sum total price for each month
+              // totalOrders: { $sum: 1 }, // count total orders for each month
+            },
+          },
+          {
+            $sort: { _id: 1 }, // Sort by month (ascending order)
+          },
+          {
+            $project: {
+              _id: 0,
+              month: '$_id',
+              sales: 1,
+            },
+          },
+        ],
+      },
+    },
+  ]);
+
+  // destructure
+  const { orderStats, monthlySales } = orderData[0];
+
+  // months name for graph
+  const monthNames = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
+
+  // first initializing graph data with sales 0 of each months
+  const initialGraphData = monthNames.map((month) => ({
+    month,
+    sales: 0,
+  }));
+
+  // then assigning sales if data is present
+  monthlySales.forEach((data) => {
+    const monthIndex = data.month - 1;
+    initialGraphData[monthIndex].sales = data.sales;
+  });
+
+  const productSales = {
+    totalProducts: productData?.[0]?.totalProducts || 0,
+    totalStocks: productData?.[0]?.totalStocks || 0,
+    menProductsCount: productData?.[0]?.menProductsCount || 0,
+    womenProductsCount: productData?.[0]?.womenProductsCount || 0,
+    totalRevenue: orderStats[0]?.totalRevenue || 0,
+    totalSellings: orderStats[0]?.totalSellings || 0,
+    graph: initialGraphData,
+  };
+
+  return productSales;
+};
+
 export const productSalesDetails = async (req, res) => {
   try {
-    // first calculating total stocks, total products and category distribution
-    const productData = await Product.aggregate([
-      {
-        $group: {
-          _id: null,
-          totalStocks: { $sum: '$stocks' },
-          totalProducts: { $sum: 1 },
-          menProductsCount: {
-            $sum: {
-              $cond: [{ $eq: ['$targetAudience', 'Men'] }, 1, 0],
-            },
-          },
-          womenProductsCount: {
-            $sum: {
-              $cond: [{ $eq: ['$targetAudience', 'Women'] }, 1, 0],
-            },
-          },
-        },
-      },
-    ]);
-
-    // second calculating total revenue and total selling count of delivered products
-    const orderData = await Order.aggregate([
-      {
-        $match: { status: 'delivered' }, // match orders with 'delivered' status
-      },
-      {
-        $group: {
-          _id: null,
-          totalRevenue: { $sum: '$totalPrice' }, // sum total price of all order
-          totalSellings: { $sum: 1 }, // sum total order(status delivered) of all order
-        },
-      },
-      {
-        // $project is used for Reshapes a document stream by renaming, adding, or removing fields
-        // $project stage is used for return only the fields you need in the result.
-        // 1 means add and 0 means remove fields
-        $project: {
-          _id: 0,
-        },
-      },
-    ]);
-
-    // third calculating graph data of current year
-    const orderDataForGraph = await Order.aggregate([
-      {
-        $match: { status: 'delivered' }, // match orders with 'delivered' status
-      },
-      {
-        $group: {
-          _id: { $month: '$createdAt' }, // group by month
-          monthlySales: { $sum: '$totalPrice' }, // sum total price for each month
-          totalOrders: { $sum: 1 }, // count total orders for each month
-        },
-      },
-      {
-        $sort: { _id: 1 }, // Sort by month (ascending order)
-      },
-    ]);
-
-    // months name for graph
-    const monthNames = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-    ];
-
-    // first initializing graph data with sales 0 of each months
-    const initialGraphData = monthNames.map((month) => ({
-      month,
-      sales: 0,
-    }));
-
-    // then assigning sales if data is present
-    orderDataForGraph.forEach((data) => {
-      const monthIndex = data._id - 1;
-      initialGraphData[monthIndex].sales = data.monthlySales;
-    });
-
-    const productSales = {
-      totalProducts: productData[0]?.totalProducts,
-      totalStocks: productData[0]?.totalStocks,
-      menProductsCount: productData[0]?.menProductsCount,
-      womenProductsCount: productData[0]?.womenProductsCount,
-      totalRevenue: orderData[0]?.totalRevenue || 0,
-      totalSellings: orderData[0]?.totalSellings || 0,
-      graph: initialGraphData,
-    };
+    const productSales = await aggregateForProductsAndOrders();
 
     return res.status(200).json({ ...productSales });
   } catch (err) {
@@ -247,8 +269,19 @@ export const editProduct = async (req, res) => {
 
   try {
     // finally updting mongodb
-    await Product.findByIdAndUpdate({ _id }, rest);
-    return res.status(200).json({ message: 'Product Edit Successfully' });
+    const product = await Product.findByIdAndUpdate({ _id }, rest, {
+      new: true,
+    })
+      .select(
+        '_id productName actualPrice sellingPrice stocks categoryId targetAudience description productPictures'
+      )
+      .populate({ path: 'categoryId', select: '_id categoryName' });
+
+    const productSales = await aggregateForProductsAndOrders();
+
+    return res
+      .status(200)
+      .json({ message: 'Product Edit Successfully', product, productSales });
   } catch (err) {
     return res
       .status(500)
