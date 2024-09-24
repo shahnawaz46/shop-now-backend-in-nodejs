@@ -35,7 +35,7 @@ export const addProduct = async (req, res) => {
   }
 
   try {
-    const product = await Product.create({
+    const newProduct = await Product.create({
       productName,
       slug: slugify(productName),
       actualPrice,
@@ -48,9 +48,47 @@ export const addProduct = async (req, res) => {
       createdBy: { AdminId: req.data._id },
     });
 
-    return res
-      .status(200)
-      .json({ message: 'Product Added Successfully', product });
+    const product = await Product.findById(newProduct._id)
+      .select(
+        '_id productName actualPrice sellingPrice stocks categoryId targetAudience description productPictures'
+      )
+      .populate({ path: 'categoryId', select: '_id categoryName' });
+
+    // after product is added here i am again calculating productData details
+    const productData = await Product.aggregate([
+      {
+        $group: {
+          _id: null,
+          totalStocks: { $sum: '$stocks' },
+          totalProducts: { $sum: 1 },
+          menProductsCount: {
+            $sum: {
+              $cond: [{ $eq: ['$targetAudience', 'Men'] }, 1, 0],
+            },
+          },
+          womenProductsCount: {
+            $sum: {
+              $cond: [{ $eq: ['$targetAudience', 'Women'] }, 1, 0],
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          totalStocks: 1,
+          totalProducts: 1,
+          menProductsCount: 1,
+          womenProductsCount: 1,
+        },
+      },
+    ]);
+
+    return res.status(200).json({
+      message: 'Product Added Successfully',
+      product,
+      productData: productData?.[0] || {},
+    });
   } catch (err) {
     console.log(err);
     return res
@@ -84,127 +122,121 @@ export const getAllProducts = async (req, res) => {
   }
 };
 
-const aggregateForProductsAndOrders = async () => {
-  // first calculating total stocks, total products and category distribution
-  const productData = await Product.aggregate([
-    {
-      $group: {
-        _id: null,
-        totalStocks: { $sum: '$stocks' },
-        totalProducts: { $sum: 1 },
-        menProductsCount: {
-          $sum: {
-            $cond: [{ $eq: ['$targetAudience', 'Men'] }, 1, 0],
-          },
-        },
-        womenProductsCount: {
-          $sum: {
-            $cond: [{ $eq: ['$targetAudience', 'Women'] }, 1, 0],
-          },
-        },
-      },
-    },
-  ]);
-
-  // $facet Operator allows us to run multiple pipelines in parallel and return multiple sets of data in a single aggregation.
-  // 1st facets is orderStats(for getting totalOrders, pendingOrder, etc)
-  // and 2nd facets is dailyOrders(for getting last 7 day sales)
-  const orderData = await Order.aggregate([
-    {
-      $facet: {
-        orderStats: [
-          {
-            $match: { status: 'delivered' }, // match orders with 'delivered' status
-          },
-          {
-            $group: {
-              _id: null,
-              totalRevenue: { $sum: '$totalPrice' }, // sum total price of all order
-              totalSellings: { $sum: 1 }, // sum total order(status delivered) of all order
-            },
-          },
-          {
-            // $project is used for Reshapes a document stream by renaming, adding, or removing fields
-            // $project stage is used for return only the fields you need in the result.
-            // 1 means add and 0 means remove fields
-            $project: {
-              _id: 0,
-            },
-          },
-        ],
-        monthlySales: [
-          {
-            $match: { status: 'delivered' }, // match orders with 'delivered' status
-          },
-          {
-            $group: {
-              _id: { $month: '$createdAt' }, // group by month
-              sales: { $sum: '$totalPrice' }, // sum total price for each month
-              // totalOrders: { $sum: 1 }, // count total orders for each month
-            },
-          },
-          {
-            $sort: { _id: 1 }, // Sort by month (ascending order)
-          },
-          {
-            $project: {
-              _id: 0,
-              month: '$_id',
-              sales: 1,
-            },
-          },
-        ],
-      },
-    },
-  ]);
-
-  // destructure
-  const { orderStats, monthlySales } = orderData[0];
-
-  // months name for graph
-  const monthNames = [
-    'Jan',
-    'Feb',
-    'Mar',
-    'Apr',
-    'May',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dec',
-  ];
-
-  // first initializing graph data with sales 0 of each months
-  const initialGraphData = monthNames.map((month) => ({
-    month,
-    sales: 0,
-  }));
-
-  // then assigning sales if data is present
-  monthlySales.forEach((data) => {
-    const monthIndex = data.month - 1;
-    initialGraphData[monthIndex].sales = data.sales;
-  });
-
-  const productSales = {
-    totalProducts: productData?.[0]?.totalProducts || 0,
-    totalStocks: productData?.[0]?.totalStocks || 0,
-    menProductsCount: productData?.[0]?.menProductsCount || 0,
-    womenProductsCount: productData?.[0]?.womenProductsCount || 0,
-    totalRevenue: orderStats[0]?.totalRevenue || 0,
-    totalSellings: orderStats[0]?.totalSellings || 0,
-    graph: initialGraphData,
-  };
-
-  return productSales;
-};
-
 export const productSalesDetails = async (req, res) => {
   try {
-    const productSales = await aggregateForProductsAndOrders();
+    // first calculating total stocks, total products and category distribution
+    const productData = await Product.aggregate([
+      {
+        $group: {
+          _id: null,
+          totalStocks: { $sum: '$stocks' },
+          totalProducts: { $sum: 1 },
+          menProductsCount: {
+            $sum: {
+              $cond: [{ $eq: ['$targetAudience', 'Men'] }, 1, 0],
+            },
+          },
+          womenProductsCount: {
+            $sum: {
+              $cond: [{ $eq: ['$targetAudience', 'Women'] }, 1, 0],
+            },
+          },
+        },
+      },
+    ]);
+
+    // $facet Operator allows us to run multiple pipelines in parallel and return multiple sets of data in a single aggregation.
+    // 1st facets is orderStats(for getting totalOrders, pendingOrder, etc)
+    // and 2nd facets is dailyOrders(for getting last 7 day sales)
+    const orderData = await Order.aggregate([
+      {
+        $facet: {
+          orderStats: [
+            {
+              $match: { status: 'delivered' }, // match orders with 'delivered' status
+            },
+            {
+              $group: {
+                _id: null,
+                totalRevenue: { $sum: '$totalPrice' }, // sum total price of all order
+                totalSellings: { $sum: 1 }, // sum total order(status delivered) of all order
+              },
+            },
+            {
+              // $project is used for Reshapes a document stream by renaming, adding, or removing fields
+              // $project stage is used for return only the fields you need in the result.
+              // 1 means add and 0 means remove fields
+              $project: {
+                _id: 0,
+              },
+            },
+          ],
+          monthlySales: [
+            {
+              $match: { status: 'delivered' }, // match orders with 'delivered' status
+            },
+            {
+              $group: {
+                _id: { $month: '$createdAt' }, // group by month
+                sales: { $sum: '$totalPrice' }, // sum total price for each month
+                // totalOrders: { $sum: 1 }, // count total orders for each month
+              },
+            },
+            {
+              $sort: { _id: 1 }, // Sort by month (ascending order)
+            },
+            {
+              $project: {
+                _id: 0,
+                month: '$_id',
+                sales: 1,
+              },
+            },
+          ],
+        },
+      },
+    ]);
+
+    // destructure
+    const { orderStats, monthlySales } = orderData[0];
+
+    // months name for graph
+    const monthNames = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+
+    // first initializing graph data with sales 0 of each months
+    const initialGraphData = monthNames.map((month) => ({
+      month,
+      sales: 0,
+    }));
+
+    // then assigning sales if data is present
+    monthlySales.forEach((data) => {
+      const monthIndex = data.month - 1;
+      initialGraphData[monthIndex].sales = data.sales;
+    });
+
+    const productSales = {
+      totalProducts: productData?.[0]?.totalProducts || 0,
+      totalStocks: productData?.[0]?.totalStocks || 0,
+      menProductsCount: productData?.[0]?.menProductsCount || 0,
+      womenProductsCount: productData?.[0]?.womenProductsCount || 0,
+      totalRevenue: orderStats[0]?.totalRevenue || 0,
+      totalSellings: orderStats[0]?.totalSellings || 0,
+      graph: initialGraphData,
+    };
 
     return res.status(200).json({ ...productSales });
   } catch (err) {
@@ -234,7 +266,40 @@ export const deleteProduct = async (req, res) => {
       _id: deletedProduct._id,
     });
 
-    return res.status(200).json({ message: 'Product Deleted Successfully' });
+    // after product is deleted here i am again calculating productData details
+    const productData = await Product.aggregate([
+      {
+        $group: {
+          _id: null,
+          totalStocks: { $sum: '$stocks' },
+          totalProducts: { $sum: 1 },
+          menProductsCount: {
+            $sum: {
+              $cond: [{ $eq: ['$targetAudience', 'Men'] }, 1, 0],
+            },
+          },
+          womenProductsCount: {
+            $sum: {
+              $cond: [{ $eq: ['$targetAudience', 'Women'] }, 1, 0],
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          totalStocks: 1,
+          totalProducts: 1,
+          menProductsCount: 1,
+          womenProductsCount: 1,
+        },
+      },
+    ]);
+
+    return res.status(200).json({
+      message: 'Product Deleted Successfully',
+      productData: productData?.[0] || {},
+    });
   } catch (error) {
     return res
       .status(500)
@@ -263,6 +328,7 @@ export const editProduct = async (req, res) => {
     rest = { ...rest, productPictures: productPictures };
   }
 
+  // if user update productName then here i am also updating slug of that product
   if (rest?.productName) {
     rest = { ...rest, slug: slugify(rest?.productName) };
   }
@@ -277,11 +343,49 @@ export const editProduct = async (req, res) => {
       )
       .populate({ path: 'categoryId', select: '_id categoryName' });
 
-    const productSales = await aggregateForProductsAndOrders();
+    // if both stock and target audience are not present in the payload/req then there is no need to calculate productData
+    if (!rest?.stocks && !rest?.targetAudience) {
+      return res.status(200).json({
+        message: 'Product Edit Successfully',
+        product,
+      });
+    }
 
-    return res
-      .status(200)
-      .json({ message: 'Product Edit Successfully', product, productSales });
+    // after product is edited i am again calculating productData details
+    const productData = await Product.aggregate([
+      {
+        $group: {
+          _id: null,
+          totalStocks: { $sum: '$stocks' },
+          totalProducts: { $sum: 1 },
+          menProductsCount: {
+            $sum: {
+              $cond: [{ $eq: ['$targetAudience', 'Men'] }, 1, 0],
+            },
+          },
+          womenProductsCount: {
+            $sum: {
+              $cond: [{ $eq: ['$targetAudience', 'Women'] }, 1, 0],
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          totalStocks: 1,
+          totalProducts: 1,
+          menProductsCount: 1,
+          womenProductsCount: 1,
+        },
+      },
+    ]);
+
+    return res.status(200).json({
+      message: 'Product Edit Successfully',
+      product,
+      productData: productData?.[0] || {},
+    });
   } catch (err) {
     return res
       .status(500)
