@@ -147,7 +147,7 @@ export const productSalesDetails = async (req, res) => {
 
     // $facet Operator allows us to run multiple pipelines in parallel and return multiple sets of data in a single aggregation.
     // 1st facets is orderStats(for getting totalOrders, pendingOrder, etc)
-    // and 2nd facets is dailyOrders(for getting last 7 day sales)
+    // and 2nd facets is monthlySales(for getting product's monthly sales)
     const orderData = await Order.aggregate([
       {
         $facet: {

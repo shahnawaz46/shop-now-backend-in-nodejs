@@ -79,8 +79,8 @@ export const getAllOrders = async (req, res) => {
 export const getOrderStats = async (req, res) => {
   try {
     // $facet Operator allows us to run multiple pipelines in parallel and return multiple sets of data in a single aggregation.
-    // 1st facets is orderStats(for getting totalOrders, pendingOrder, etc)
-    // and 2nd facets is dailyOrders(for getting last 7 day sales)
+    // 1st facets is orderStats(for getting totalOrders, activeOrders, confirmedOrders, etc)
+    // and 2nd facets is monthlyOrders(for getting product's monthly orders)
     const orders = await Order.aggregate([
       {
         $facet: {
@@ -89,9 +89,14 @@ export const getOrderStats = async (req, res) => {
               $group: {
                 _id: null,
                 totalOrders: { $sum: 1 },
-                pendingOrders: {
+                activeOrders: {
                   $sum: {
                     $cond: [{ $ne: ['$status', 'delivered'] }, 1, 0],
+                  },
+                },
+                confirmedOrders: {
+                  $sum: {
+                    $cond: [{ $eq: ['$status', 'order confirmed'] }, 1, 0],
                   },
                 },
                 completedOrders: {
@@ -124,7 +129,8 @@ export const getOrderStats = async (req, res) => {
               $project: {
                 _id: 0,
                 totalOrders: 1,
-                pendingOrders: 1,
+                activeOrders: 1,
+                confirmedOrders: 1,
                 completedOrders: 1,
                 processingOrders: 1,
                 shippedOrders: 1,
@@ -232,15 +238,20 @@ export const updateOrderStatus = async (req, res) => {
       });
     }
 
-    // then calculating orderStats like (totalOrders, pendingOrders, completedOrder, processingOrders, shippedOrders, totalRevenue)
+    // then calculating orderStats like (totalOrders, activeOrders, confirmedOrders, completedOrder, processingOrders, shippedOrders, totalRevenue)
     const orderStats = await Order.aggregate([
       {
         $group: {
           _id: null,
           totalOrders: { $sum: 1 },
-          pendingOrders: {
+          activeOrders: {
             $sum: {
               $cond: [{ $ne: ['$status', 'delivered'] }, 1, 0],
+            },
+          },
+          confirmedOrders: {
+            $sum: {
+              $cond: [{ $eq: ['$status', 'order confirmed'] }, 1, 0],
             },
           },
           completedOrders: {
@@ -269,7 +280,8 @@ export const updateOrderStatus = async (req, res) => {
         $project: {
           _id: 0,
           totalOrders: 1,
-          pendingOrders: 1,
+          activeOrders: 1,
+          confirmedOrders: 1,
           completedOrders: 1,
           processingOrders: 1,
           shippedOrders: 1,
