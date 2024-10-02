@@ -29,6 +29,10 @@ const productSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    totalSales: {
+      type: Number,
+      default: 0,
+    },
     offer: {
       type: Number,
     },

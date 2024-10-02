@@ -1,5 +1,3 @@
-import moment from 'moment';
-
 // internal
 import { LIMIT } from '../../constant/pagination.js';
 import { Order } from '../../model/order.model.js';
@@ -12,6 +10,7 @@ export const getAllOrders = async (req, res) => {
     const orders = await Order.find({})
       .select('orderId customer totalPrice status orderDate')
       .populate('customer', 'firstName lastName')
+      .sort({ createdAt: -1 })
       .skip((page - 1) * LIMIT)
       .limit(LIMIT);
 
@@ -233,6 +232,7 @@ export const updateOrderStatus = async (req, res) => {
         const product = await Product.findById(prod.product);
         if (product) {
           product.stocks -= prod.qty;
+          product.totalSales += 1;
           await product.save();
         }
       });

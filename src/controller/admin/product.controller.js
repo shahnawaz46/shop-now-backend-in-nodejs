@@ -103,12 +103,14 @@ export const getAllProducts = async (req, res) => {
   try {
     const allProducts = await Product.find({})
       .select(
-        '_id productName actualPrice sellingPrice stocks categoryId targetAudience description productPictures'
+        '_id productName actualPrice sellingPrice stocks categoryId targetAudience description productPictures totalSales'
       )
       .populate({ path: 'categoryId', select: '_id categoryName' })
+      .sort({ createdAt: -1 })
       .skip((page - 1) * LIMIT)
       .limit(LIMIT);
 
+    // generate next url for pagination
     const nextURL = generateURL(req, `page=${parseInt(page) + 1}`, true);
 
     return res.status(200).json({
