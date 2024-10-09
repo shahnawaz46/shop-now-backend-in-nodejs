@@ -12,6 +12,8 @@ export const migration = async () => {
   // await Product.updateMany({}, { $set: { totalSales: 0 } });
   // await Product.updateMany({}, { $set: { reviews: [] } });
   // await User.updateMany({}, { $set: { dob: '2000-09-22' } });
+  // await User.updateMany({}, { $set: { isEmailVerified: true } });
+
   console.log('migration done');
 };
 
