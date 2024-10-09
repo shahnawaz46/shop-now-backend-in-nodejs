@@ -6,7 +6,7 @@ import {
   signout,
   signup,
   userProfile,
-} from '../../controller/admin/user.controller.js';
+} from '../../controller/admin/admin.controller.js';
 import { verification } from '../../middleware/middleware.js';
 import {
   isRequestValid,

@@ -180,8 +180,8 @@ export const productSalesDetails = async (req, res) => {
             {
               $group: {
                 _id: { $month: '$createdAt' }, // group by month
-                sales: { $sum: '$totalPrice' }, // sum total price for each month
-                // totalOrders: { $sum: 1 }, // count total orders for each month
+                // sales: { $sum: '$totalPrice' }, // sum total price for each month
+                sales: { $sum: 1 }, // count total sales for each month
               },
             },
             {

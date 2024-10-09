@@ -15,7 +15,7 @@ import userAddressRouter from './routes/user/address.routes.js';
 import userOrderRouter from './routes/user/order.routes.js';
 
 // admin router
-import adminUserRouter from './routes/admin/user.routes.js';
+import adminUserRouter from './routes/admin/admin.routes.js';
 import adminCategoryRouter from './routes/admin/category.routes.js';
 import adminProductRouter from './routes/admin/product.routes.js';
 import adminOrderRouter from './routes/admin/order.routes.js';
