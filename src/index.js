@@ -19,6 +19,7 @@ import adminUserRouter from './routes/admin/admin.routes.js';
 import adminCategoryRouter from './routes/admin/category.routes.js';
 import adminProductRouter from './routes/admin/product.routes.js';
 import adminOrderRouter from './routes/admin/order.routes.js';
+import userRouterForAdmin from './routes/admin/user.routes.js';
 
 // import bannerRoute from './routes/banner.routes.js';
 
@@ -51,6 +52,7 @@ app.use('/api/admin', adminUserRouter);
 app.use('/api/admin', adminCategoryRouter);
 app.use('/api/admin', adminProductRouter);
 app.use('/api/admin', adminOrderRouter);
+app.use('/api/admin', userRouterForAdmin);
 
 // user routes
 app.use('/api', userRouter);

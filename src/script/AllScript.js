@@ -1,7 +1,7 @@
-import { migration, updateFields, updateOrderSales } from './Migration.js';
+import { migration, updateUserDetails, updateOrderSales } from './Migration.js';
 
 export const allScript = () => {
   // migration();
-  // updateFields();
-  updateOrderSales();
+  // updateUserDetails();
+  // updateOrderSales();
 };

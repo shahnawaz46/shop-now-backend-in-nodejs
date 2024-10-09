@@ -66,7 +66,7 @@ export const signin = async (req, res) => {
         const token = jwt.sign(
           { _id: admin._id, role: admin.role },
           process.env.JWT_SECRET,
-          { expiresIn: '24h' }
+          { expiresIn: '30d' }
         );
         res.cookie('_a_tn', token, {
           httpOnly: true,

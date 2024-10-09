@@ -7,8 +7,15 @@ import { Address } from '../../model/address.model.js';
 import { uploadProfilePictures } from '../../utils/Cloudinary.js';
 
 export const signup = async (req, res) => {
-  const { firstName, lastName, email, phoneNo, password, confirm_password } =
-    req.body;
+  const {
+    firstName,
+    lastName,
+    email,
+    phoneNo,
+    dob,
+    password,
+    confirm_password,
+  } = req.body;
 
   try {
     // if user is already exsit then return error with messages
@@ -33,6 +40,7 @@ export const signup = async (req, res) => {
       lastName,
       email,
       phoneNo,
+      dob,
       password: hashPassword,
     });
 

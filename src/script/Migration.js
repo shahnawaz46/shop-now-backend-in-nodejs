@@ -1,5 +1,6 @@
 import { Order } from '../model/order.model.js';
 import { Product } from '../model/product.model.js';
+import { User } from '../model/user.model.js';
 
 export const migration = async () => {
   // await Order.updateMany({}, { $set: { deliveredDate: null } });
@@ -7,13 +8,33 @@ export const migration = async () => {
   //   {},
   //   { $set: { paymentMethod: 'cod', paymentStatus: 'pending' } }
   // );
+  // await Order.updateMany({}, { $set: { status: 'order confirmed' } });
   // await Product.updateMany({}, { $set: { totalSales: 0 } });
+  // await Product.updateMany({}, { $set: { reviews: [] } });
+  // await User.updateMany({}, { $set: { dob: '2000-09-22' } });
   console.log('migration done');
 };
 
-export const updateFields = async () => {
-  //  await Order.updateMany({}, { $set: { status: 'order confirmed' } });
-  //   await Product.updateMany({}, { $set: { reviews: [] } });
+export const updateUserDetails = async () => {
+  // const dobList = [
+  //   '2000-10-24',
+  //   '1981-01-09',
+  //   '1999-11-28',
+  //   '2002-03-18',
+  //   '2001-09-01',
+  //   '1992-12-02',
+  //   '2000-05-22',
+  //   '2005-01-19',
+  //   '2004-05-29',
+  //   '2007-01-19',
+  // ];
+  // const users = await User.find({});
+  // users.forEach(async (user, index) => {
+  //   const userUpdate = await User.findById(user._id);
+  //   userUpdate.dob = dobList[index];
+  //   await userUpdate.save();
+  //   console.log(`${userUpdate.email} updated`);
+  // });
   console.log('field updated');
 };
 
