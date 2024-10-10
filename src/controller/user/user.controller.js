@@ -21,7 +21,12 @@ export const signup = async (req, res) => {
     dob,
     password,
     confirm_password,
+    device,
+    browser,
   } = req.body;
+
+  const ipAddress =
+    req?.headers['x-forwarded-for'] || req?.socket?.remoteAddress || req?.ip;
 
   try {
     const isUserAlreadyExist = await User.findOne({ email });
@@ -40,7 +45,7 @@ export const signup = async (req, res) => {
     // hash the password by using bcrypt to store inside database
     const hashPassword = await bcrypt.hash(password, 10);
 
-    // generating 6 digit otp
+    // generating 4 digit otp
     const otp = Math.ceil(1000 + Math.random() * 9182);
 
     // if user exists but email is not verified then overwriting the document
@@ -53,6 +58,7 @@ export const signup = async (req, res) => {
           phoneNo,
           dob,
           password: hashPassword,
+          lastLogin: { date: Date.now(), device, browser, ipAddress },
         },
         { new: true }
       );
@@ -84,6 +90,7 @@ export const signup = async (req, res) => {
       phoneNo,
       dob,
       password: hashPassword,
+      lastLogin: { date: Date.now(), device, browser, ipAddress },
     });
 
     // after the account is created now sending otp to the mail
@@ -171,41 +178,65 @@ export const otpVerification = async (req, res) => {
   }
 };
 export const signin = async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, browser, device } = req.body;
+
+  const ipAddress =
+    req?.headers['x-forwarded-for'] || req?.socket?.remoteAddress || req?.ip;
 
   try {
     // role can be user and admin
     const user = await User.findOne({ email });
-    if (user && user.role === 'user') {
-      // comparing login password with hash password
-      const passwordMatch = await bcrypt.compare(password, user.password);
 
-      // after password matched then generating token to store in cookie for authentication/verfication.
-      if (passwordMatch) {
-        const token = jwt.sign(
-          { _id: user._id, role: user.role },
-          process.env.JWT_SECRET,
-          { expiresIn: '30d' }
-        );
-
-        // if the origin is same (means if client and server domain are same) then sameSite = lax, otherwise sameSite = none
-        res.cookie('_f_id', token, {
-          httpOnly: true,
-          sameSite: 'none',
-          secure: true,
-        });
-
-        return res
-          .status(200)
-          .json({ msg: 'Login Successfully', userId: user._id });
-      }
-
-      return res.status(401).json({ error: 'Invalid credential' });
+    // if user not found
+    if (!user) {
+      return res.status(404).json({ error: 'User not found please Register' });
     }
 
+    // comparing login password with hash password
+    const isPasswordCorrect = await bcrypt.compare(password, user.password);
+    if (!isPasswordCorrect) {
+      return res.status(401).json({ error: 'Wrong credentials' });
+    }
+
+    // save user login info
+    user.lastLogin = { date: Date.now(), device, browser, ipAddress };
+    await user.save();
+
+    // if user email didn't verified then returning this error for email verification
+    if (!user.isEmailVerified) {
+      // generating 4 digit otp
+      const otp = Math.ceil(1000 + Math.random() * 9182);
+
+      await sendMail(
+        email,
+        'Account Verification',
+        registrationVerificationEmail(otp)
+      );
+
+      // if document exist then update else create new document
+      await Otp.findOneAndUpdate({ user: user._id }, { otp }, { upsert: true });
+
+      return res
+        .status(400)
+        .json({ error: 'User not verified, Please verify' });
+    }
+
+    const token = jwt.sign(
+      { _id: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: '30d' }
+    );
+
+    // if the origin is same (means if client and server domain are same) then sameSite = lax, otherwise sameSite = none
+    res.cookie('_f_id', token, {
+      httpOnly: true,
+      sameSite: 'none',
+      secure: true,
+    });
+
     return res
-      .status(404)
-      .json({ error: 'No Account Found Please Signup First' });
+      .status(200)
+      .json({ msg: 'Login Successfully', userId: user._id });
   } catch (err) {
     return res
       .status(500)

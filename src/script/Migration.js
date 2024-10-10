@@ -13,6 +13,20 @@ export const migration = async () => {
   // await Product.updateMany({}, { $set: { reviews: [] } });
   // await User.updateMany({}, { $set: { dob: '2000-09-22' } });
   // await User.updateMany({}, { $set: { isEmailVerified: true } });
+  // await User.updateMany(
+  //   {},
+  //   {
+  //     $set: {
+  //       lastLogin: {
+  //         date: new Date().toISOString(),
+  //         device: 'mobile',
+  //         ipAddress: '123.00.1.2',
+  //         location: 'Delhi, India',
+  //         browser: 'chrome',
+  //       },
+  //     },
+  //   }
+  // );
 
   console.log('migration done');
 };

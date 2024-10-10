@@ -48,13 +48,13 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
-    lastLogin: [
-      {
-        date: Date,
-        device: String,
-        location: String,
-      },
-    ],
+    lastLogin: {
+      date: Date,
+      device: String,
+      browser: String,
+      location: String,
+      ipAddress: String,
+    },
   },
   { timestamps: true }
 );

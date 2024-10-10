@@ -6,7 +6,7 @@ export const getAllUsers = async (req, res) => {
   const { page = 1 } = req.query;
   try {
     const allUsers = await User.find({})
-      .select('firstName lastName email role')
+      .select('firstName lastName email role isEmailVerified')
       .sort({ createdAt: -1 })
       .skip((page - 1) * LIMIT)
       .limit(LIMIT);
@@ -28,9 +28,57 @@ export const getAllUsers = async (req, res) => {
 
 export const getUserStats = async (req, res) => {
   try {
+    const currentMonth = new Date().getMonth() + 1; // months are 0 indexed
+    const currentYear = new Date().getFullYear();
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
     // first calculating total users, new users, active users
-    // const userData = await User.aggregate([{}]);
-    return res.status(200).json({ msg: 'done' });
+    const userStats = await User.aggregate([
+      {
+        $group: {
+          _id: null,
+          totalUsers: { $sum: 1 },
+          newUserCurrentMonth: {
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    {
+                      $gte: [
+                        '$createdAt',
+                        new Date(currentYear, currentMonth - 1, 1),
+                      ],
+                    },
+                    {
+                      $lt: [
+                        '$createdAt',
+                        new Date(currentYear, currentMonth, 1),
+                      ],
+                    },
+                  ],
+                },
+                1,
+                0,
+              ],
+            },
+          },
+          activeUsers: {
+            $sum: {
+              $cond: [{ $gte: ['$lastLogin', thirtyDaysAgo] }, 1, 0],
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          totalUsers: 1,
+          newUserCurrentMonth: 1,
+          activeUsers: 1,
+        },
+      },
+    ]);
+    return res.status(200).json({ userStats: userStats?.[0] || {} });
   } catch (err) {
     console.log(err);
     return res
@@ -51,7 +99,7 @@ export const searchUsers = async (req, res) => {
         { email: { $regex: query, $options: 'i' } },
       ],
     })
-      .select('firstName lastName email role')
+      .select('firstName lastName email role isEmailVerified')
       .sort({ createdAt: -1 })
       .skip((page - 1) * LIMIT)
       .limit(LIMIT);
