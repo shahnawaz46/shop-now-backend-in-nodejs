@@ -26,7 +26,7 @@ export const signup = async (req, res) => {
   } = req.body;
 
   const ipAddress =
-    req?.headers['x-forwarded-for'] || req?.socket?.remoteAddress || req?.ip;
+    req?.headers?.['x-forwarded-for'] || req?.socket?.remoteAddress || req?.ip;
 
   try {
     const isUserAlreadyExist = await User.findOne({ email });
@@ -177,11 +177,12 @@ export const otpVerification = async (req, res) => {
       .json({ error: 'Something went wrong please try again after some time' });
   }
 };
+
 export const signin = async (req, res) => {
   const { email, password, browser, device } = req.body;
 
   const ipAddress =
-    req?.headers['x-forwarded-for'] || req?.socket?.remoteAddress || req?.ip;
+    req?.headers?.['x-forwarded-for'] || req?.socket?.remoteAddress || req?.ip;
 
   try {
     // role can be user and admin

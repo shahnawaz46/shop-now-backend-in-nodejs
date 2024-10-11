@@ -54,43 +54,55 @@ export const signup = async (req, res) => {
 };
 
 export const signin = async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, browser, device } = req.body;
+
+  const ipAddress =
+    req?.headers?.['x-forwarded-for'] || req?.socket?.remoteAddress || req?.ip;
 
   try {
     const admin = await User.findOne({ email });
 
-    if (admin && admin.role === 'admin') {
-      const passwordMatch = await bcrypt.compare(password, admin.password);
-
-      if (passwordMatch) {
-        const token = jwt.sign(
-          { _id: admin._id, role: admin.role },
-          process.env.JWT_SECRET,
-          { expiresIn: '30d' }
-        );
-        res.cookie('_a_tn', token, {
-          httpOnly: true,
-          sameSite: 'none',
-          secure: true,
-        });
-
-        return res.status(200).json({
-          msg: 'Login Successfully',
-          details: {
-            firstName: admin?.firstName,
-            lastName: admin?.lastName,
-            email: admin?.email,
-            profilePicture: admin?.profilePicture,
-            location: admin?.location,
-            phoneNo: admin?.phoneNo,
-          },
-        });
-      }
-
-      return res.status(400).json({ error: 'Invalid credential' });
+    if (!admin) {
+      return res.status(404).json({ error: 'User not found please Register' });
     }
 
-    return res.status(404).json({ error: 'No Account Found Please Signup' });
+    // comparing login password with hash password
+    const isPasswordCorrect = await bcrypt.compare(password, admin.password);
+    if (!isPasswordCorrect) {
+      return res.status(401).json({ error: 'Wrong credentials' });
+    }
+
+    if (admin.role !== 'admin') {
+      return res.status(404).json({ error: "You don't have permission" });
+    }
+
+    // save user login info
+    admin.lastLogin = { date: Date.now(), device, browser, ipAddress };
+    await admin.save();
+
+    const token = jwt.sign(
+      { _id: admin._id, role: admin.role },
+      process.env.JWT_SECRET,
+      { expiresIn: '30d' }
+    );
+
+    res.cookie('_a_tn', token, {
+      httpOnly: true,
+      sameSite: 'none',
+      secure: true,
+    });
+
+    return res.status(200).json({
+      msg: 'Login Successfully',
+      details: {
+        firstName: admin?.firstName,
+        lastName: admin?.lastName,
+        email: admin?.email,
+        profilePicture: admin?.profilePicture,
+        location: admin?.location,
+        phoneNo: admin?.phoneNo,
+      },
+    });
   } catch (err) {
     return res
       .status(400)

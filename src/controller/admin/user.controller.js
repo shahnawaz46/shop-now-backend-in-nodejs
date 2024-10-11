@@ -1,3 +1,6 @@
+import moment from 'moment';
+
+// internal
 import { LIMIT } from '../../constant/pagination.js';
 import { User } from '../../model/user.model.js';
 import { generateURL } from '../../utils/GenerateURL.js';
@@ -6,7 +9,7 @@ export const getAllUsers = async (req, res) => {
   const { page = 1 } = req.query;
   try {
     const allUsers = await User.find({})
-      .select('firstName lastName email role isEmailVerified')
+      .select('firstName lastName email role isEmailVerified lastLogin.date')
       .sort({ createdAt: -1 })
       .skip((page - 1) * LIMIT)
       .limit(LIMIT);
@@ -32,53 +35,126 @@ export const getUserStats = async (req, res) => {
     const currentYear = new Date().getFullYear();
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 
-    // first calculating total users, new users, active users
-    const userStats = await User.aggregate([
+    // $facet Operator allows us to run multiple pipelines in parallel and return multiple sets of data in a single aggregation.
+    // 1st facets is usersInfo(for getting totalUsers, newUserCurrentMonth and activeUsers)
+    // and 2nd facets is userGrowthGraph(for getting user monthly growth)
+    const userData = await User.aggregate([
       {
-        $group: {
-          _id: null,
-          totalUsers: { $sum: 1 },
-          newUserCurrentMonth: {
-            $sum: {
-              $cond: [
-                {
-                  $and: [
-                    {
-                      $gte: [
-                        '$createdAt',
-                        new Date(currentYear, currentMonth - 1, 1),
-                      ],
-                    },
-                    {
-                      $lt: [
-                        '$createdAt',
-                        new Date(currentYear, currentMonth, 1),
-                      ],
-                    },
-                  ],
+        $facet: {
+          usersInfo: [
+            {
+              $group: {
+                _id: null,
+                totalUsers: { $sum: 1 },
+                newUserCurrentMonth: {
+                  $sum: {
+                    $cond: [
+                      {
+                        $gte: [
+                          '$createdAt',
+                          new Date(currentYear, currentMonth - 1, 1),
+                        ],
+                      },
+                      1,
+                      0,
+                    ],
+                  },
                 },
-                1,
-                0,
-              ],
+                activeUsers: {
+                  $sum: {
+                    $cond: [{ $gte: ['$lastLogin.date', thirtyDaysAgo] }, 1, 0],
+                  },
+                },
+              },
             },
-          },
-          activeUsers: {
-            $sum: {
-              $cond: [{ $gte: ['$lastLogin', thirtyDaysAgo] }, 1, 0],
+            {
+              $project: {
+                _id: 0,
+                totalUsers: 1,
+                newUserCurrentMonth: 1,
+                activeUsers: 1,
+              },
             },
-          },
-        },
-      },
-      {
-        $project: {
-          _id: 0,
-          totalUsers: 1,
-          newUserCurrentMonth: 1,
-          activeUsers: 1,
+          ],
+          userGrowthGraph: [
+            {
+              $group: {
+                _id: { $month: '$createdAt' },
+                users: { $sum: 1 },
+              },
+            },
+            {
+              $project: {
+                _id: 0,
+                month: '$_id',
+                users: 1,
+              },
+            },
+          ],
         },
       },
     ]);
-    return res.status(200).json({ userStats: userStats?.[0] || {} });
+
+    // destructure
+    const { usersInfo, userGrowthGraph } = userData[0];
+
+    // graph with initial value
+    const monthGraph = [
+      { month: 'Jan', users: 0 },
+      { month: 'Feb', users: 0 },
+      { month: 'Mar', users: 0 },
+      { month: 'Apr', users: 0 },
+      { month: 'May', users: 0 },
+      { month: 'Jun', users: 0 },
+      { month: 'Jul', users: 0 },
+      { month: 'Aug', users: 0 },
+      { month: 'Sep', users: 0 },
+      { month: 'Oct', users: 0 },
+      { month: 'Nov', users: 0 },
+      { month: 'Dec', users: 0 },
+    ];
+
+    userGrowthGraph.forEach((data) => {
+      const monthIndex = data.month - 1;
+      monthGraph[monthIndex].users = data.users;
+    });
+
+    // second calculating UserDemographics
+    const allUsers = await User.find({});
+    const currentDate = moment();
+    const userDemographics = [
+      { name: '<18', value: 0 },
+      { name: '18-24', value: 0 },
+      { name: '25-35', value: 0 },
+      { name: '36-50', value: 0 },
+      { name: '50+', value: 0 },
+    ];
+
+    for (let i = 0; i < allUsers.length; i++) {
+      const dobDate = moment(allUsers[i].dob);
+      const differenceInYears = currentDate.diff(dobDate, 'years');
+      if (differenceInYears < 18) {
+        userDemographics[0].value++;
+      } else if (differenceInYears >= 18 && differenceInYears <= 24) {
+        userDemographics[1].value++;
+      } else if (differenceInYears >= 25 && differenceInYears <= 35) {
+        userDemographics[2].value++;
+      } else if (differenceInYears >= 36 && differenceInYears <= 50) {
+        userDemographics[3].value++;
+      } else if (differenceInYears > 50) {
+        userDemographics[4].value++;
+      }
+    }
+
+    const userStats = {
+      totalUsers: usersInfo?.[0]?.totalUsers || 0,
+      newUserCurrentMonth: usersInfo?.[0]?.newUserCurrentMonth || 0,
+      activeUsers: usersInfo?.[0]?.activeUsers || 0,
+      userGrowthGraph: monthGraph,
+      userDemographics,
+    };
+
+    return res.status(200).json({ ...userStats });
   } catch (err) {
     console.log(err);
     return res
@@ -99,7 +175,7 @@ export const searchUsers = async (req, res) => {
         { email: { $regex: query, $options: 'i' } },
       ],
     })
-      .select('firstName lastName email role isEmailVerified')
+      .select('firstName lastName email role isEmailVerified lastLogin.date')
       .sort({ createdAt: -1 })
       .skip((page - 1) * LIMIT)
       .limit(LIMIT);
