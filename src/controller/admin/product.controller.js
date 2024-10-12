@@ -61,16 +61,6 @@ export const addProduct = async (req, res) => {
           _id: null,
           totalStocks: { $sum: '$stocks' },
           totalProducts: { $sum: 1 },
-          menProductsCount: {
-            $sum: {
-              $cond: [{ $eq: ['$targetAudience', 'Men'] }, 1, 0],
-            },
-          },
-          womenProductsCount: {
-            $sum: {
-              $cond: [{ $eq: ['$targetAudience', 'Women'] }, 1, 0],
-            },
-          },
         },
       },
       {
@@ -78,8 +68,6 @@ export const addProduct = async (req, res) => {
           _id: 0,
           totalStocks: 1,
           totalProducts: 1,
-          menProductsCount: 1,
-          womenProductsCount: 1,
         },
       },
     ]);
@@ -133,111 +121,39 @@ export const productSalesDetails = async (req, res) => {
           _id: null,
           totalStocks: { $sum: '$stocks' },
           totalProducts: { $sum: 1 },
-          menProductsCount: {
-            $sum: {
-              $cond: [{ $eq: ['$targetAudience', 'Men'] }, 1, 0],
-            },
-          },
-          womenProductsCount: {
-            $sum: {
-              $cond: [{ $eq: ['$targetAudience', 'Women'] }, 1, 0],
-            },
-          },
         },
       },
     ]);
 
-    // $facet Operator allows us to run multiple pipelines in parallel and return multiple sets of data in a single aggregation.
-    // 1st facets is orderStats(for getting totalOrders, pendingOrder, etc)
-    // and 2nd facets is monthlySales(for getting product's monthly sales)
+    // 2nd calculating totalSellings and totalRevenue
     const orderData = await Order.aggregate([
       {
-        $facet: {
-          orderStats: [
-            {
-              $match: { status: 'delivered' }, // match orders with 'delivered' status
-            },
-            {
-              $group: {
-                _id: null,
-                totalRevenue: { $sum: '$totalPrice' }, // sum total price of all order
-                totalSellings: { $sum: 1 }, // sum total order(status delivered) of all order
-              },
-            },
-            {
-              // $project is used for Reshapes a document stream by renaming, adding, or removing fields
-              // $project stage is used for return only the fields you need in the result.
-              // 1 means add and 0 means remove fields
-              $project: {
-                _id: 0,
-              },
-            },
-          ],
-          monthlySales: [
-            {
-              $match: { status: 'delivered' }, // match orders with 'delivered' status
-            },
-            {
-              $group: {
-                _id: { $month: '$createdAt' }, // group by month
-                // sales: { $sum: '$totalPrice' }, // sum total price for each month
-                sales: { $sum: 1 }, // count total sales for each month
-              },
-            },
-            {
-              $sort: { _id: 1 }, // Sort by month (ascending order)
-            },
-            {
-              $project: {
-                _id: 0,
-                month: '$_id',
-                sales: 1,
-              },
-            },
-          ],
+        $match: { status: 'delivered' }, // match orders with 'delivered' status
+      },
+      {
+        $group: {
+          _id: null,
+          totalSellings: { $sum: 1 }, // sum total order(status delivered) of all order
+          totalRevenue: { $sum: '$totalPrice' }, // sum total price of all order
+        },
+      },
+      {
+        // $project is used for Reshapes a document stream by renaming, adding, or removing fields
+        // $project stage is used for return only the fields you need in the result.
+        // 1 means add and 0 means remove fields
+        $project: {
+          _id: 0,
+          totalSellings: 1,
+          totalRevenue: 1,
         },
       },
     ]);
-
-    // destructure
-    const { orderStats, monthlySales } = orderData[0];
-
-    // months name for graph
-    const monthNames = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-    ];
-
-    // first initializing graph data with sales 0 of each months
-    const initialGraphData = monthNames.map((month) => ({
-      month,
-      sales: 0,
-    }));
-
-    // then assigning sales if data is present
-    monthlySales.forEach((data) => {
-      const monthIndex = data.month - 1;
-      initialGraphData[monthIndex].sales = data.sales;
-    });
 
     const productSales = {
       totalProducts: productData?.[0]?.totalProducts || 0,
       totalStocks: productData?.[0]?.totalStocks || 0,
-      menProductsCount: productData?.[0]?.menProductsCount || 0,
-      womenProductsCount: productData?.[0]?.womenProductsCount || 0,
-      totalRevenue: orderStats[0]?.totalRevenue || 0,
-      totalSellings: orderStats[0]?.totalSellings || 0,
-      graph: initialGraphData,
+      totalRevenue: orderData[0]?.totalRevenue || 0,
+      totalSellings: orderData[0]?.totalSellings || 0,
     };
 
     return res.status(200).json({ ...productSales });
@@ -275,16 +191,6 @@ export const deleteProduct = async (req, res) => {
           _id: null,
           totalStocks: { $sum: '$stocks' },
           totalProducts: { $sum: 1 },
-          menProductsCount: {
-            $sum: {
-              $cond: [{ $eq: ['$targetAudience', 'Men'] }, 1, 0],
-            },
-          },
-          womenProductsCount: {
-            $sum: {
-              $cond: [{ $eq: ['$targetAudience', 'Women'] }, 1, 0],
-            },
-          },
         },
       },
       {
@@ -292,8 +198,6 @@ export const deleteProduct = async (req, res) => {
           _id: 0,
           totalStocks: 1,
           totalProducts: 1,
-          menProductsCount: 1,
-          womenProductsCount: 1,
         },
       },
     ]);
@@ -360,16 +264,6 @@ export const editProduct = async (req, res) => {
           _id: null,
           totalStocks: { $sum: '$stocks' },
           totalProducts: { $sum: 1 },
-          menProductsCount: {
-            $sum: {
-              $cond: [{ $eq: ['$targetAudience', 'Men'] }, 1, 0],
-            },
-          },
-          womenProductsCount: {
-            $sum: {
-              $cond: [{ $eq: ['$targetAudience', 'Women'] }, 1, 0],
-            },
-          },
         },
       },
       {
@@ -377,8 +271,6 @@ export const editProduct = async (req, res) => {
           _id: 0,
           totalStocks: 1,
           totalProducts: 1,
-          menProductsCount: 1,
-          womenProductsCount: 1,
         },
       },
     ]);
