@@ -3,6 +3,9 @@ import slugify from 'slugify';
 // internal
 import { Category } from '../../model/category.model.js';
 import getAllCategory from '../../utils/getAllCategory.js';
+import { sendMail } from '../../utils/SendMail.js';
+import { errorTemplate } from '../../utils/MailTemplate.js';
+import { generateURL } from '../../utils/GenerateURL.js';
 
 export const createCategory = async (req, res) => {
   try {
@@ -29,9 +32,16 @@ export const createCategory = async (req, res) => {
       }
     });
   } catch (error) {
-    return res
-      .status(400)
-      .json({ error: 'Something Gone Wrong Please Try Again' });
+    // send error to email
+    sendMail(
+      process.env.ADMIN_EMAIL,
+      '(Admin Panel) Error in Create Category',
+      errorTemplate(generateURL(req, '', true), error.message)
+    );
+    return res.status(500).json({
+      error:
+        "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
+    });
   }
 };
 
@@ -53,9 +63,16 @@ export const getCategory = async (req, res) => {
 
     return res.status(404).json({ error: 'No Category Found' });
   } catch (error) {
-    return res
-      .status(400)
-      .json({ error: 'Something Gone Wrong Please Try Again' });
+    // send error to email
+    sendMail(
+      process.env.ADMIN_EMAIL,
+      '(Admin Panel) Error in Get Category',
+      errorTemplate(generateURL(req, '', true), error.message)
+    );
+    return res.status(500).json({
+      error:
+        "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
+    });
   }
 };
 
@@ -64,9 +81,16 @@ export const deleteCategory = async (req, res) => {
     await Category.findByIdAndDelete({ _id: req.body.categoryId });
     return res.status(200).json({ message: 'Category Deleted Successfully' });
   } catch (error) {
-    return res
-      .status(400)
-      .json({ error: 'Something Gone Wrong Please Try Again' });
+    // send error to email
+    sendMail(
+      process.env.ADMIN_EMAIL,
+      '(Admin Panel) Error in Delete Category',
+      errorTemplate(generateURL(req, '', true), error.message)
+    );
+    return res.status(500).json({
+      error:
+        "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
+    });
   }
 };
 
@@ -85,8 +109,15 @@ export const editCategory = async (req, res) => {
     });
     return res.status(200).json({ message: 'Category Edit Successfully' });
   } catch (error) {
-    return res
-      .status(400)
-      .json({ error: 'Something Gone Wrong Please Try Again' });
+    // send error to email
+    sendMail(
+      process.env.ADMIN_EMAIL,
+      '(Admin Panel) Error in Edit/Update Category',
+      errorTemplate(generateURL(req, '', true), error.message)
+    );
+    return res.status(500).json({
+      error:
+        "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
+    });
   }
 };

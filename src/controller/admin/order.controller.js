@@ -3,6 +3,8 @@ import { LIMIT } from '../../constant/pagination.js';
 import { Order } from '../../model/order.model.js';
 import { Product } from '../../model/product.model.js';
 import { generateURL } from '../../utils/GenerateURL.js';
+import { errorTemplate } from '../../utils/MailTemplate.js';
+import { sendMail } from '../../utils/SendMail.js';
 
 export const getAllOrders = async (req, res) => {
   const { page = 1 } = req.query;
@@ -23,11 +25,17 @@ export const getAllOrders = async (req, res) => {
     return res
       .status(200)
       .json({ next: orders.length < LIMIT ? null : nextURL, orders });
-  } catch (err) {
-    console.log(err);
-    return res
-      .status(500)
-      .json({ error: 'Something Gone Wrong Please Try Again' });
+  } catch (error) {
+    // send error to email
+    sendMail(
+      process.env.ADMIN_EMAIL,
+      '(Admin Panel) Error in Get All Orders',
+      errorTemplate(generateURL(req, '', true), error.message)
+    );
+    return res.status(500).json({
+      error:
+        "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
+    });
   }
 };
 
@@ -196,11 +204,17 @@ export const getOrderStats = async (req, res) => {
     }
 
     return res.status(404).json({ error: 'No orders stats found' });
-  } catch (err) {
-    console.log(err);
-    return res
-      .status(500)
-      .json({ error: 'Something Gone Wrong Please Try Again' });
+  } catch (error) {
+    // send error to email
+    sendMail(
+      process.env.ADMIN_EMAIL,
+      '(Admin Panel) Error in Get Order Stats',
+      errorTemplate(generateURL(req, '', true), error.message)
+    );
+    return res.status(500).json({
+      error:
+        "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
+    });
   }
 };
 
@@ -210,11 +224,17 @@ export const getOrderById = async (req, res) => {
       .populate('items.product', 'productName productPictures')
       .populate('address', 'address locality cityDistrictTown pinCode state');
     return res.status(200).json({ order });
-  } catch (err) {
-    console.log(err);
-    return res
-      .status(500)
-      .json({ error: 'Something Gone Wrong Please Try Again' });
+  } catch (error) {
+    // send error to email
+    sendMail(
+      process.env.ADMIN_EMAIL,
+      '(Admin Panel) Error in Get Order By Id',
+      errorTemplate(generateURL(req, '', true), error.message)
+    );
+    return res.status(500).json({
+      error:
+        "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
+    });
   }
 };
 
@@ -294,11 +314,17 @@ export const updateOrderStatus = async (req, res) => {
       msg: 'Order Status Updated Successfully',
       orderStats: orderStats?.[0] || {},
     });
-  } catch (err) {
-    console.log(err);
-    return res
-      .status(500)
-      .json({ error: 'Something Gone Wrong Please Try Again' });
+  } catch (error) {
+    // send error to email
+    sendMail(
+      process.env.ADMIN_EMAIL,
+      '(Admin Panel) Error in Update Order Status',
+      errorTemplate(generateURL(req, '', true), error.message)
+    );
+    return res.status(500).json({
+      error:
+        "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
+    });
   }
 };
 
@@ -321,10 +347,16 @@ export const searchOrders = async (req, res) => {
     return res
       .status(200)
       .json({ next: orders.length < LIMIT ? null : nextURL, orders });
-  } catch (err) {
-    console.log(err);
-    return res
-      .status(500)
-      .json({ error: 'Something Gone Wrong Please Try Again' });
+  } catch (error) {
+    // send error to email
+    sendMail(
+      process.env.ADMIN_EMAIL,
+      '(Admin Panel) Error in Search Order',
+      errorTemplate(generateURL(req, '', true), error.message)
+    );
+    return res.status(500).json({
+      error:
+        "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
+    });
   }
 };

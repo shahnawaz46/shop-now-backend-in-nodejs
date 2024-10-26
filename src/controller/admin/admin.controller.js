@@ -3,6 +3,9 @@ import jwt from 'jsonwebtoken';
 
 // internal
 import { User } from '../../model/user.model.js';
+import { sendMail } from '../../utils/SendMail.js';
+import { errorTemplate } from '../../utils/MailTemplate.js';
+import { generateURL } from '../../utils/GenerateURL.js';
 
 export const signup = async (req, res) => {
   const {
@@ -45,11 +48,17 @@ export const signup = async (req, res) => {
     });
 
     return res.status(200).json({ msg: 'Signup Successfully' });
-  } catch (err) {
-    console.log(err.message);
-    return res
-      .status(400)
-      .json({ error: 'something gone wrong please try again' });
+  } catch (error) {
+    // send error to email
+    sendMail(
+      process.env.ADMIN_EMAIL,
+      '(Admin Panel) Error in Signup',
+      errorTemplate(generateURL(req, '', true), error.message)
+    );
+    return res.status(500).json({
+      error:
+        "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
+    });
   }
 };
 
@@ -103,10 +112,17 @@ export const signin = async (req, res) => {
         phoneNo: admin?.phoneNo,
       },
     });
-  } catch (err) {
-    return res
-      .status(400)
-      .json({ error: 'Something Gone Wrong Please Try Again' });
+  } catch (error) {
+    // send error to email
+    sendMail(
+      process.env.ADMIN_EMAIL,
+      '(Admin Panel) Error in Signin',
+      errorTemplate(generateURL(req, '', true), error.message)
+    );
+    return res.status(500).json({
+      error:
+        "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
+    });
   }
 };
 
@@ -123,10 +139,16 @@ export const userProfile = async (req, res) => {
     }).select('firstName lastName email phoneNo profilePicture location');
 
     return res.status(200).json({ details: userDetail });
-  } catch (err) {
-    console.log(err);
-    return res
-      .status(400)
-      .json({ error: 'Something Gone Wrong Please Try Again' });
+  } catch (error) {
+    // send error to email
+    sendMail(
+      process.env.ADMIN_EMAIL,
+      '(Admin Panel) Error in Profile',
+      errorTemplate(generateURL(req, '', true), error.message)
+    );
+    return res.status(500).json({
+      error:
+        "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
+    });
   }
 };

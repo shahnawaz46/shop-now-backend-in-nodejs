@@ -4,11 +4,13 @@ import moment from 'moment';
 import { LIMIT } from '../../constant/pagination.js';
 import { User } from '../../model/user.model.js';
 import { generateURL } from '../../utils/GenerateURL.js';
+import { sendMail } from '../../utils/SendMail.js';
+import { errorTemplate } from '../../utils/MailTemplate.js';
 
 export const getAllUsers = async (req, res) => {
   const { page = 1 } = req.query;
   try {
-    const allUsers = await User.find({})
+    const allUsers = await User.fin({})
       .select('firstName lastName email role isEmailVerified lastLogin.date')
       .sort({ createdAt: -1 })
       .skip((page - 1) * LIMIT)
@@ -21,11 +23,17 @@ export const getAllUsers = async (req, res) => {
       next: allUsers.length < LIMIT ? null : nextURL,
       users: allUsers,
     });
-  } catch (err) {
-    console.log(err);
-    return res
-      .status(500)
-      .json({ error: 'Something Gone Wrong Please Try Again' });
+  } catch (error) {
+    // send error to email
+    sendMail(
+      process.env.ADMIN_EMAIL,
+      '(Admin Panel) Error in Get All Users',
+      errorTemplate(generateURL(req, '', true), error.message)
+    );
+    return res.status(500).json({
+      error:
+        "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
+    });
   }
 };
 
@@ -155,11 +163,17 @@ export const getUserStats = async (req, res) => {
     };
 
     return res.status(200).json({ ...userStats });
-  } catch (err) {
-    console.log(err);
-    return res
-      .status(500)
-      .json({ error: 'Something Gone Wrong Please Try Again' });
+  } catch (error) {
+    // send error to email
+    sendMail(
+      process.env.ADMIN_EMAIL,
+      '(Admin Panel) Error in Get User Stats',
+      errorTemplate(generateURL(req, '', true), error.message)
+    );
+    return res.status(500).json({
+      error:
+        "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
+    });
   }
 };
 
@@ -185,10 +199,16 @@ export const searchUsers = async (req, res) => {
     return res
       .status(200)
       .json({ next: users.length < LIMIT ? null : nextURL, users });
-  } catch (err) {
-    console.log(err);
-    return res
-      .status(500)
-      .json({ error: 'Something Gone Wrong Please Try Again' });
+  } catch (error) {
+    // send error to email
+    sendMail(
+      process.env.ADMIN_EMAIL,
+      '(Admin Panel) Error in Search Users',
+      errorTemplate(generateURL(req, '', true), error.message)
+    );
+    return res.status(500).json({
+      error:
+        "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
+    });
   }
 };
