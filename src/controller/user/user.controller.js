@@ -8,9 +8,11 @@ import { uploadProfilePictures } from '../../utils/Cloudinary.js';
 import { Otp } from '../../model/otp.model.js';
 import { sendMail } from '../../utils/SendMail.js';
 import {
+  errorTemplate,
   registrationVerificationEmail,
   thankForRegistration,
 } from '../../utils/MailTemplate.js';
+import { generateURL } from '../../utils/GenerateURL.js';
 
 export const signup = async (req, res) => {
   const {
@@ -107,10 +109,16 @@ export const signup = async (req, res) => {
       .status(200)
       .json({ msg: 'Signup Successfully', email: newUser.email });
   } catch (err) {
-    console.log(err);
-    return res
-      .status(500)
-      .json({ error: 'Something Gone Wrong Please Try Again' });
+    // send error to email
+    sendMail(
+      process.env.ADMIN_EMAIL,
+      'Error in Signup',
+      errorTemplate(generateURL(req), err.message)
+    );
+    return res.status(500).json({
+      error:
+        "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
+    });
   }
 };
 
@@ -172,9 +180,16 @@ export const otpVerification = async (req, res) => {
       thankForRegistration(`${user.firstName} ${user.lastName}`)
     );
   } catch (err) {
-    return res
-      .status(500)
-      .json({ error: 'Something went wrong please try again after some time' });
+    // send error to email
+    sendMail(
+      process.env.ADMIN_EMAIL,
+      'Error in OTP Verification',
+      errorTemplate(generateURL(req), err.message)
+    );
+    return res.status(500).json({
+      error:
+        "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
+    });
   }
 };
 
@@ -239,9 +254,16 @@ export const signin = async (req, res) => {
       .status(200)
       .json({ msg: 'Login Successfully', userId: user._id });
   } catch (err) {
-    return res
-      .status(500)
-      .json({ error: 'Something Gone Wrong Please Try Again' });
+    // send error to email
+    sendMail(
+      process.env.ADMIN_EMAIL,
+      'Error in Signin',
+      errorTemplate(generateURL(req), err.message)
+    );
+    return res.status(500).json({
+      error:
+        "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
+    });
   }
 };
 
@@ -255,10 +277,16 @@ export const userProfile = async (req, res) => {
 
     return res.status(200).json({ userDetail, address });
   } catch (err) {
-    console.log(err);
-    return res
-      .status(400)
-      .json({ error: 'Something Gone Wrong Please Try Again' });
+    // send error to email
+    sendMail(
+      process.env.ADMIN_EMAIL,
+      'Error in Get User Profile',
+      errorTemplate(generateURL(req), err.message)
+    );
+    return res.status(500).json({
+      error:
+        "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
+    });
   }
 };
 
@@ -287,9 +315,16 @@ export const updateProfilePic = async (req, res) => {
       });
     }
   } catch (err) {
-    return res
-      .status(400)
-      .json({ error: 'Something Gone Wrong Please Try Again' });
+    // send error to email
+    sendMail(
+      process.env.ADMIN_EMAIL,
+      'Error in Update Profile Pic',
+      errorTemplate(generateURL(req), err.message)
+    );
+    return res.status(500).json({
+      error:
+        "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
+    });
   }
 };
 
@@ -308,9 +343,17 @@ export const editUserProfileDetail = async (req, res) => {
     if (err.codeName == 'DuplicateKey') {
       return res.status(400).json({ error: 'This Email Already Exist' });
     }
-    return res
-      .status(400)
-      .json({ error: 'Something Gone Wrong Please Try Again' });
+
+    // send error to email
+    sendMail(
+      process.env.ADMIN_EMAIL,
+      'Error in Update User Profile Details',
+      errorTemplate(generateURL(req), err.message)
+    );
+    return res.status(500).json({
+      error:
+        "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
+    });
   }
 };
 

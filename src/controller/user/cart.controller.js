@@ -1,5 +1,8 @@
 // internal
 import { Cart } from '../../model/cart.model.js';
+import { generateURL } from '../../utils/GenerateURL.js';
+import { errorTemplate } from '../../utils/MailTemplate.js';
+import { sendMail } from '../../utils/SendMail.js';
 
 export const addToCart = async (req, res) => {
   try {
@@ -40,11 +43,17 @@ export const addToCart = async (req, res) => {
       await Cart.create({ userId: req.data._id, cartItems: cartItem });
       return res.status(201).json({ msg: 'Cart Created Successfully' });
     }
-  } catch (err) {
-    // console.log(err)
-    return res
-      .status(400)
-      .json({ msg: 'Something Gone Wrong Please Try Again' });
+  } catch (error) {
+    // send error to email
+    sendMail(
+      process.env.ADMIN_EMAIL,
+      'Error in Add to Cart',
+      errorTemplate(generateURL(req), error.message)
+    );
+    return res.status(500).json({
+      error:
+        "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
+    });
   }
 };
 
@@ -71,10 +80,17 @@ export const getCartItem = async (req, res) => {
       return res.status(200).json({ allCartItem: cartItem });
     }
     return res.status(401).json({ msg: 'Not Item in Cart' });
-  } catch (err) {
-    return res
-      .status(400)
-      .json({ msg: 'Something Gone Wrong Please Try Again' });
+  } catch (error) {
+    // send error to email
+    sendMail(
+      process.env.ADMIN_EMAIL,
+      'Error in Get Cart Items',
+      errorTemplate(generateURL(req), error.message)
+    );
+    return res.status(500).json({
+      error:
+        "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
+    });
   }
 };
 
@@ -88,9 +104,16 @@ export const removeCartItem = async (req, res) => {
       }
     );
     return res.status(200).json({ msg: 'Cart Item deleted Successfully' });
-  } catch (err) {
-    return res
-      .status(400)
-      .json({ msg: 'Something Gone Wrong Please Try Again' });
+  } catch (error) {
+    // send error to email
+    sendMail(
+      process.env.ADMIN_EMAIL,
+      'Error in Remove Cart Items',
+      errorTemplate(generateURL(req), error.message)
+    );
+    return res.status(500).json({
+      error:
+        "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
+    });
   }
 };

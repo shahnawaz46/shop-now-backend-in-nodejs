@@ -1,6 +1,9 @@
 // internal
 import { Category } from '../../model/category.model.js';
+import { generateURL } from '../../utils/GenerateURL.js';
 import getAllCategory from '../../utils/getAllCategory.js';
+import { errorTemplate } from '../../utils/MailTemplate.js';
+import { sendMail } from '../../utils/SendMail.js';
 
 export const getCategory = async (req, res) => {
   const { slug } = req.params;
@@ -14,9 +17,16 @@ export const getCategory = async (req, res) => {
 
     return res.status(404).json({ error: 'No Category Found' });
   } catch (error) {
-    return res
-      .status(400)
-      .json({ error: 'Something Gone Wrong Please Try Again' });
+    // send error to email
+    sendMail(
+      process.env.ADMIN_EMAIL,
+      'Error in Get Category',
+      errorTemplate(generateURL(req), error.message)
+    );
+    return res.status(500).json({
+      error:
+        "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
+    });
   }
 };
 
@@ -34,8 +44,15 @@ export const searchCategory = async (req, res) => {
 
     return res.status(200).json({ result: category });
   } catch (error) {
-    return res
-      .status(400)
-      .json({ error: 'Something Gone Wrong Please Try Again' });
+    // send error to email
+    sendMail(
+      process.env.ADMIN_EMAIL,
+      'Error in Search Category',
+      errorTemplate(generateURL(req), error.message)
+    );
+    return res.status(500).json({
+      error:
+        "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
+    });
   }
 };

@@ -5,6 +5,8 @@ import { Order } from '../../model/order.model.js';
 import { TrendingProduct } from '../../model/trendingProduct.model.js';
 import { LIMIT } from '../../constant/pagination.js';
 import { generateURL } from '../../utils/GenerateURL.js';
+import { sendMail } from '../../utils/SendMail.js';
+import { errorTemplate } from '../../utils/MailTemplate.js';
 
 // find method in Mongoose takes three arguments:
 // 1st -> filter
@@ -41,9 +43,16 @@ export const getAllProducts = async (req, res) => {
       data: allProducts,
     });
   } catch (error) {
-    return res
-      .status(400)
-      .json({ error: 'Something Gone Wrong Please Try Again' });
+    // send error to email
+    sendMail(
+      process.env.ADMIN_EMAIL,
+      'Error in Get All Products',
+      errorTemplate(generateURL(req), error.message)
+    );
+    return res.status(500).json({
+      error:
+        "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
+    });
   }
 };
 
@@ -138,9 +147,16 @@ export const getFilteredProducts = async (req, res) => {
       });
     }
   } catch (error) {
-    return res
-      .status(400)
-      .json({ error: 'Something Gone Wrong Please Try Again' });
+    // send error to email
+    sendMail(
+      process.env.ADMIN_EMAIL,
+      'Error in Get Filtered Products',
+      errorTemplate(generateURL(req), error.message)
+    );
+    return res.status(500).json({
+      error:
+        "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
+    });
   }
 };
 
@@ -157,9 +173,16 @@ export const getSingleProductById = async (req, res) => {
     }
     return res.status(404).json({ error: 'product not found' });
   } catch (error) {
-    return res
-      .status(400)
-      .json({ error: 'Something Gone Wrong Please Try Again' });
+    // send error to email
+    sendMail(
+      process.env.ADMIN_EMAIL,
+      'Error in Get Single Product',
+      errorTemplate(generateURL(req), error.message)
+    );
+    return res.status(500).json({
+      error:
+        "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
+    });
   }
 };
 
@@ -178,10 +201,16 @@ export const updateTopTrendingProduct = async (req, res) => {
     );
 
     return res.status(200).json({ msg: 'successfully' });
-  } catch (err) {
-    return res.status(400).json({
-      error: 'Something Went Wrong Please Try Again',
-      msg: err.message,
+  } catch (error) {
+    // send error to email
+    sendMail(
+      process.env.ADMIN_EMAIL,
+      'Error in Update Top Trending Product',
+      errorTemplate(generateURL(req), error.message)
+    );
+    return res.status(500).json({
+      error:
+        "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
     });
   }
 };
@@ -266,10 +295,16 @@ export const getTopTrendingProducts = async (req, res) => {
       const productResult = await trendingProductsPipeLine();
       return res.status(200).json({ products: productResult });
     }
-  } catch (err) {
-    return res.status(400).json({
-      error: 'Something Went Wrong Please Try Again',
-      msg: err.message,
+  } catch (error) {
+    // send error to email
+    sendMail(
+      process.env.ADMIN_EMAIL,
+      'Error in Get Top Trending Products',
+      errorTemplate(generateURL(req), error.message)
+    );
+    return res.status(500).json({
+      error:
+        "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
     });
   }
 };
@@ -312,10 +347,17 @@ export const topRatingProducts = async (req, res) => {
       },
     ]);
     return res.status(200).json({ products });
-  } catch (err) {
-    return res
-      .status(400)
-      .json({ error: 'Something Went Wrong Please Try Again' });
+  } catch (error) {
+    // send error to email
+    sendMail(
+      process.env.ADMIN_EMAIL,
+      'Error in Get Top Rating Products',
+      errorTemplate(generateURL(req), error.message)
+    );
+    return res.status(500).json({
+      error:
+        "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
+    });
   }
 };
 
@@ -410,10 +452,17 @@ export const getTopSellingProducts = async (req, res) => {
       next: product.length < LIMIT ? null : nextRoute,
       item: product,
     });
-  } catch (err) {
-    return res
-      .status(400)
-      .json({ error: 'Something Went Wrong Please Try Again', err });
+  } catch (error) {
+    // send error to email
+    sendMail(
+      process.env.ADMIN_EMAIL,
+      'Error in Get Top Selling Products',
+      errorTemplate(generateURL(req), error.message)
+    );
+    return res.status(500).json({
+      error:
+        "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
+    });
   }
 };
 
@@ -479,10 +528,17 @@ export const getNewestProducts = async (req, res) => {
       next: newestProducts.length < LIMIT ? null : nextRoute,
       item: newestProducts,
     });
-  } catch (err) {
-    return res
-      .status(400)
-      .json({ error: 'Something Went Wrong Please Try Again', err });
+  } catch (error) {
+    // send error to email
+    sendMail(
+      process.env.ADMIN_EMAIL,
+      'Error in Get Newest Products',
+      errorTemplate(generateURL(req), error.message)
+    );
+    return res.status(500).json({
+      error:
+        "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
+    });
   }
 };
 
@@ -547,9 +603,16 @@ export const writeProductReview = async (req, res) => {
       }
     }
     return res.status(400).json({ error: 'No Product Found' });
-  } catch (err) {
-    return res
-      .status(400)
-      .json({ error: 'Something Gone Wrong Please Try Again' });
+  } catch (error) {
+    // send error to email
+    sendMail(
+      process.env.ADMIN_EMAIL,
+      'Error in Write Product Review',
+      errorTemplate(generateURL(req), error.message)
+    );
+    return res.status(500).json({
+      error:
+        "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
+    });
   }
 };

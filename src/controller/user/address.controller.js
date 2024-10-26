@@ -1,5 +1,8 @@
 // internal
 import { Address } from '../../model/address.model.js';
+import { generateURL } from '../../utils/GenerateURL.js';
+import { errorTemplate } from '../../utils/MailTemplate.js';
+import { sendMail } from '../../utils/SendMail.js';
 
 export const addAddress = async (req, res) => {
   const userAddress = req.body;
@@ -13,9 +16,16 @@ export const addAddress = async (req, res) => {
       address,
     });
   } catch (error) {
-    return res
-      .status(400)
-      .json({ message: 'something gone wrong please try again', error });
+    // send error to email
+    sendMail(
+      process.env.ADMIN_EMAIL,
+      'Error in Add Address',
+      errorTemplate(generateURL(req), error.message)
+    );
+    return res.status(500).json({
+      error:
+        "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
+    });
   }
 };
 
@@ -28,9 +38,16 @@ export const getAddress = async (req, res) => {
       return res.status(200).json({ userAddress: [] });
     }
   } catch (error) {
-    return res
-      .status(400)
-      .json({ msg: 'something gone wrong please try again' });
+    // send error to email
+    sendMail(
+      process.env.ADMIN_EMAIL,
+      'Error in Get Address',
+      errorTemplate(generateURL(req), error.message)
+    );
+    return res.status(500).json({
+      error:
+        "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
+    });
   }
 };
 
@@ -47,9 +64,16 @@ export const updateAddress = async (req, res) => {
       address: updatedAddress,
     });
   } catch (error) {
-    return res
-      .status(400)
-      .json({ msg: 'something gone wrong please try again' });
+    // send error to email
+    sendMail(
+      process.env.ADMIN_EMAIL,
+      'Error in Update Address',
+      errorTemplate(generateURL(req), error.message)
+    );
+    return res.status(500).json({
+      error:
+        "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
+    });
   }
 };
 
@@ -59,8 +83,15 @@ export const deleteAddress = async (req, res) => {
 
     return res.status(200).json({ msg: 'Address Remove Successfully' });
   } catch (error) {
-    return res
-      .status(400)
-      .json({ msg: 'something gone wrong please try again' });
+    // send error to email
+    sendMail(
+      process.env.ADMIN_EMAIL,
+      'Error in Delete Address',
+      errorTemplate(generateURL(req), error.message)
+    );
+    return res.status(500).json({
+      error:
+        "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
+    });
   }
 };

@@ -15,7 +15,13 @@ export const generateURL = (req, query, admin = false) => {
     apiPath = apiPath.replace(':slug', req.params.slug);
   }
 
-  const currentRoute = `${protocal}://${host}${apiPath}?${query}`;
+  let currentRoute = '';
+  if (query) {
+    currentRoute = `${protocal}://${host}${apiPath}?${query}`;
+  } else {
+    currentRoute = `${protocal}://${host}${apiPath}`;
+  }
+
   return currentRoute;
 
   //   const currentRoute = `${

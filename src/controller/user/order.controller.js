@@ -5,6 +5,9 @@ import crypto from 'crypto';
 // internal
 import { Order } from '../../model/order.model.js';
 import { Cart } from '../../model/cart.model.js';
+import { sendMail } from '../../utils/SendMail.js';
+import { errorTemplate } from '../../utils/MailTemplate.js';
+import { generateURL } from '../../utils/GenerateURL.js';
 
 // razor pay instance
 const key_id = process.env.RAZOR_PAY_KEY;
@@ -59,9 +62,16 @@ export const createOrder = async (req, res) => {
         })
       : res.status(400).json({ error: 'Not Allowed' });
   } catch (error) {
-    return res
-      .status(400)
-      .json({ error: 'Something Gone Wrong Please Try Again' });
+    // send error to email
+    sendMail(
+      process.env.ADMIN_EMAIL,
+      'Error in Create Order',
+      errorTemplate(generateURL(req), error.message)
+    );
+    return res.status(500).json({
+      error:
+        "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
+    });
   }
 };
 
@@ -122,10 +132,17 @@ export const paymentVerification = async (req, res) => {
       );
       return res.status(400).json({ error: 'Payment Not Verified' });
     }
-  } catch (err) {
-    return res
-      .status(400)
-      .json({ error: 'Something Gone Wrong Please Try Again' });
+  } catch (error) {
+    // send error to email
+    sendMail(
+      process.env.ADMIN_EMAIL,
+      'Error in Payment Verification For Order',
+      errorTemplate(generateURL(req), error.message)
+    );
+    return res.status(500).json({
+      error:
+        "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
+    });
   }
 };
 
@@ -142,10 +159,17 @@ export const paymentFailed = async (req, res) => {
       }
     );
     return res.status(201).json({ msg: 'payment failed' });
-  } catch (err) {
-    return res
-      .status(400)
-      .json({ error: 'Something Gone Wrong Please Try Again' });
+  } catch (error) {
+    // send error to email
+    sendMail(
+      process.env.ADMIN_EMAIL,
+      'Error in Payment Failed For Order',
+      errorTemplate(generateURL(req), error.message)
+    );
+    return res.status(500).json({
+      error:
+        "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
+    });
   }
 };
 
@@ -158,9 +182,15 @@ export const getOrder = async (req, res) => {
 
     return res.status(200).json({ orders });
   } catch (error) {
-    console.log(error);
-    return res
-      .status(400)
-      .json({ error: 'Something Gone Wrong Please Try Again' });
+    // send error to email
+    sendMail(
+      process.env.ADMIN_EMAIL,
+      'Error in Get Order',
+      errorTemplate(generateURL(req), error.message)
+    );
+    return res.status(500).json({
+      error:
+        "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
+    });
   }
 };
