@@ -4,13 +4,13 @@ import moment from 'moment';
 import { LIMIT } from '../../constant/pagination.js';
 import { User } from '../../model/user.model.js';
 import { generateURL } from '../../utils/GenerateURL.js';
-import { sendMail } from '../../utils/SendMail.js';
-import { errorTemplate } from '../../utils/MailTemplate.js';
+import sendMail from '../../services/mail.service.js';
+import { errorTemplate } from '../../template/ErrorMailTemplate.js';
 
 export const getAllUsers = async (req, res) => {
   const { page = 1 } = req.query;
   try {
-    const allUsers = await User.fin({})
+    const allUsers = await User.find({})
       .select('firstName lastName email role isEmailVerified lastLogin.date')
       .sort({ createdAt: -1 })
       .skip((page - 1) * LIMIT)

@@ -4,15 +4,15 @@ import jwt from 'jsonwebtoken';
 // internal
 import { User } from '../../model/user.model.js';
 import { Address } from '../../model/address.model.js';
-import { uploadProfilePictures } from '../../utils/Cloudinary.js';
+import { uploadProfilePictures } from '../../services/cloudinary.service.js';
 import { Otp } from '../../model/otp.model.js';
-import { sendMail } from '../../utils/SendMail.js';
+import sendMail from '../../services/mail.service.js';
+import { generateURL } from '../../utils/GenerateURL.js';
+import { errorTemplate } from '../../template/ErrorMailTemplate.js';
 import {
-  errorTemplate,
   registrationVerificationEmail,
   thankForRegistration,
-} from '../../utils/MailTemplate.js';
-import { generateURL } from '../../utils/GenerateURL.js';
+} from '../../template/RegistrationMailTemplate.js';
 
 export const signup = async (req, res) => {
   const {

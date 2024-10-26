@@ -3,8 +3,8 @@ import slugify from 'slugify';
 // internal
 import { Category } from '../../model/category.model.js';
 import getAllCategory from '../../utils/getAllCategory.js';
-import { sendMail } from '../../utils/SendMail.js';
-import { errorTemplate } from '../../utils/MailTemplate.js';
+import sendMail from '../../services/mail.service.js';
+import { errorTemplate } from '../../template/ErrorMailTemplate.js';
 import { generateURL } from '../../utils/GenerateURL.js';
 
 export const createCategory = async (req, res) => {

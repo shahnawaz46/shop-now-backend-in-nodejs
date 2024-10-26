@@ -3,8 +3,7 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 
-// db connection
-import Connection from './db/Connection.js';
+import mongoDBConnection from './database/mongo.database.js';
 
 // user router
 import userRouter from './routes/user/user.routes.js';
@@ -30,7 +29,7 @@ allScript();
 const app = express();
 dotenv.config({});
 
-Connection();
+mongoDBConnection(); // mongoDB database connection
 
 const origin =
   process.env.NODE_ENV === 'production'

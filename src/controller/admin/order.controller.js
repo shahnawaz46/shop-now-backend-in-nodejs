@@ -3,8 +3,8 @@ import { LIMIT } from '../../constant/pagination.js';
 import { Order } from '../../model/order.model.js';
 import { Product } from '../../model/product.model.js';
 import { generateURL } from '../../utils/GenerateURL.js';
-import { errorTemplate } from '../../utils/MailTemplate.js';
-import { sendMail } from '../../utils/SendMail.js';
+import sendMail from '../../services/mail.service.js';
+import { errorTemplate } from '../../template/ErrorMailTemplate.js';
 
 export const getAllOrders = async (req, res) => {
   const { page = 1 } = req.query;

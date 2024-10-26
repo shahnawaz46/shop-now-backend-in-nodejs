@@ -3,8 +3,8 @@ import jwt from 'jsonwebtoken';
 
 // internal
 import { User } from '../../model/user.model.js';
-import { sendMail } from '../../utils/SendMail.js';
-import { errorTemplate } from '../../utils/MailTemplate.js';
+import sendMail from '../../services/mail.service.js';
+import { errorTemplate } from '../../template/ErrorMailTemplate.js';
 import { generateURL } from '../../utils/GenerateURL.js';
 
 export const signup = async (req, res) => {

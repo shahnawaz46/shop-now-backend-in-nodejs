@@ -5,12 +5,12 @@ import { Product } from '../../model/product.model.js';
 import {
   deleteProductPictures,
   uploadProductPictures,
-} from '../../utils/Cloudinary.js';
+} from '../../services/cloudinary.service.js';
 import { Order } from '../../model/order.model.js';
 import { LIMIT } from '../../constant/pagination.js';
 import { generateURL } from '../../utils/GenerateURL.js';
-import { sendMail } from '../../utils/SendMail.js';
-import { errorTemplate } from '../../utils/MailTemplate.js';
+import sendMail from '../../services/mail.service.js';
+import { errorTemplate } from '../../template/ErrorMailTemplate.js';
 
 export const addProduct = async (req, res) => {
   const {

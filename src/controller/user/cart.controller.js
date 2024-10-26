@@ -1,8 +1,8 @@
 // internal
 import { Cart } from '../../model/cart.model.js';
 import { generateURL } from '../../utils/GenerateURL.js';
-import { errorTemplate } from '../../utils/MailTemplate.js';
-import { sendMail } from '../../utils/SendMail.js';
+import sendMail from '../../services/mail.service.js';
+import { errorTemplate } from '../../template/ErrorMailTemplate.js';
 
 export const addToCart = async (req, res) => {
   try {

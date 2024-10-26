@@ -5,8 +5,8 @@ import { Order } from '../../model/order.model.js';
 import { TrendingProduct } from '../../model/trendingProduct.model.js';
 import { LIMIT } from '../../constant/pagination.js';
 import { generateURL } from '../../utils/GenerateURL.js';
-import { sendMail } from '../../utils/SendMail.js';
-import { errorTemplate } from '../../utils/MailTemplate.js';
+import sendMail from '../../services/mail.service.js';
+import { errorTemplate } from '../../template/ErrorMailTemplate.js';
 
 // find method in Mongoose takes three arguments:
 // 1st -> filter

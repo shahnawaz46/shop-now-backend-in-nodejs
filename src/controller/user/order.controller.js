@@ -5,8 +5,8 @@ import crypto from 'crypto';
 // internal
 import { Order } from '../../model/order.model.js';
 import { Cart } from '../../model/cart.model.js';
-import { sendMail } from '../../utils/SendMail.js';
-import { errorTemplate } from '../../utils/MailTemplate.js';
+import sendMail from '../../services/mail.service.js';
+import { errorTemplate } from '../../template/ErrorMailTemplate.js';
 import { generateURL } from '../../utils/GenerateURL.js';
 
 // razor pay instance

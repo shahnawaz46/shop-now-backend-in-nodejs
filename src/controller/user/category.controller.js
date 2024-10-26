@@ -2,8 +2,8 @@
 import { Category } from '../../model/category.model.js';
 import { generateURL } from '../../utils/GenerateURL.js';
 import getAllCategory from '../../utils/getAllCategory.js';
-import { errorTemplate } from '../../utils/MailTemplate.js';
-import { sendMail } from '../../utils/SendMail.js';
+import sendMail from '../../services/mail.service.js';
+import { errorTemplate } from '../../template/ErrorMailTemplate.js';
 
 export const getCategory = async (req, res) => {
   const { slug } = req.params;

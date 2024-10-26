@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 
 dotenv.config({});
 
-const Connection = async () => {
+const mongoDBConnection = async () => {
   try {
     await mongoose.connect(
       `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@ecommerce-app.x82kj.mongodb.net/ecommerce-detail?retryWrites=true&w=majority`,
@@ -15,4 +15,4 @@ const Connection = async () => {
   }
 };
 
-export default Connection;
+export default mongoDBConnection;
