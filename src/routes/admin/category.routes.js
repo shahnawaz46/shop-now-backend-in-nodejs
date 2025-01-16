@@ -19,7 +19,7 @@ router.post(
   createCategory
 );
 
-router.get('/category', getCategory);
+router.get('/category', verification('_a_tn'), getCategory);
 
 router.post(
   '/category/delete',

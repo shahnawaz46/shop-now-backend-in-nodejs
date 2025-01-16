@@ -39,8 +39,10 @@ export const getAllProducts = async (req, res) => {
     const nextRoute = generateURL(req, `page=${Number(page) + 1}`);
 
     return res.status(200).json({
-      next: allProducts.length < LIMIT ? null : nextRoute,
-      data: allProducts,
+      products: {
+        next: allProducts.length < LIMIT ? null : nextRoute,
+        data: allProducts,
+      },
     });
   } catch (error) {
     // send error to email
@@ -95,8 +97,10 @@ export const getFilteredProducts = async (req, res) => {
         );
 
         return res.status(200).json({
-          next: subCategoryProducts.length < LIMIT ? null : nextRoute,
-          subCategoryProducts,
+          products: {
+            next: subCategoryProducts.length < LIMIT ? null : nextRoute,
+            subCategoryProducts,
+          },
         });
       }
 
@@ -369,7 +373,7 @@ export const getTopSellingProducts = async (req, res) => {
   let priceQuery;
   if (price) {
     const [minPrice, maxPrice] = price.split('-');
-    // if maxPrice is 2500(default value) that's means user only selected minPrice So, i am returning all the products that is greater than minPrice.
+    // if maxPrice is 2500(default value) that's means user selected only minPrice So, i am returning all the products that is greater than minPrice.
     // if maxPrice is not 2500(default value) then i am returning all the products that price is between minPrice and maxPrice
     priceQuery =
       maxPrice == 2500
@@ -384,7 +388,6 @@ export const getTopSellingProducts = async (req, res) => {
 
   try {
     const product = await Order.aggregate([
-      { $skip: (page - 1) * LIMIT },
       { $match: { status: 'delivered' } },
       {
         $unwind: '$items',
@@ -397,7 +400,8 @@ export const getTopSellingProducts = async (req, res) => {
       },
       {
         $sort: {
-          totalSale: -1,
+          totalSale: -1, // primary sort by totalSale
+          _id: 1, // secondary sort by _id for consistency
         },
       },
       {
@@ -430,6 +434,7 @@ export const getTopSellingProducts = async (req, res) => {
           },
         },
       },
+      { $skip: (page - 1) * LIMIT },
       {
         $limit: LIMIT,
       },
@@ -449,8 +454,10 @@ export const getTopSellingProducts = async (req, res) => {
     const nextRoute = generateURL(req, isExist);
 
     return res.status(200).json({
-      next: product.length < LIMIT ? null : nextRoute,
-      item: product,
+      products: {
+        next: product.length < LIMIT ? null : nextRoute,
+        item: product,
+      },
     });
   } catch (error) {
     // send error to email
@@ -525,8 +532,10 @@ export const getNewestProducts = async (req, res) => {
     const nextRoute = generateURL(req, isQueryExist);
 
     return res.status(200).json({
-      next: newestProducts.length < LIMIT ? null : nextRoute,
-      item: newestProducts,
+      products: {
+        next: newestProducts.length < LIMIT ? null : nextRoute,
+        item: newestProducts,
+      },
     });
   } catch (error) {
     // send error to email

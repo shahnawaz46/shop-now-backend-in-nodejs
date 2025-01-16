@@ -355,7 +355,7 @@ export const searchProducts = async (req, res) => {
       $or: [{ productName: { $regex: query, $options: 'i' } }],
     })
       .select(
-        '_id productName actualPrice sellingPrice stocks categoryId description productPictures'
+        '_id productName actualPrice sellingPrice stocks categoryId targetAudience description productPictures'
       )
       .populate('categoryId', '_id categoryName')
       .skip((page - 1) * LIMIT)
