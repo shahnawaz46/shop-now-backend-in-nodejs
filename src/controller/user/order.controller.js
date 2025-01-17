@@ -269,8 +269,16 @@ export const generateInvoice = async (req, res) => {
     });
 
     res.end(pdf); // Send the PDF buffer as response
-  } catch (err) {
-    console.log(err);
-    res.status(500).send('Error generating invoice');
+  } catch (error) {
+    // send error to email
+    sendMail(
+      process.env.ADMIN_EMAIL,
+      'Error in Generate Invoice',
+      errorTemplate(generateURL(req), error.message)
+    );
+    return res.status(500).json({
+      error:
+        "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
+    });
   }
 };
