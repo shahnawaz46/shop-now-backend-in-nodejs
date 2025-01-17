@@ -238,7 +238,10 @@ export const generateInvoice = async (req, res) => {
     const htmlContent = await ejs.renderFile(invoicePath, updatedData);
 
     // create a browser instance
-    const browser = await puppeteer.launch({ headless: true });
+    const browser = await puppeteer.launch({
+      headless: true,
+      ignoreDefaultArgs: ['--disable-extensions'],
+    });
 
     // Create a new page
     const page = await browser.newPage();
