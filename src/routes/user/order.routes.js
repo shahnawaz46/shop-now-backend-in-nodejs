@@ -4,6 +4,7 @@ import { Router } from 'express';
 import { verification, userMiddleware } from '../../middleware/middleware.js';
 import {
   createOrder,
+  generateInvoice,
   getOrder,
   paymentFailed,
   paymentVerification,
@@ -30,5 +31,11 @@ router.post(
   paymentFailed
 );
 router.get('/user/getOrder', verification('_f_id'), userMiddleware, getOrder);
+router.get(
+  '/generate-invoice/:orderId',
+  verification('_f_id'),
+  userMiddleware,
+  generateInvoice
+);
 
 export default router;

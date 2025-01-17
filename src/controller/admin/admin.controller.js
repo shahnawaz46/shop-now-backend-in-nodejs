@@ -75,14 +75,14 @@ export const signin = async (req, res) => {
       return res.status(404).json({ error: 'User not found please Register' });
     }
 
+    if (admin.role !== 'admin') {
+      return res.status(404).json({ error: "You don't have permission" });
+    }
+
     // comparing login password with hash password
     const isPasswordCorrect = await bcrypt.compare(password, admin.password);
     if (!isPasswordCorrect) {
       return res.status(401).json({ error: 'Wrong credentials' });
-    }
-
-    if (admin.role !== 'admin') {
-      return res.status(404).json({ error: "You don't have permission" });
     }
 
     // save user login info
@@ -129,6 +129,37 @@ export const signin = async (req, res) => {
 export const signout = (req, res) => {
   res.clearCookie('_a_tn');
   return res.status(200).json({ msg: 'Signout Successfully' });
+};
+
+export const updatePassword = async (req, res) => {
+  const { email, newPassword } = req.body;
+  try {
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res
+        .status(404)
+        .json({ error: 'User not found! Please contact with Admin' });
+    }
+
+    if (user.role !== 'admin') {
+      return res
+        .status(404)
+        .json({ error: 'User not found! Please contact with Admin' });
+    }
+
+    const hashPassword = await bcrypt.hash(newPassword, 12);
+    user.password = hashPassword;
+    await user.save();
+
+    return res.status(200).json({ msg: 'Updated updated successfully' });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({
+      error:
+        "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
+    });
+  }
 };
 
 export const userProfile = async (req, res) => {

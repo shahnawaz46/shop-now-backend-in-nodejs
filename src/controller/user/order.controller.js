@@ -1,6 +1,10 @@
 import { v4 as uuidv4 } from 'uuid';
 import Razorpay from 'razorpay';
 import crypto from 'crypto';
+import puppeteer from 'puppeteer';
+import ejs from 'ejs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 // internal
 import { Order } from '../../model/order.model.js';
@@ -192,5 +196,78 @@ export const getOrder = async (req, res) => {
       error:
         "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
     });
+  }
+};
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const invoicePath = path.join(__dirname, '../../template/Invoice.ejs');
+
+export const generateInvoice = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    if (!orderId) {
+      return res
+        .status(400)
+        .json({ error: 'Order not found, Please try again later' });
+    }
+
+    const order = await Order.findOne({ orderId })
+      .populate('items.product', 'productName')
+      .populate(
+        'address',
+        'name mobileNumber address locality cityDistrictTown state pinCode'
+      );
+
+    // extract required data
+    const invoice = order.orderId.split('-');
+    const orderDate = new Date(order.orderDate).toDateString();
+    const updatedData = {
+      orderDate,
+      invoice: `${invoice[0]}-${invoice[1]}`,
+      customerName: `${order?.address?.name}`,
+      customerPhoneNo: order?.address?.mobileNumber,
+      customerAddress: `${order?.address?.address}, ${order?.address?.locality}`,
+      customerLocality: `${order?.address?.cityDistrictTown}, ${order?.address?.pinCode}`,
+      customCountry: `${order?.address?.state}, India`,
+      items: order?.items,
+      totalPrice: order?.totalPrice,
+    };
+
+    // const htmlContent = fs.readFileSync(invoicePath, 'utf8');
+    const htmlContent = await ejs.renderFile(invoicePath, updatedData);
+
+    // create a browser instance
+    const browser = await puppeteer.launch({ headless: true });
+
+    // Create a new page
+    const page = await browser.newPage();
+
+    await page.setContent(htmlContent, { waitUntil: 'domcontentloaded' });
+
+    // Optional: Debug styles with a screenshot
+    // await page.screenshot({ path: 'debug.png', fullPage: true });
+
+    // Downlaod the PDF
+    const pdf = await page.pdf({
+      margin: { top: '100px', right: '50px', bottom: '100px', left: '50px' },
+      printBackground: true,
+      format: 'A4',
+    });
+
+    // Close the browser instance
+    await browser.close();
+
+    // Set the response headers for PDF download
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': 'attachment; filename="invoice.pdf"',
+      'Content-Length': pdf.length, // Ensures accurate content length
+    });
+
+    res.end(pdf); // Send the PDF buffer as response
+  } catch (err) {
+    console.log(err);
+    res.status(500).send('Error generating invoice');
   }
 };
