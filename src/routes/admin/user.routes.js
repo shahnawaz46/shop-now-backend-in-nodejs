@@ -3,6 +3,7 @@ import { Router } from 'express';
 // internal
 import { verification } from '../../middleware/middleware.js';
 import {
+  deleteUser,
   getAllUsers,
   getUserStats,
   searchUsers,
@@ -15,5 +16,6 @@ router.get('/user-stats', verification('_a_tn'), getUserStats);
 
 // search users
 router.get('/user/search', searchUsers);
+// router.delete('/user/delete/:id', deleteUser);
 
 export default router;

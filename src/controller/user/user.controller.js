@@ -129,7 +129,7 @@ export const otpVerification = async (req, res) => {
     if (!user) {
       return res
         .status(404)
-        .json({ error: 'User not found please singup again' });
+        .json({ error: 'User not found please signup again' });
     }
 
     const isOtpExists = await Otp.findOne({ user: user._id });

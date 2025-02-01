@@ -212,3 +212,30 @@ export const searchUsers = async (req, res) => {
     });
   }
 };
+
+export const deleteUser = async (req, res) => {
+  const id = req.params.id;
+  try {
+    const user = await User.findById(id);
+    if (!user) {
+      return res
+        .status(200)
+        .json({ msg: 'User already deleted or User Not found' });
+    }
+
+    await User.findByIdAndDelete(id);
+
+    return res.status(200).json({ msg: 'User deleted Successfully' });
+  } catch (error) {
+    // send error to email
+    sendMail(
+      process.env.ADMIN_EMAIL,
+      '(Admin Panel) Error in Search Users',
+      errorTemplate(generateURL(req, '', true), error.message)
+    );
+    return res.status(500).json({
+      error:
+        "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
+    });
+  }
+};
