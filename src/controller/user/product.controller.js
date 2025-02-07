@@ -1,5 +1,5 @@
 // internal
-import { Product } from '../../model/product.model.js';
+import { Product, sizeDescription } from '../../model/product.model.js';
 import { Category } from '../../model/category.model.js';
 import { Order } from '../../model/order.model.js';
 import { TrendingProduct } from '../../model/trendingProduct.model.js';
@@ -172,10 +172,19 @@ export const getSingleProductById = async (req, res) => {
       _id: productId,
     }).populate('reviews.userId', 'firstName lastName profilePicture');
 
-    if (product) {
-      return res.status(200).json({ product });
+    if (!product) {
+      return res.status(404).json({ error: 'product not found' });
     }
-    return res.status(404).json({ error: 'product not found' });
+
+    // update size key
+    const sizeWithDescription = {};
+    product.size.forEach(
+      (item) => (sizeWithDescription[item] = sizeDescription.get(item))
+    );
+    let updatedProduct = { ...product._doc };
+    updatedProduct.size = sizeWithDescription;
+
+    return res.status(200).json({ product: updatedProduct });
   } catch (error) {
     // send error to email
     sendMail(

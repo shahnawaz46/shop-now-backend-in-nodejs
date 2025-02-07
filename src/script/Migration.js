@@ -1,34 +1,49 @@
 import { Order } from '../model/order.model.js';
-import { Product } from '../model/product.model.js';
+import { Product, sizeDescription } from '../model/product.model.js';
 import { User } from '../model/user.model.js';
 
 export const migration = async () => {
-  // await Order.updateMany({}, { $set: { deliveredDate: null } });
-  // await Order.updateMany(
-  //   {},
-  //   { $set: { paymentMethod: 'cod', paymentStatus: 'pending' } }
-  // );
-  // await Order.updateMany({}, { $set: { status: 'order confirmed' } });
-  // await Product.updateMany({}, { $set: { totalSales: 0 } });
-  // await Product.updateMany({}, { $set: { reviews: [] } });
-  // await User.updateMany({}, { $set: { dob: '2000-09-22' } });
-  // await User.updateMany({}, { $set: { isEmailVerified: true } });
-  // await User.updateMany(
-  //   {},
-  //   {
-  //     $set: {
-  //       lastLogin: {
-  //         date: new Date().toISOString(),
-  //         device: 'mobile',
-  //         ipAddress: '123.00.1.2',
-  //         location: 'Delhi, India',
-  //         browser: 'chrome',
-  //       },
-  //     },
-  //   }
-  // );
+  try {
+    // await Order.updateMany({}, { $set: { deliveredDate: null } });
+    // await Order.updateMany(
+    //   {},
+    //   { $set: { paymentMethod: 'cod', paymentStatus: 'pending' } }
+    // );
+    // await Order.updateMany({}, { $set: { status: 'order confirmed' } });
+    // await Product.updateMany({}, { $set: { totalSales: 0 } });
+    // await Product.updateMany({}, { $set: { reviews: [] } });
+    // await User.updateMany({}, { $set: { dob: '2000-09-22' } });
+    // await User.updateMany({}, { $set: { isEmailVerified: true } });
+    // await User.updateMany(
+    //   {},
+    //   {
+    //     $set: {
+    //       lastLogin: {
+    //         date: new Date().toISOString(),
+    //         device: 'mobile',
+    //         ipAddress: '123.00.1.2',
+    //         location: 'Delhi, India',
+    //         browser: 'chrome',
+    //       },
+    //     },
+    //   }
+    // );
 
-  console.log('migration done');
+    // By default, updateMany does not trigger Mongoose validation. To enforce validation,
+    // use the runValidators: true option. This ensures that your enum and other schema rules are respected during updates.
+    // await Product.updateMany(
+    //   {},
+    //   {
+    //     $set: {
+    //       size: sizeDescription.map((item) => item.size),
+    //     },
+    //   },
+    //   { runValidators: true }
+    // );
+    console.log('migration done');
+  } catch (err) {
+    console.log('Migration Error: ', err);
+  }
 };
 
 export const updateUserDetails = async () => {

@@ -24,7 +24,7 @@ import userRouterForAdmin from './routes/admin/user.routes.js';
 
 // script file
 import { allScript } from './script/AllScript.js';
-allScript();
+import { wakeUpTheServer } from './utils/WakeUpTheServer.js';
 
 const app = express();
 dotenv.config({});
@@ -66,3 +66,9 @@ app.use('/api', userOrderRouter);
 
 const port = process.env.PORT || 9000;
 app.listen(port, () => console.log(`Server is running at Port no ${port}`));
+
+// running script if i want to update any model
+allScript();
+
+// trying to wakeup server
+wakeUpTheServer();
