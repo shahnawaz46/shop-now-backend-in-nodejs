@@ -1,6 +1,6 @@
 import https from 'https';
 
-const time = 1 * 60 * 1000; // 14 minutes
+const time = 14 * 60 * 1000; // 14 minutes
 let totalNoOfTimePinged = 0;
 let timer;
 
