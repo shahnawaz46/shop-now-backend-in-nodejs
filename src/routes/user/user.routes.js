@@ -38,4 +38,8 @@ router.patch(
   updateProfilePic
 );
 
+router.get('/pinged', (req, res) => {
+  return res.status(200).send('Pong');
+});
+
 export default router;

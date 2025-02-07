@@ -70,5 +70,5 @@ app.listen(port, () => console.log(`Server is running at Port no ${port}`));
 // running script if i want to update any model
 allScript();
 
-// trying to wakeup server
+// trying to wakeup the server
 wakeUpTheServer();
