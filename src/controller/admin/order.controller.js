@@ -10,7 +10,7 @@ export const getAllOrders = async (req, res) => {
   const { page = 1 } = req.query;
   try {
     const orders = await Order.find({})
-      .select('orderId customer totalPrice status orderDate')
+      .select('orderId customer totalPrice status orderDate paymentStatus')
       .populate('customer', 'firstName lastName')
       .sort({ createdAt: -1 })
       .skip((page - 1) * LIMIT)
