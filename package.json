@@ -8,7 +8,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node ./src/index.js",
     "dev": "nodemon ./src/index.js",
-    "postinstall": "npx puppeteer browsers install"
+    "postinstall": "npx puppeteer browsers install",
+    "audit-fix": "yarn audit && npm i --package-lock-only && npm audit fix && rm package-lock.json && rm yarn.lock && rm -rf node_modules && yarn"
   },
   "author": "shahnawaz",
   "license": "ISC",
