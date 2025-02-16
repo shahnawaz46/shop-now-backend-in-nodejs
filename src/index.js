@@ -71,4 +71,4 @@ app.listen(port, () => console.log(`Server is running at Port no ${port}`));
 allScript();
 
 // trying to wakeup the server
-wakeUpTheServer();
+process.env.NODE_ENV === 'production' && wakeUpTheServer();

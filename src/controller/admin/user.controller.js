@@ -48,84 +48,43 @@ export const getUserStats = async (req, res) => {
     // and 2nd facets is userGrowthGraph(for getting user monthly growth)
     const userData = await User.aggregate([
       {
-        $facet: {
-          usersInfo: [
-            {
-              $group: {
-                _id: null,
-                totalUsers: { $sum: 1 },
-                newUserCurrentMonth: {
-                  $sum: {
-                    $cond: [
-                      {
-                        $gte: [
-                          '$createdAt',
-                          new Date(currentYear, currentMonth - 1, 1),
-                        ],
-                      },
-                      1,
-                      0,
-                    ],
-                  },
+        $group: {
+          _id: null,
+          totalUsers: { $sum: 1 },
+          newUserCurrentMonth: {
+            $sum: {
+              $cond: [
+                {
+                  $gte: [
+                    '$createdAt',
+                    new Date(currentYear, currentMonth - 1, 1),
+                  ],
                 },
-                activeUsers: {
-                  $sum: {
-                    $cond: [{ $gte: ['$lastLogin.date', thirtyDaysAgo] }, 1, 0],
-                  },
-                },
-              },
+                1,
+                0,
+              ],
             },
-            {
-              $project: {
-                _id: 0,
-                totalUsers: 1,
-                newUserCurrentMonth: 1,
-                activeUsers: 1,
-              },
+          },
+          activeUsers: {
+            $sum: {
+              $cond: [{ $gte: ['$lastLogin.date', thirtyDaysAgo] }, 1, 0],
             },
-          ],
-          userGrowthGraph: [
-            {
-              $group: {
-                _id: { $month: '$createdAt' },
-                users: { $sum: 1 },
-              },
-            },
-            {
-              $project: {
-                _id: 0,
-                month: '$_id',
-                users: 1,
-              },
-            },
-          ],
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          totalUsers: 1,
+          newUserCurrentMonth: 1,
+          activeUsers: 1,
         },
       },
     ]);
 
-    // destructure
-    const { usersInfo, userGrowthGraph } = userData[0];
-
-    // graph with initial value
-    const monthGraph = [
-      { month: 'Jan', users: 0 },
-      { month: 'Feb', users: 0 },
-      { month: 'Mar', users: 0 },
-      { month: 'Apr', users: 0 },
-      { month: 'May', users: 0 },
-      { month: 'Jun', users: 0 },
-      { month: 'Jul', users: 0 },
-      { month: 'Aug', users: 0 },
-      { month: 'Sep', users: 0 },
-      { month: 'Oct', users: 0 },
-      { month: 'Nov', users: 0 },
-      { month: 'Dec', users: 0 },
-    ];
-
-    userGrowthGraph.forEach((data) => {
-      const monthIndex = data.month - 1;
-      monthGraph[monthIndex].users = data.users;
-    });
+    if (userData.length === 0) {
+      return res.status(404).json({ error: 'No user stats found' });
+    }
 
     // second calculating UserDemographics
     const allUsers = await User.find({});
@@ -155,10 +114,7 @@ export const getUserStats = async (req, res) => {
     }
 
     const userStats = {
-      totalUsers: usersInfo?.[0]?.totalUsers || 0,
-      newUserCurrentMonth: usersInfo?.[0]?.newUserCurrentMonth || 0,
-      activeUsers: usersInfo?.[0]?.activeUsers || 0,
-      userGrowthGraph: monthGraph,
+      ...userData[0],
       userDemographics,
     };
 
@@ -168,6 +124,73 @@ export const getUserStats = async (req, res) => {
     sendMail(
       process.env.ADMIN_EMAIL,
       '(Admin Panel) Error in Get User Stats',
+      errorTemplate(generateURL(req, '', true), error.message)
+    );
+    return res.status(500).json({
+      error:
+        "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
+    });
+  }
+};
+
+export const getUserGrowthGraph = async (req, res) => {
+  const currentYear = new Date().getFullYear();
+
+  let year = req.query.year;
+  year = year ? parseInt(year) : currentYear;
+
+  try {
+    const userGrowthGraph = await User.aggregate([
+      {
+        $match: {
+          createdAt: {
+            $gte: new Date(`${year}-01-01T00:00:00.000Z`),
+            $lt: new Date(`${year + 1}-01-01T00:00:00.000Z`),
+          },
+        },
+      },
+      {
+        $group: {
+          _id: { $month: '$createdAt' },
+          users: { $sum: 1 },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          month: '$_id',
+          users: 1,
+        },
+      },
+    ]);
+
+    // graph with initial value
+    const monthGraph = [
+      { month: 'Jan', users: 0 },
+      { month: 'Feb', users: 0 },
+      { month: 'Mar', users: 0 },
+      { month: 'Apr', users: 0 },
+      { month: 'May', users: 0 },
+      { month: 'Jun', users: 0 },
+      { month: 'Jul', users: 0 },
+      { month: 'Aug', users: 0 },
+      { month: 'Sep', users: 0 },
+      { month: 'Oct', users: 0 },
+      { month: 'Nov', users: 0 },
+      { month: 'Dec', users: 0 },
+    ];
+
+    userGrowthGraph.forEach((data) => {
+      const monthIndex = data.month - 1;
+      monthGraph[monthIndex].users = data.users;
+    });
+
+    return res.status(200).json({ monthGraph });
+  } catch (error) {
+    // send error to email
+    sendMail(
+      process.env.ADMIN_EMAIL,
+      '(Admin Panel) Error in Search Users',
       errorTemplate(generateURL(req, '', true), error.message)
     );
     return res.status(500).json({
