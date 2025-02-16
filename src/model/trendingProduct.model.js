@@ -15,6 +15,7 @@ const trendingProdutSchema = new mongoose.Schema(
     eventType: {
       type: String,
       required: true,
+      enum: ['visit', 'buy'],
     },
   },
   { timestamps: true }

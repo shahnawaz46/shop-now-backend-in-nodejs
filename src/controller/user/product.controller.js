@@ -564,63 +564,78 @@ export const getNewestProducts = async (req, res) => {
 export const writeProductReview = async (req, res) => {
   const { product_id, message, rating, date } = req.body;
   try {
-    // checking product is exist or not
-    const product = await Product.findOne({ _id: product_id });
-    // checking review is already added by user or not
-    if (product) {
-      const reviewIsAlready = product.reviews.find(
-        (value) => value.userId == req.data._id
-      );
+    // first checking, user has purchased this product or not
+    const order = await Order.findOne({
+      customer: req.data._id,
+      'items.product': product_id,
+    });
 
-      // if review is already added then i am updating preview review with new review
-      // and also returning list of updated review
-      if (reviewIsAlready) {
-        const review = await Product.findOneAndUpdate(
-          { _id: product_id, 'reviews.userId': req.data._id },
-          {
-            $set: {
-              'reviews.$.message': message,
-              'reviews.$.rating': rating,
-              'reviews.$.update_date': date,
-            },
-          },
-          { new: true }
-        )
-          .select('reviews')
-          .populate('reviews.userId', 'firstName lastName profilePicture');
-
-        return res.status(200).json({
-          message: 'Review Edit Successfully',
-          allReviews: review.reviews,
-        });
-      }
-      // if there is no review is added by user then pushing new review in product review array
-      else {
-        const review = await Product.findOneAndUpdate(
-          { _id: product_id },
-          {
-            $push: {
-              reviews: {
-                userId: req.data._id,
-                rating,
-                message,
-                create_date: date,
-                update_date: date,
-              },
-            },
-          },
-          { new: true }
-        )
-          .select('reviews')
-          .populate('reviews.userId', 'firstName lastName profilePicture');
-
-        return res.status(200).json({
-          message: 'Review Add Successfully',
-          allReviews: review.reviews,
-        });
-      }
+    if (!order) {
+      return res.status(404).json({
+        error: "You can't write a review without buying this product",
+      });
     }
-    return res.status(400).json({ error: 'No Product Found' });
+
+    if (order.status !== 'delivered') {
+      return res.status(400).json({
+        error: 'You can write a review after the product has been delivered',
+      });
+    }
+
+    const product = await Product.findById(product_id);
+
+    // checking review is already added by user or not
+    const reviewIsAlready = product.reviews.find(
+      (value) => value.userId == req.data._id
+    );
+
+    // if review is already added then i am updating review with new review
+    // and also returning list of updated review
+    if (reviewIsAlready) {
+      const review = await Product.findOneAndUpdate(
+        { _id: product_id, 'reviews.userId': req.data._id },
+        {
+          $set: {
+            'reviews.$.message': message,
+            'reviews.$.rating': rating,
+            'reviews.$.update_date': date,
+          },
+        },
+        { new: true }
+      )
+        .select('reviews')
+        .populate('reviews.userId', 'firstName lastName profilePicture');
+
+      return res.status(200).json({
+        message: 'Review Edit Successfully',
+        allReviews: review.reviews,
+      });
+    }
+    // if there is no review is added by user then pushing new review in product review array
+    else {
+      const review = await Product.findOneAndUpdate(
+        { _id: product_id },
+        {
+          $push: {
+            reviews: {
+              userId: req.data._id,
+              rating,
+              message,
+              create_date: date,
+              update_date: date,
+            },
+          },
+        },
+        { new: true }
+      )
+        .select('reviews')
+        .populate('reviews.userId', 'firstName lastName profilePicture');
+
+      return res.status(200).json({
+        message: 'Review Add Successfully',
+        allReviews: review.reviews,
+      });
+    }
   } catch (error) {
     // send error to email
     sendMail(
