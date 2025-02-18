@@ -25,11 +25,16 @@ export const getAllUsers = async (req, res) => {
     });
   } catch (error) {
     // send error to email
-    sendMail(
-      process.env.ADMIN_EMAIL,
-      '(Admin Panel) Error in Get All Users',
-      errorTemplate(generateURL(req, '', true), error.message)
-    );
+    if (process.env.NODE_ENV === 'production') {
+      sendMail(
+        process.env.ADMIN_EMAIL,
+        '(Admin Panel) Error in Get All Users',
+        errorTemplate(generateURL(req, '', true), error.message)
+      );
+    } else {
+      console.log(error);
+    }
+
     return res.status(500).json({
       error:
         "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
@@ -121,11 +126,16 @@ export const getUserStats = async (req, res) => {
     return res.status(200).json({ ...userStats });
   } catch (error) {
     // send error to email
-    sendMail(
-      process.env.ADMIN_EMAIL,
-      '(Admin Panel) Error in Get User Stats',
-      errorTemplate(generateURL(req, '', true), error.message)
-    );
+    if (process.env.NODE_ENV === 'production') {
+      sendMail(
+        process.env.ADMIN_EMAIL,
+        '(Admin Panel) Error in Get User Stats',
+        errorTemplate(generateURL(req, '', true), error.message)
+      );
+    } else {
+      console.log(error);
+    }
+
     return res.status(500).json({
       error:
         "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
@@ -188,11 +198,16 @@ export const getUserGrowthGraph = async (req, res) => {
     return res.status(200).json({ monthGraph });
   } catch (error) {
     // send error to email
-    sendMail(
-      process.env.ADMIN_EMAIL,
-      '(Admin Panel) Error in Search Users',
-      errorTemplate(generateURL(req, '', true), error.message)
-    );
+    if (process.env.NODE_ENV === 'production') {
+      sendMail(
+        process.env.ADMIN_EMAIL,
+        '(Admin Panel) Error in Get Users Growth Graph',
+        errorTemplate(generateURL(req, '', true), error.message)
+      );
+    } else {
+      console.log(error);
+    }
+
     return res.status(500).json({
       error:
         "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
@@ -224,11 +239,16 @@ export const searchUsers = async (req, res) => {
       .json({ next: users.length < LIMIT ? null : nextURL, users });
   } catch (error) {
     // send error to email
-    sendMail(
-      process.env.ADMIN_EMAIL,
-      '(Admin Panel) Error in Search Users',
-      errorTemplate(generateURL(req, '', true), error.message)
-    );
+    if (process.env.NODE_ENV === 'production') {
+      sendMail(
+        process.env.ADMIN_EMAIL,
+        '(Admin Panel) Error in Search Users',
+        errorTemplate(generateURL(req, '', true), error.message)
+      );
+    } else {
+      console.log(error);
+    }
+
     return res.status(500).json({
       error:
         "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
@@ -251,11 +271,16 @@ export const deleteUser = async (req, res) => {
     return res.status(200).json({ msg: 'User deleted Successfully' });
   } catch (error) {
     // send error to email
-    sendMail(
-      process.env.ADMIN_EMAIL,
-      '(Admin Panel) Error in Search Users',
-      errorTemplate(generateURL(req, '', true), error.message)
-    );
+    if (process.env.NODE_ENV === 'production') {
+      sendMail(
+        process.env.ADMIN_EMAIL,
+        '(Admin Panel) Error in Delete Users',
+        errorTemplate(generateURL(req, '', true), error.message)
+      );
+    } else {
+      console.log(error);
+    }
+
     return res.status(500).json({
       error:
         "Oops! Something went wrong. We're working to fix it. Please try again shortly.",

@@ -33,11 +33,16 @@ export const createCategory = async (req, res) => {
     });
   } catch (error) {
     // send error to email
-    sendMail(
-      process.env.ADMIN_EMAIL,
-      '(Admin Panel) Error in Create Category',
-      errorTemplate(generateURL(req, '', true), error.message)
-    );
+    if (process.env.NODE_ENV === 'production') {
+      sendMail(
+        process.env.ADMIN_EMAIL,
+        '(Admin Panel) Error in Create Category',
+        errorTemplate(generateURL(req, '', true), error.message)
+      );
+    } else {
+      console.log(error);
+    }
+
     return res.status(500).json({
       error:
         "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
@@ -64,11 +69,16 @@ export const getCategory = async (req, res) => {
     return res.status(404).json({ error: 'No Category Found' });
   } catch (error) {
     // send error to email
-    sendMail(
-      process.env.ADMIN_EMAIL,
-      '(Admin Panel) Error in Get Category',
-      errorTemplate(generateURL(req, '', true), error.message)
-    );
+    if (process.env.NODE_ENV === 'production') {
+      sendMail(
+        process.env.ADMIN_EMAIL,
+        '(Admin Panel) Error in Get Category',
+        errorTemplate(generateURL(req, '', true), error.message)
+      );
+    } else {
+      console.log(error);
+    }
+
     return res.status(500).json({
       error:
         "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
@@ -82,11 +92,16 @@ export const deleteCategory = async (req, res) => {
     return res.status(200).json({ message: 'Category Deleted Successfully' });
   } catch (error) {
     // send error to email
-    sendMail(
-      process.env.ADMIN_EMAIL,
-      '(Admin Panel) Error in Delete Category',
-      errorTemplate(generateURL(req, '', true), error.message)
-    );
+    if (process.env.NODE_ENV === 'production') {
+      sendMail(
+        process.env.ADMIN_EMAIL,
+        '(Admin Panel) Error in Delete Category',
+        errorTemplate(generateURL(req, '', true), error.message)
+      );
+    } else {
+      console.log(error);
+    }
+
     return res.status(500).json({
       error:
         "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
@@ -110,11 +125,16 @@ export const editCategory = async (req, res) => {
     return res.status(200).json({ message: 'Category Edit Successfully' });
   } catch (error) {
     // send error to email
-    sendMail(
-      process.env.ADMIN_EMAIL,
-      '(Admin Panel) Error in Edit/Update Category',
-      errorTemplate(generateURL(req, '', true), error.message)
-    );
+    if (process.env.NODE_ENV === 'production') {
+      sendMail(
+        process.env.ADMIN_EMAIL,
+        '(Admin Panel) Error in Edit/Update Category',
+        errorTemplate(generateURL(req, '', true), error.message)
+      );
+    } else {
+      console.log(error);
+    }
+
     return res.status(500).json({
       error:
         "Oops! Something went wrong. We're working to fix it. Please try again shortly.",

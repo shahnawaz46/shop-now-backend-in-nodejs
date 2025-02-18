@@ -50,11 +50,16 @@ export const signup = async (req, res) => {
     return res.status(200).json({ msg: 'Signup Successfully' });
   } catch (error) {
     // send error to email
-    sendMail(
-      process.env.ADMIN_EMAIL,
-      '(Admin Panel) Error in Signup',
-      errorTemplate(generateURL(req, '', true), error.message)
-    );
+    if (process.env.NODE_ENV === 'production') {
+      sendMail(
+        process.env.ADMIN_EMAIL,
+        '(Admin Panel) Error in Signup',
+        errorTemplate(generateURL(req, '', true), error.message)
+      );
+    } else {
+      console.log(error);
+    }
+
     return res.status(500).json({
       error:
         "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
@@ -114,11 +119,16 @@ export const signin = async (req, res) => {
     });
   } catch (error) {
     // send error to email
-    sendMail(
-      process.env.ADMIN_EMAIL,
-      '(Admin Panel) Error in Signin',
-      errorTemplate(generateURL(req, '', true), error.message)
-    );
+    if (process.env.NODE_ENV === 'production') {
+      sendMail(
+        process.env.ADMIN_EMAIL,
+        '(Admin Panel) Error in Signin',
+        errorTemplate(generateURL(req, '', true), error.message)
+      );
+    } else {
+      console.log(error);
+    }
+
     return res.status(500).json({
       error:
         "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
@@ -153,8 +163,18 @@ export const updatePassword = async (req, res) => {
     await user.save();
 
     return res.status(200).json({ msg: 'Updated updated successfully' });
-  } catch (err) {
-    console.log(err);
+  } catch (error) {
+    // send error to email
+    if (process.env.NODE_ENV === 'production') {
+      sendMail(
+        process.env.ADMIN_EMAIL,
+        'Error in Update Password',
+        errorTemplate(generateURL(req), error.message)
+      );
+    } else {
+      console.log(error);
+    }
+
     return res.status(500).json({
       error:
         "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
@@ -172,11 +192,16 @@ export const userProfile = async (req, res) => {
     return res.status(200).json({ details: userDetail });
   } catch (error) {
     // send error to email
-    sendMail(
-      process.env.ADMIN_EMAIL,
-      '(Admin Panel) Error in Profile',
-      errorTemplate(generateURL(req, '', true), error.message)
-    );
+    if (process.env.NODE_ENV === 'production') {
+      sendMail(
+        process.env.ADMIN_EMAIL,
+        '(Admin Panel) Error in Profile',
+        errorTemplate(generateURL(req, '', true), error.message)
+      );
+    } else {
+      console.log(error);
+    }
+
     return res.status(500).json({
       error:
         "Oops! Something went wrong. We're working to fix it. Please try again shortly.",

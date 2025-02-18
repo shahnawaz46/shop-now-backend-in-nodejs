@@ -81,11 +81,16 @@ export const addProduct = async (req, res) => {
     });
   } catch (error) {
     // send error to email
-    sendMail(
-      process.env.ADMIN_EMAIL,
-      '(Admin Panel) Error in Add Product',
-      errorTemplate(generateURL(req, '', true), error.message)
-    );
+    if (process.env.NODE_ENV === 'production') {
+      sendMail(
+        process.env.ADMIN_EMAIL,
+        '(Admin Panel) Error in Add Product',
+        errorTemplate(generateURL(req, '', true), error.message)
+      );
+    } else {
+      console.log(error);
+    }
+
     return res.status(500).json({
       error:
         "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
@@ -115,11 +120,16 @@ export const getAllProducts = async (req, res) => {
     });
   } catch (error) {
     // send error to email
-    sendMail(
-      process.env.ADMIN_EMAIL,
-      '(Admin Panel) Error in Get All Products',
-      errorTemplate(generateURL(req, '', true), error.message)
-    );
+    if (process.env.NODE_ENV === 'production') {
+      sendMail(
+        process.env.ADMIN_EMAIL,
+        '(Admin Panel) Error in Get All Products',
+        errorTemplate(generateURL(req, '', true), error.message)
+      );
+    } else {
+      console.log(error);
+    }
+
     return res.status(500).json({
       error:
         "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
@@ -174,11 +184,16 @@ export const productSalesDetails = async (req, res) => {
     return res.status(200).json({ ...productSales });
   } catch (error) {
     // send error to email
-    sendMail(
-      process.env.ADMIN_EMAIL,
-      '(Admin Panel) Error in Get Product Sales Details',
-      errorTemplate(generateURL(req, '', true), error.message)
-    );
+    if (process.env.NODE_ENV === 'production') {
+      sendMail(
+        process.env.ADMIN_EMAIL,
+        '(Admin Panel) Error in Get Product Sales Details',
+        errorTemplate(generateURL(req, '', true), error.message)
+      );
+    } else {
+      console.log(error);
+    }
+
     return res.status(500).json({
       error:
         "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
@@ -229,11 +244,16 @@ export const deleteProduct = async (req, res) => {
     });
   } catch (error) {
     // send error to email
-    sendMail(
-      process.env.ADMIN_EMAIL,
-      '(Admin Panel) Error in Delete Product',
-      errorTemplate(generateURL(req, '', true), error.message)
-    );
+    if (process.env.NODE_ENV === 'production') {
+      sendMail(
+        process.env.ADMIN_EMAIL,
+        '(Admin Panel) Error in Delete Product',
+        errorTemplate(generateURL(req, '', true), error.message)
+      );
+    } else {
+      console.log(error);
+    }
+
     return res.status(500).json({
       error:
         "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
@@ -310,11 +330,16 @@ export const editProduct = async (req, res) => {
     });
   } catch (error) {
     // send error to email
-    sendMail(
-      process.env.ADMIN_EMAIL,
-      '(Admin Panel) Error in Edit/update Product',
-      errorTemplate(generateURL(req, '', true), error.message)
-    );
+    if (process.env.NODE_ENV === 'production') {
+      sendMail(
+        process.env.ADMIN_EMAIL,
+        '(Admin Panel) Error in Edit/update Product',
+        errorTemplate(generateURL(req, '', true), error.message)
+      );
+    } else {
+      console.log(error);
+    }
+
     return res.status(500).json({
       error:
         "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
@@ -334,11 +359,16 @@ export const getSingleProductById = async (req, res) => {
     return res.status(404).json({ error: 'product not found' });
   } catch (error) {
     // send error to email
-    sendMail(
-      process.env.ADMIN_EMAIL,
-      '(Admin Panel) Error in Get Single Product By Id',
-      errorTemplate(generateURL(req, '', true), error.message)
-    );
+    if (process.env.NODE_ENV === 'production') {
+      sendMail(
+        process.env.ADMIN_EMAIL,
+        '(Admin Panel) Error in Get Single Product By Id',
+        errorTemplate(generateURL(req, '', true), error.message)
+      );
+    } else {
+      console.log(error);
+    }
+
     return res.status(500).json({
       error:
         "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
@@ -368,11 +398,16 @@ export const searchProducts = async (req, res) => {
       .json({ next: products.length < LIMIT ? null : nextURL, products });
   } catch (error) {
     // send error to email
-    sendMail(
-      process.env.ADMIN_EMAIL,
-      '(Admin Panel) Error in Search Products',
-      errorTemplate(generateURL(req, '', true), error.message)
-    );
+    if (process.env.NODE_ENV === 'production') {
+      sendMail(
+        process.env.ADMIN_EMAIL,
+        '(Admin Panel) Error in Search Products',
+        errorTemplate(generateURL(req, '', true), error.message)
+      );
+    } else {
+      console.log(error);
+    }
+
     return res.status(500).json({
       error:
         "Oops! Something went wrong. We're working to fix it. Please try again shortly.",

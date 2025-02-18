@@ -17,11 +17,16 @@ export const addAddress = async (req, res) => {
     });
   } catch (error) {
     // send error to email
-    sendMail(
-      process.env.ADMIN_EMAIL,
-      'Error in Add Address',
-      errorTemplate(generateURL(req), error.message)
-    );
+    if (process.env.NODE_ENV === 'production') {
+      sendMail(
+        process.env.ADMIN_EMAIL,
+        'Error in Add Address',
+        errorTemplate(generateURL(req), error.message)
+      );
+    } else {
+      console.log(error);
+    }
+
     return res.status(500).json({
       error:
         "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
@@ -39,11 +44,16 @@ export const getAddress = async (req, res) => {
     }
   } catch (error) {
     // send error to email
-    sendMail(
-      process.env.ADMIN_EMAIL,
-      'Error in Get Address',
-      errorTemplate(generateURL(req), error.message)
-    );
+    if (process.env.NODE_ENV === 'production') {
+      sendMail(
+        process.env.ADMIN_EMAIL,
+        'Error in Get Address',
+        errorTemplate(generateURL(req), error.message)
+      );
+    } else {
+      console.log(error);
+    }
+
     return res.status(500).json({
       error:
         "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
@@ -65,11 +75,16 @@ export const updateAddress = async (req, res) => {
     });
   } catch (error) {
     // send error to email
-    sendMail(
-      process.env.ADMIN_EMAIL,
-      'Error in Update Address',
-      errorTemplate(generateURL(req), error.message)
-    );
+    if (process.env.NODE_ENV === 'production') {
+      sendMail(
+        process.env.ADMIN_EMAIL,
+        'Error in Update Address',
+        errorTemplate(generateURL(req), error.message)
+      );
+    } else {
+      console.log(error);
+    }
+
     return res.status(500).json({
       error:
         "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
@@ -84,11 +99,16 @@ export const deleteAddress = async (req, res) => {
     return res.status(200).json({ msg: 'Address Remove Successfully' });
   } catch (error) {
     // send error to email
-    sendMail(
-      process.env.ADMIN_EMAIL,
-      'Error in Delete Address',
-      errorTemplate(generateURL(req), error.message)
-    );
+    if (process.env.NODE_ENV === 'production') {
+      sendMail(
+        process.env.ADMIN_EMAIL,
+        'Error in Delete Address',
+        errorTemplate(generateURL(req), error.message)
+      );
+    } else {
+      console.log(error);
+    }
+
     return res.status(500).json({
       error:
         "Oops! Something went wrong. We're working to fix it. Please try again shortly.",

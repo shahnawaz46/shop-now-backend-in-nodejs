@@ -108,13 +108,18 @@ export const signup = async (req, res) => {
     return res
       .status(200)
       .json({ msg: 'Signup Successfully', email: newUser.email });
-  } catch (err) {
+  } catch (error) {
     // send error to email
-    sendMail(
-      process.env.ADMIN_EMAIL,
-      'Error in Signup',
-      errorTemplate(generateURL(req), err.message)
-    );
+    if (process.env.NODE_ENV === 'production') {
+      sendMail(
+        process.env.ADMIN_EMAIL,
+        'Error in Signup',
+        errorTemplate(generateURL(req), error.message)
+      );
+    } else {
+      console.log(error);
+    }
+
     return res.status(500).json({
       error:
         "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
@@ -179,13 +184,18 @@ export const otpVerification = async (req, res) => {
       'Registration Successfully',
       thankForRegistration(`${user.firstName} ${user.lastName}`)
     );
-  } catch (err) {
+  } catch (error) {
     // send error to email
-    sendMail(
-      process.env.ADMIN_EMAIL,
-      'Error in OTP Verification',
-      errorTemplate(generateURL(req), err.message)
-    );
+    if (process.env.NODE_ENV === 'production') {
+      sendMail(
+        process.env.ADMIN_EMAIL,
+        'Error in OTP Verification',
+        errorTemplate(generateURL(req), error.message)
+      );
+    } else {
+      console.log(error);
+    }
+
     return res.status(500).json({
       error:
         "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
@@ -253,13 +263,18 @@ export const signin = async (req, res) => {
     return res
       .status(200)
       .json({ msg: 'Login Successfully', userId: user._id });
-  } catch (err) {
+  } catch (error) {
     // send error to email
-    sendMail(
-      process.env.ADMIN_EMAIL,
-      'Error in Signin',
-      errorTemplate(generateURL(req), err.message)
-    );
+    if (process.env.NODE_ENV === 'production') {
+      sendMail(
+        process.env.ADMIN_EMAIL,
+        'Error in Signin',
+        errorTemplate(generateURL(req), error.message)
+      );
+    } else {
+      console.log(error);
+    }
+
     return res.status(500).json({
       error:
         "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
@@ -276,13 +291,18 @@ export const userProfile = async (req, res) => {
     const address = await Address.find({ userId: req.data._id });
 
     return res.status(200).json({ userDetail, address });
-  } catch (err) {
+  } catch (error) {
     // send error to email
-    sendMail(
-      process.env.ADMIN_EMAIL,
-      'Error in Get User Profile',
-      errorTemplate(generateURL(req), err.message)
-    );
+    if (process.env.NODE_ENV === 'production') {
+      sendMail(
+        process.env.ADMIN_EMAIL,
+        'Error in Get User Profile',
+        errorTemplate(generateURL(req), error.message)
+      );
+    } else {
+      console.log(error);
+    }
+
     return res.status(500).json({
       error:
         "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
@@ -314,13 +334,18 @@ export const updateProfilePic = async (req, res) => {
         userDetails: result,
       });
     }
-  } catch (err) {
+  } catch (error) {
     // send error to email
-    sendMail(
-      process.env.ADMIN_EMAIL,
-      'Error in Update Profile Pic',
-      errorTemplate(generateURL(req), err.message)
-    );
+    if (process.env.NODE_ENV === 'production') {
+      sendMail(
+        process.env.ADMIN_EMAIL,
+        'Error in Update Profile Pic',
+        errorTemplate(generateURL(req), error.message)
+      );
+    } else {
+      console.log(error);
+    }
+
     return res.status(500).json({
       error:
         "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
@@ -339,17 +364,22 @@ export const editUserProfileDetail = async (req, res) => {
     return res
       .status(200)
       .json({ msg: 'Profile Update Successfully', userDetail: result });
-  } catch (err) {
-    if (err.codeName == 'DuplicateKey') {
+  } catch (error) {
+    if (error.codeName == 'DuplicateKey') {
       return res.status(400).json({ error: 'This Email Already Exist' });
     }
 
     // send error to email
-    sendMail(
-      process.env.ADMIN_EMAIL,
-      'Error in Update User Profile Details',
-      errorTemplate(generateURL(req), err.message)
-    );
+    if (process.env.NODE_ENV === 'production') {
+      sendMail(
+        process.env.ADMIN_EMAIL,
+        'Error in Update User Profile Details',
+        errorTemplate(generateURL(req), error.message)
+      );
+    } else {
+      console.log(error);
+    }
+
     return res.status(500).json({
       error:
         "Oops! Something went wrong. We're working to fix it. Please try again shortly.",

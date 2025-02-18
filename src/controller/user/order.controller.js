@@ -67,11 +67,16 @@ export const createOrder = async (req, res) => {
       : res.status(400).json({ error: 'Not Allowed' });
   } catch (error) {
     // send error to email
-    sendMail(
-      process.env.ADMIN_EMAIL,
-      'Error in Create Order',
-      errorTemplate(generateURL(req), error.message)
-    );
+    if (process.env.NODE_ENV === 'production') {
+      sendMail(
+        process.env.ADMIN_EMAIL,
+        'Error in Create Order',
+        errorTemplate(generateURL(req), error.message)
+      );
+    } else {
+      console.log(error);
+    }
+
     return res.status(500).json({
       error:
         "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
@@ -138,11 +143,16 @@ export const paymentVerification = async (req, res) => {
     }
   } catch (error) {
     // send error to email
-    sendMail(
-      process.env.ADMIN_EMAIL,
-      'Error in Payment Verification For Order',
-      errorTemplate(generateURL(req), error.message)
-    );
+    if (process.env.NODE_ENV === 'production') {
+      sendMail(
+        process.env.ADMIN_EMAIL,
+        'Error in Payment Verification For Order',
+        errorTemplate(generateURL(req), error.message)
+      );
+    } else {
+      console.log(error);
+    }
+
     return res.status(500).json({
       error:
         "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
@@ -165,11 +175,16 @@ export const paymentFailed = async (req, res) => {
     return res.status(201).json({ msg: 'payment failed' });
   } catch (error) {
     // send error to email
-    sendMail(
-      process.env.ADMIN_EMAIL,
-      'Error in Payment Failed For Order',
-      errorTemplate(generateURL(req), error.message)
-    );
+    if (process.env.NODE_ENV === 'production') {
+      sendMail(
+        process.env.ADMIN_EMAIL,
+        'Error in Payment Failed For Order',
+        errorTemplate(generateURL(req), error.message)
+      );
+    } else {
+      console.log(error);
+    }
+
     return res.status(500).json({
       error:
         "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
@@ -187,11 +202,16 @@ export const getOrder = async (req, res) => {
     return res.status(200).json({ orders });
   } catch (error) {
     // send error to email
-    sendMail(
-      process.env.ADMIN_EMAIL,
-      'Error in Get Order',
-      errorTemplate(generateURL(req), error.message)
-    );
+    if (process.env.NODE_ENV === 'production') {
+      sendMail(
+        process.env.ADMIN_EMAIL,
+        'Error in Get Order',
+        errorTemplate(generateURL(req), error.message)
+      );
+    } else {
+      console.log(error);
+    }
+
     return res.status(500).json({
       error:
         "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
@@ -271,11 +291,16 @@ export const generateInvoice = async (req, res) => {
     res.end(pdf); // Send the PDF buffer as response
   } catch (error) {
     // send error to email
-    sendMail(
-      process.env.ADMIN_EMAIL,
-      'Error in Generate Invoice',
-      errorTemplate(generateURL(req), error.message)
-    );
+    if (process.env.NODE_ENV === 'production') {
+      sendMail(
+        process.env.ADMIN_EMAIL,
+        'Error in Generate Invoice',
+        errorTemplate(generateURL(req), error.message)
+      );
+    } else {
+      console.log(error);
+    }
+
     return res.status(500).json({
       error:
         "Oops! Something went wrong. We're working to fix it. Please try again shortly.",

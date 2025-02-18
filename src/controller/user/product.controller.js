@@ -41,16 +41,21 @@ export const getAllProducts = async (req, res) => {
     return res.status(200).json({
       products: {
         next: allProducts.length < LIMIT ? null : nextRoute,
-        data: allProducts,
+        item: allProducts,
       },
     });
   } catch (error) {
     // send error to email
-    sendMail(
-      process.env.ADMIN_EMAIL,
-      'Error in Get All Products',
-      errorTemplate(generateURL(req), error.message)
-    );
+    if (process.env.NODE_ENV === 'production') {
+      sendMail(
+        process.env.ADMIN_EMAIL,
+        'Error in Get All Products',
+        errorTemplate(generateURL(req), error.message)
+      );
+    } else {
+      console.log(error);
+    }
+
     return res.status(500).json({
       error:
         "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
@@ -122,8 +127,10 @@ export const getFilteredProducts = async (req, res) => {
       );
 
       return res.status(200).json({
-        next: subCategoryProducts.length < LIMIT ? null : nextRoute,
-        subCategoryProducts,
+        products: {
+          next: subCategoryProducts.length < LIMIT ? null : nextRoute,
+          subCategoryProducts,
+        },
       });
     }
 
@@ -146,17 +153,24 @@ export const getFilteredProducts = async (req, res) => {
       );
 
       return res.status(200).json({
-        next: subCategoryProducts.length < LIMIT ? null : nextRoute,
-        subCategoryProducts,
+        products: {
+          next: subCategoryProducts.length < LIMIT ? null : nextRoute,
+          subCategoryProducts,
+        },
       });
     }
   } catch (error) {
     // send error to email
-    sendMail(
-      process.env.ADMIN_EMAIL,
-      'Error in Get Filtered Products',
-      errorTemplate(generateURL(req), error.message)
-    );
+    if (process.env.NODE_ENV === 'production') {
+      sendMail(
+        process.env.ADMIN_EMAIL,
+        'Error in Get Filtered Products',
+        errorTemplate(generateURL(req), error.message)
+      );
+    } else {
+      console.log(error);
+    }
+
     return res.status(500).json({
       error:
         "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
@@ -187,11 +201,16 @@ export const getSingleProductById = async (req, res) => {
     return res.status(200).json({ product: updatedProduct });
   } catch (error) {
     // send error to email
-    sendMail(
-      process.env.ADMIN_EMAIL,
-      'Error in Get Single Product',
-      errorTemplate(generateURL(req), error.message)
-    );
+    if (process.env.NODE_ENV === 'production') {
+      sendMail(
+        process.env.ADMIN_EMAIL,
+        'Error in Get Single Product',
+        errorTemplate(generateURL(req), error.message)
+      );
+    } else {
+      console.log(error);
+    }
+
     return res.status(500).json({
       error:
         "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
@@ -216,11 +235,16 @@ export const updateTopTrendingProduct = async (req, res) => {
     return res.status(200).json({ msg: 'successfully' });
   } catch (error) {
     // send error to email
-    sendMail(
-      process.env.ADMIN_EMAIL,
-      'Error in Update Top Trending Product',
-      errorTemplate(generateURL(req), error.message)
-    );
+    if (process.env.NODE_ENV === 'production') {
+      sendMail(
+        process.env.ADMIN_EMAIL,
+        'Error in Update Top Trending Product',
+        errorTemplate(generateURL(req), error.message)
+      );
+    } else {
+      console.log(error);
+    }
+
     return res.status(500).json({
       error:
         "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
@@ -310,11 +334,16 @@ export const getTopTrendingProducts = async (req, res) => {
     }
   } catch (error) {
     // send error to email
-    sendMail(
-      process.env.ADMIN_EMAIL,
-      'Error in Get Top Trending Products',
-      errorTemplate(generateURL(req), error.message)
-    );
+    if (process.env.NODE_ENV === 'production') {
+      sendMail(
+        process.env.ADMIN_EMAIL,
+        'Error in Get Top Trending Products',
+        errorTemplate(generateURL(req), error.message)
+      );
+    } else {
+      console.log(error);
+    }
+
     return res.status(500).json({
       error:
         "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
@@ -362,11 +391,16 @@ export const topRatingProducts = async (req, res) => {
     return res.status(200).json({ products });
   } catch (error) {
     // send error to email
-    sendMail(
-      process.env.ADMIN_EMAIL,
-      'Error in Get Top Rating Products',
-      errorTemplate(generateURL(req), error.message)
-    );
+    if (process.env.NODE_ENV === 'production') {
+      sendMail(
+        process.env.ADMIN_EMAIL,
+        'Error in Get Top Rating Products',
+        errorTemplate(generateURL(req), error.message)
+      );
+    } else {
+      console.log(error);
+    }
+
     return res.status(500).json({
       error:
         "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
@@ -470,11 +504,16 @@ export const getTopSellingProducts = async (req, res) => {
     });
   } catch (error) {
     // send error to email
-    sendMail(
-      process.env.ADMIN_EMAIL,
-      'Error in Get Top Selling Products',
-      errorTemplate(generateURL(req), error.message)
-    );
+    if (process.env.NODE_ENV === 'production') {
+      sendMail(
+        process.env.ADMIN_EMAIL,
+        'Error in Get Top Selling Products',
+        errorTemplate(generateURL(req), error.message)
+      );
+    } else {
+      console.log(error);
+    }
+
     return res.status(500).json({
       error:
         "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
@@ -548,11 +587,16 @@ export const getNewestProducts = async (req, res) => {
     });
   } catch (error) {
     // send error to email
-    sendMail(
-      process.env.ADMIN_EMAIL,
-      'Error in Get Newest Products',
-      errorTemplate(generateURL(req), error.message)
-    );
+    if (process.env.NODE_ENV === 'production') {
+      sendMail(
+        process.env.ADMIN_EMAIL,
+        'Error in Get Newest Products',
+        errorTemplate(generateURL(req), error.message)
+      );
+    } else {
+      console.log(error);
+    }
+
     return res.status(500).json({
       error:
         "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
@@ -638,11 +682,16 @@ export const writeProductReview = async (req, res) => {
     }
   } catch (error) {
     // send error to email
-    sendMail(
-      process.env.ADMIN_EMAIL,
-      'Error in Write Product Review',
-      errorTemplate(generateURL(req), error.message)
-    );
+    if (process.env.NODE_ENV === 'production') {
+      sendMail(
+        process.env.ADMIN_EMAIL,
+        'Error in Write Product Review',
+        errorTemplate(generateURL(req), error.message)
+      );
+    } else {
+      console.log(error);
+    }
+
     return res.status(500).json({
       error:
         "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
