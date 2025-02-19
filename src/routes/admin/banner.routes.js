@@ -2,41 +2,38 @@ import { Router } from 'express';
 
 // internal
 import { verification, adminMiddleware } from '../../middleware/middleware.js';
-import multerMiddleWare from '../../middleware/MulterMiddleWare.js';
+
+import upload from '../../middleware/multer.js';
 import {
   addBanner,
-  getBanner,
   deleteBanner,
-  editBanner,
-} from '../../controller/banner.controller.js';
+  getBanner,
+  updateBannerVisibility,
+} from '../../controller/admin/banner.controller.js';
 
 const router = Router();
 
-const upload = multerMiddleWare('BannerImages');
-
 router.post(
-  '/banner/addBanner',
-  verification('token'),
+  '/banner',
+  verification('_a_tn'),
   adminMiddleware,
-  upload.fields([
-    { name: 'computerBannerImage', maxCount: 1 },
-    { name: 'mobileBannerImage', maxCount: 1 },
-  ]),
+  upload.single('bannerImage'),
   addBanner
 );
+router.get('/banner', verification('_a_tn'), adminMiddleware, getBanner);
+router.delete('/banner', verification('_a_tn'), adminMiddleware, deleteBanner);
+router.patch(
+  '/banner',
+  verification('_a_tn'),
+  adminMiddleware,
+  updateBannerVisibility
+);
 
-router.get('/banner/getBanner', getBanner);
-router.post(
-  '/banner/deleteBanner',
-  verification('token'),
-  adminMiddleware,
-  deleteBanner
-);
-router.post(
-  '/banner/editBanner',
-  verification('token'),
-  adminMiddleware,
-  editBanner
-);
+// router.post(
+//   '/banner/editBanner',
+//   verification('token'),
+//   adminMiddleware,
+//   editBanner
+// );
 
 export default router;

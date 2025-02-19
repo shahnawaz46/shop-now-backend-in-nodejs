@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 
 const bannerSchema = new mongoose.Schema(
   {
-    bannerTitle: {
+    title: {
       type: String,
       required: true,
       trim: true,
@@ -12,20 +12,14 @@ const bannerSchema = new mongoose.Schema(
       required: true,
       default: true,
     },
-    computerBannerImage: {
+    screen: {
       type: String,
       required: true,
+      enum: ['computer', 'mobile'],
     },
-    mobileBannerImage: {
-      type: String,
-      required: true,
-    },
-    createdBy: {
-      AdminId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Admin',
-        required: true,
-      },
+    image: {
+      URL: { type: String, required: true },
+      public_id: { type: String, required: true },
     },
   },
   { timestamps: true }

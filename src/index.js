@@ -12,12 +12,14 @@ import userCategoryRouter from './routes/user/category.routes.js';
 import userCartRouter from './routes/user/cart.routes.js';
 import userAddressRouter from './routes/user/address.routes.js';
 import userOrderRouter from './routes/user/order.routes.js';
+import userBannerRouter from './routes/user/banner.routes.js';
 
 // admin router
 import adminUserRouter from './routes/admin/admin.routes.js';
 import adminCategoryRouter from './routes/admin/category.routes.js';
 import adminProductRouter from './routes/admin/product.routes.js';
 import adminOrderRouter from './routes/admin/order.routes.js';
+import adminBannerRouter from './routes/admin/banner.routes.js';
 import userRouterForAdmin from './routes/admin/user.routes.js';
 
 // import bannerRoute from './routes/banner.routes.js';
@@ -52,6 +54,7 @@ app.use('/api/admin', adminUserRouter);
 app.use('/api/admin', adminCategoryRouter);
 app.use('/api/admin', adminProductRouter);
 app.use('/api/admin', adminOrderRouter);
+app.use('/api/admin', adminBannerRouter);
 app.use('/api/admin', userRouterForAdmin);
 
 // user routes
@@ -61,6 +64,7 @@ app.use('/api', userCategoryRouter);
 app.use('/api', userCartRouter);
 app.use('/api', userAddressRouter);
 app.use('/api', userOrderRouter);
+app.use('/api', userBannerRouter);
 
 // app.use('/api', bannerRoute);
 

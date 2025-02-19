@@ -1,5 +1,6 @@
 import cloudinary from '../config/cloudinary.config.js';
 
+// for upload profile images/pictures
 const uploadProfilePicturesOptions = (firstName, lastName) => {
   return {
     upload_preset: 'shop-now-profile-images',
@@ -27,6 +28,7 @@ export const uploadProfilePictures = async (image, firstName, lastName) => {
   });
 };
 
+// for upload product images/pictures
 const uploadProductPicturesOptions = (userName) => {
   return {
     upload_preset: 'shop-now-product-images',
@@ -67,5 +69,40 @@ export const deleteProductPictures = async (productImages) => {
       );
   } catch (err) {
     throw new Error('Problem with deleting product pictures please try again');
+  }
+};
+
+// for upload banner images/pictures
+const uploadBannerPicturesOptions = {
+  upload_preset: 'shop-now-banner-images',
+  allowed_formats: ['png', 'jpg', 'jpeg', 'webp', 'ico', 'avif'],
+};
+
+export const uploadBannerPicture = async (bannerImage) => {
+  return new Promise((resolve, reject) => {
+    cloudinary.uploader.upload(
+      bannerImage,
+      uploadBannerPicturesOptions,
+      (error, result) => {
+        if (result && result.secure_url) {
+          return resolve({
+            URL: result.secure_url,
+            public_id: result.public_id,
+          });
+        }
+        if (error) {
+          console.log('uploadBannerPictures Error: ', error);
+          return reject(error.message);
+        }
+      }
+    );
+  });
+};
+
+export const deleteBannerPicture = async (public_id) => {
+  try {
+    await cloudinary.uploader.destroy(public_id);
+  } catch (err) {
+    throw new Error('Problem with deleting banner picture please try again');
   }
 };
