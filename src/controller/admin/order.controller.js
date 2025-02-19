@@ -44,6 +44,30 @@ export const getAllOrders = async (req, res) => {
   }
 };
 
+export const deleteOrder = async (req, res) => {
+  const { orderId } = req.query;
+  try {
+    await Order.findOneAndDelete({ orderId });
+    return res.status(200).json({ msg: 'Order deleted Successfully' });
+  } catch (error) {
+    // send error to email
+    if (process.env.NODE_ENV === 'production') {
+      sendMail(
+        process.env.ADMIN_EMAIL,
+        '(Admin Panel) Error in Get All Orders',
+        errorTemplate(generateURL(req, '', true), error.message)
+      );
+    } else {
+      console.log(error);
+    }
+
+    return res.status(500).json({
+      error:
+        "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
+    });
+  }
+};
+
 // ? Get daily orders for the last 7 days
 //  const startDate = moment().subtract(6, 'days').startOf('day'); // 7 days including today
 //  const endDate = moment().endOf('day');

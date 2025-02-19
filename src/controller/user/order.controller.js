@@ -1,5 +1,4 @@
 import { v4 as uuidv4 } from 'uuid';
-import Razorpay from 'razorpay';
 import crypto from 'crypto';
 import puppeteer from 'puppeteer';
 import ejs from 'ejs';
@@ -12,16 +11,18 @@ import { Cart } from '../../model/cart.model.js';
 import sendMail from '../../services/mail.service.js';
 import { errorTemplate } from '../../template/ErrorMailTemplate.js';
 import { generateURL } from '../../utils/GenerateURL.js';
-
-// razor pay instance
-const key_id = process.env.RAZOR_PAY_KEY;
-const key_secret = process.env.RAZOR_PAY_SECRET;
-const instance = new Razorpay({ key_id, key_secret });
+import {
+  key_id,
+  key_secret,
+  razorpayInstance,
+} from '../../config/razorpay.config.js';
 
 export const createOrder = async (req, res) => {
   try {
     const userId = req.data._id;
     const { addressId, items, totalPrice, paymentMethod, process } = req.body;
+
+    // create object for use
     const orderDetails = {
       address: addressId,
       customer: userId,
@@ -31,19 +32,9 @@ export const createOrder = async (req, res) => {
       paymentMethod,
     };
 
-    await Order.create(orderDetails); // creating order to the database
-
-    // if customer place order through cart and paymentMethod is cod then the cart will be emptied after a successful order.
-    // otherwise it means user have purchased product directly so cart will be remain same
-    if (paymentMethod === 'cod' && process === 'checkout') {
-      await Cart.findOneAndUpdate(
-        { userId: req.data._id },
-        { $set: { cartItems: [] } }
-      );
-    }
+    const order = await Order.create(orderDetails); // creating order to the database
 
     // if paymentMethod is card then creating order with the help of razor pay to proceed payment
-    let razorPayOrder;
     if (paymentMethod === 'card') {
       const options = {
         amount: totalPrice * 100, // Convert totalPrice to paisa
@@ -51,20 +42,33 @@ export const createOrder = async (req, res) => {
         receipt: orderDetails.orderId,
       };
 
-      razorPayOrder = await instance.orders.create(options);
+      const razorPayOrder = await razorpayInstance.orders.create(options);
+      return res.status(201).json({
+        process: process,
+        orderId: orderDetails.orderId,
+        razorOrderId: razorPayOrder.id,
+        amount: razorPayOrder.amount,
+        key: key_id,
+      });
     }
 
-    return paymentMethod === 'cod'
-      ? res.status(201).json({ msg: 'Order Done' })
-      : paymentMethod === 'card'
-      ? res.status(201).json({
-          process: process,
-          orderId: orderDetails.orderId,
-          razorOrderId: razorPayOrder.id,
-          amount: razorPayOrder.amount,
-          key: key_id,
-        })
-      : res.status(400).json({ error: 'Not Allowed' });
+    // if paymentMethod is cod then creating order with the help of razor pay to proceed payment
+    if (paymentMethod === 'cod') {
+      order.orderStatus = 'order confirmed';
+      await order.save();
+
+      // if customer place order through cart then the cart will be emptied after a successful order.
+      if (process === 'checkout') {
+        await Cart.findOneAndUpdate(
+          { userId: req.data._id },
+          { $set: { cartItems: [] } }
+        );
+      }
+
+      return res.status(201).json({ msg: 'Order Done' });
+    }
+
+    return res.status(400).json({ error: 'Not Allowed' });
   } catch (error) {
     // send error to email
     if (process.env.NODE_ENV === 'production') {
@@ -115,6 +119,7 @@ export const paymentVerification = async (req, res) => {
         {
           $set: {
             paymentStatus: 'success',
+            orderStatus: 'order confirmed',
             paymentDetails: {
               razorpay_payment_id,
               razorpay_order_id,
@@ -131,6 +136,7 @@ export const paymentVerification = async (req, res) => {
         {
           $set: {
             paymentStatus: 'failed',
+            orderStatus: 'failed',
             paymentDetails: {
               razorpay_payment_id,
               razorpay_order_id,
@@ -162,12 +168,14 @@ export const paymentVerification = async (req, res) => {
 
 export const paymentFailed = async (req, res) => {
   const { orderId, razorpay_order_id, razorpay_payment_id } = req.body;
+
   try {
     await Order.findOneAndUpdate(
       { orderId },
       {
         $set: {
           paymentStatus: 'failed',
+          orderStatus: 'failed',
           paymentDetails: { razorpay_order_id, razorpay_payment_id },
         },
       }
@@ -194,7 +202,10 @@ export const paymentFailed = async (req, res) => {
 
 export const getOrder = async (req, res) => {
   try {
-    const orders = await Order.find({ customer: req.data._id })
+    const orders = await Order.find({
+      customer: req.data._id,
+      orderStatus: { $ne: 'pending' },
+    })
       .populate('items.product', 'productName productPictures')
       .populate('address', 'address locality cityDistrictTown pinCode state')
       .sort({ createdAt: -1 });

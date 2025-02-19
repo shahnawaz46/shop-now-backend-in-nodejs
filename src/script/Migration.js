@@ -69,19 +69,28 @@ export const updateUserDetails = async () => {
   console.log('field updated');
 };
 
-export const updateOrderSales = async () => {
-  // try {
-  //   const order = await Order.find({}).select('items');
-  //   order.forEach(async (order) => {
-  //     order.items.forEach(async (product) => {
-  //       await Product.findByIdAndUpdate(product.product, {
-  //         $inc: { totalSales: 1 },
-  //       });
-  //     });
-  //   });
-  // } catch (err) {
-  //   console.log(err);
-  // }
+export const updateOrderModel = async () => {
+  try {
+    // const order = await Order.find({}).select('items');
+    // order.forEach(async (order) => {
+    //   order.items.forEach(async (product) => {
+    //     await Product.findByIdAndUpdate(product.product, {
+    //       $inc: { totalSales: 1 },
+    //     });
+    //   });
+    // });
+
+    // await Order.updateMany({}, { $rename: { status: 'orderStatus' } });
+
+    // await Order.updateMany(
+    //   { paymentMethod: 'card', paymentStatus: 'failed' },
+    //   { orderStatus: 'failed' },
+    //   { runValidators: true }
+    // );
+    console.log('Updated');
+  } catch (err) {
+    console.log(err);
+  }
 };
 
 export const updatePublicIdToEachProductIamges = async () => {

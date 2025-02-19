@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import {
+  deleteOrder,
   getAllOrders,
   getOrderById,
   getOrderGraph,
@@ -12,6 +13,7 @@ import { verification } from '../../middleware/middleware.js';
 const router = Router();
 
 router.get('/orders', verification('_a_tn'), getAllOrders);
+router.delete('/orders-delete', deleteOrder);
 router.get('/order-stats', verification('_a_tn'), getOrderStats);
 router.get('/order-graph', verification('_a_tn'), getOrderGraph);
 router.get('/order-stats/:orderId', verification('_a_tn'), getOrderById);
