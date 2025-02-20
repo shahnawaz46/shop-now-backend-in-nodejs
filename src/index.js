@@ -58,13 +58,13 @@ app.use('/api/admin', adminBannerRouter);
 app.use('/api/admin', userRouterForAdmin);
 
 // user routes
-app.use('/api', userRouter);
-app.use('/api', userProductRouter);
-app.use('/api', userCategoryRouter);
-app.use('/api', userCartRouter);
-app.use('/api', userAddressRouter);
-app.use('/api', userOrderRouter);
-app.use('/api', userBannerRouter);
+app.use('/api/user', userRouter);
+app.use('/api/user', userProductRouter);
+app.use('/api/user', userCategoryRouter);
+app.use('/api/user', userCartRouter);
+app.use('/api/user', userAddressRouter);
+app.use('/api/user', userOrderRouter);
+app.use('/api/user', userBannerRouter);
 
 // app.use('/api', bannerRoute);
 

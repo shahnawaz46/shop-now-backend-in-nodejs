@@ -36,13 +36,13 @@ export const getCategory = async (req, res) => {
 };
 
 export const searchCategory = async (req, res) => {
-  const { search } = req.query;
+  const { query } = req.query;
   try {
     // .*: Matches any characters zero or more times (wildcard)
     // $options: 'i': Enables case-insensitive matching
     const category = await Category.find({
       $and: [
-        { categoryName: { $regex: `${search}.*`, $options: 'i' } },
+        { categoryName: { $regex: `${query}.*`, $options: 'i' } },
         { categoryName: { $nin: ["Men's Wardrobe", "Women's Wardrobe"] } }, // Exclude documents with name "Nothing"
       ],
     }).select('categoryName slug');

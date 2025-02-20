@@ -1,8 +1,8 @@
 import moment from 'moment';
 
 // internal
-import { LIMIT } from '../../constant/pagination.js';
 import { User } from '../../model/user.model.js';
+import { LIMIT } from '../../utils/Constant.js';
 import { generateURL } from '../../utils/GenerateURL.js';
 import sendMail from '../../services/mail.service.js';
 import { errorTemplate } from '../../template/ErrorMailTemplate.js';

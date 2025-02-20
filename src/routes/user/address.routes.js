@@ -11,26 +11,11 @@ import {
 
 const router = Router();
 
-router.get(
-  '/user/getAddress',
-  verification('_f_id'),
-  userMiddleware,
-  getAddress
-);
-router.post(
-  '/user/addAddress',
-  verification('_f_id'),
-  userMiddleware,
-  addAddress
-);
-router.patch(
-  '/user/updateAddress',
-  verification('_f_id'),
-  userMiddleware,
-  updateAddress
-);
+router.get('/address', verification('_f_id'), userMiddleware, getAddress);
+router.post('/address', verification('_f_id'), userMiddleware, addAddress);
+router.put('/address', verification('_f_id'), userMiddleware, updateAddress);
 router.delete(
-  '/user/deleteAddress/:_id',
+  '/address/:_id',
   verification('_f_id'),
   userMiddleware,
   deleteAddress

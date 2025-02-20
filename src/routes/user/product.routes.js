@@ -21,6 +21,7 @@ const router = Router();
 // slug mean -> men or women
 router.get('/product/all/:slug', getAllProducts);
 
+// getting filtered products inside query
 router.get('/product/filtered', getFilteredProducts);
 
 // getting single product by id

@@ -3,7 +3,7 @@ import { Product, sizeDescription } from '../../model/product.model.js';
 import { Category } from '../../model/category.model.js';
 import { Order } from '../../model/order.model.js';
 import { TrendingProduct } from '../../model/trendingProduct.model.js';
-import { LIMIT } from '../../constant/pagination.js';
+import { LIMIT } from '../../utils/Constant.js';
 import { generateURL } from '../../utils/GenerateURL.js';
 import sendMail from '../../services/mail.service.js';
 import { errorTemplate } from '../../template/ErrorMailTemplate.js';

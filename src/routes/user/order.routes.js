@@ -12,27 +12,22 @@ import {
 
 const router = Router();
 
+router.get('/order', verification('_f_id'), userMiddleware, getOrder);
+router.post('/order', verification('_f_id'), userMiddleware, createOrder);
 router.post(
-  '/user/createOrder',
-  verification('_f_id'),
-  userMiddleware,
-  createOrder
-);
-router.post(
-  '/user/paymentVerification/:orderId',
+  '/order/payment-verification/:orderId',
   verification('_f_id'),
   userMiddleware,
   paymentVerification
 );
 router.post(
-  '/user/paymentFailed',
+  '/order/payment-failed',
   verification('_f_id'),
   userMiddleware,
   paymentFailed
 );
-router.get('/user/getOrder', verification('_f_id'), userMiddleware, getOrder);
 router.get(
-  '/generate-invoice/:orderId',
+  '/order/generate-invoice/:orderId',
   verification('_f_id'),
   userMiddleware,
   generateInvoice

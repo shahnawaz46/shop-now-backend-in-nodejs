@@ -1,8 +1,8 @@
 // internal
-import { LIMIT } from '../../constant/pagination.js';
 import { Order } from '../../model/order.model.js';
 import { Product } from '../../model/product.model.js';
 import { generateURL } from '../../utils/GenerateURL.js';
+import { LIMIT } from '../../utils/Constant.js';
 import sendMail from '../../services/mail.service.js';
 import { errorTemplate } from '../../template/ErrorMailTemplate.js';
 

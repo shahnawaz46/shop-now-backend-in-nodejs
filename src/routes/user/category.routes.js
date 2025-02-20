@@ -8,8 +8,8 @@ import {
 
 const router = Router();
 
-router.get('/category/:slug', getCategory);
+router.get('/category/all/:slug', getCategory);
 
-router.get('/search/category', searchCategory);
+router.get('/category/search', searchCategory);
 
 export default router;

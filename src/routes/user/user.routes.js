@@ -19,20 +19,16 @@ import upload from '../../middleware/multer.js';
 
 const router = Router();
 
-router.post('/user/signup', validateRequest, isRequestValid, signup);
-router.post('/user/verify', otpVerification);
-router.post('/user/signin', signin);
-router.post('/user/signout', signout);
+router.post('/signup', validateRequest, isRequestValid, signup);
+router.post('/verify', otpVerification);
+router.post('/signin', signin);
+router.post('/signout', signout);
 
-router.get('/user/profile', verification('_f_id'), userProfile);
-router.patch(
-  '/user/updateProfile',
-  verification('_f_id'),
-  editUserProfileDetail
-);
+router.get('/profile', verification('_f_id'), userProfile);
+router.patch('/profile', verification('_f_id'), editUserProfileDetail);
 
 router.patch(
-  '/user/updateProfilePic',
+  '/profile-pic',
   verification('_f_id'),
   upload.single('profilePicture'),
   updateProfilePic

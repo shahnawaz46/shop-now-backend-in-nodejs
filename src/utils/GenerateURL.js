@@ -8,7 +8,7 @@ export const generateURL = (req, query, admin = false) => {
   if (admin) {
     apiPath = `/api/admin${req.route.path}`;
   } else {
-    apiPath = `/api${req.route.path}`;
+    apiPath = `/api/user${req.route.path}`;
   }
 
   if (apiPath.includes(':slug')) {

@@ -13,7 +13,7 @@ import { verification, adminMiddleware } from '../../middleware/middleware.js';
 const router = Router();
 
 router.post(
-  '/category/create',
+  '/category',
   verification('token'),
   adminMiddleware,
   createCategory
@@ -22,17 +22,12 @@ router.post(
 router.get('/category', verification('_a_tn'), getCategory);
 
 router.post(
-  '/category/delete',
+  '/category',
   verification('token'),
   adminMiddleware,
   deleteCategory
 );
 
-router.post(
-  '/category/edit',
-  verification('token'),
-  adminMiddleware,
-  editCategory
-);
+router.post('/category', verification('token'), adminMiddleware, editCategory);
 
 export default router;
