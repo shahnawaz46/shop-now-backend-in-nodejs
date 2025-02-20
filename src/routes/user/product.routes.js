@@ -12,6 +12,7 @@ import {
   updateTopTrendingProduct,
   getTopSellingProducts,
   getNewestProducts,
+  getSingleProductByIdDuringCheckout,
 } from '../../controller/user/product.controller.js';
 
 const router = Router();
@@ -24,6 +25,12 @@ router.get('/product/filtered', getFilteredProducts);
 
 // getting single product by id
 router.get('/product/single/:productId', getSingleProductById);
+
+// getting single product by id during checkout/buy
+router.get(
+  '/product/single/checkout/:productId',
+  getSingleProductByIdDuringCheckout
+);
 
 // top trending products
 router.post('/product/top-trending', updateTopTrendingProduct);

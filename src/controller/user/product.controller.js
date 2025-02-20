@@ -218,6 +218,38 @@ export const getSingleProductById = async (req, res) => {
   }
 };
 
+// fetching single product based on productId during checkout/buy
+export const getSingleProductByIdDuringCheckout = async (req, res) => {
+  const { productId } = req.params;
+  try {
+    const product = await Product.findOne({
+      _id: productId,
+    }).select('productName productPictures sellingPrice');
+
+    if (!product) {
+      return res.status(404).json({ error: 'product not found' });
+    }
+
+    return res.status(200).json({ product });
+  } catch (error) {
+    // send error to email
+    if (process.env.NODE_ENV === 'production') {
+      sendMail(
+        process.env.ADMIN_EMAIL,
+        'Error in Get Single Product during Checkout/Buy',
+        errorTemplate(generateURL(req), error.message)
+      );
+    } else {
+      console.log(error);
+    }
+
+    return res.status(500).json({
+      error:
+        "Oops! Something went wrong. We're working to fix it. Please try again shortly.",
+    });
+  }
+};
+
 // updating topTrendingProducts based on event(like visit).
 // if loggedin user click on any product then i am updating topTrendingProducts count
 export const updateTopTrendingProduct = async (req, res) => {
@@ -431,7 +463,7 @@ export const getTopSellingProducts = async (req, res) => {
 
   try {
     const product = await Order.aggregate([
-      { $match: { status: 'delivered' } },
+      { $match: { orderStatus: 'delivered' } },
       {
         $unwind: '$items',
       },
@@ -620,7 +652,7 @@ export const writeProductReview = async (req, res) => {
       });
     }
 
-    if (order.status !== 'delivered') {
+    if (order.orderStatus !== 'delivered') {
       return res.status(400).json({
         error: 'You can write a review after the product has been delivered',
       });

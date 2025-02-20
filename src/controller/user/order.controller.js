@@ -16,20 +16,36 @@ import {
   key_secret,
   razorpayInstance,
 } from '../../config/razorpay.config.js';
+import { Product } from '../../model/product.model.js';
+import { DELIVERY_CHARGE } from '../../utils/Constant.js';
 
 export const createOrder = async (req, res) => {
-  try {
-    const userId = req.data._id;
-    const { addressId, items, totalPrice, paymentMethod, process } = req.body;
+  const userId = req.data._id;
+  const { addressId, paymentMethod, process, items } = req.body;
 
-    // create object for use
+  try {
+    // getting selling price on server(not getting from client because of the security issue)
+    const productItems = [];
+    let totalPrice = DELIVERY_CHARGE;
+    for (let i = 0; i < items.length; i++) {
+      try {
+        const item = items[i];
+        const product = await Product.findById(item.product);
+        productItems.push({ ...item, price: product.sellingPrice });
+        totalPrice += product.sellingPrice * item.qty;
+      } catch (err) {
+        console.error(`Error processing item ${i}:`, err);
+      }
+    }
+
+    // create orderDetails object
     const orderDetails = {
       address: addressId,
       customer: userId,
-      orderId: uuidv4(),
-      items,
-      totalPrice,
       paymentMethod,
+      orderId: uuidv4(),
+      items: productItems,
+      totalPrice,
     };
 
     const order = await Order.create(orderDetails); // creating order to the database
