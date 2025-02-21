@@ -4,6 +4,7 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 
 import mongoDBConnection from './database/mongo.database.js';
+import redisConnection from './database/redis.database.js';
 
 // user router
 import userRouter from './routes/user/user.routes.js';
@@ -32,6 +33,7 @@ const app = express();
 dotenv.config({});
 
 mongoDBConnection(); // mongoDB database connection
+redisConnection();
 
 const origin =
   process.env.NODE_ENV === 'production'
@@ -65,8 +67,6 @@ app.use('/api/user', userCartRouter);
 app.use('/api/user', userAddressRouter);
 app.use('/api/user', userOrderRouter);
 app.use('/api/user', userBannerRouter);
-
-// app.use('/api', bannerRoute);
 
 const port = process.env.PORT || 9000;
 app.listen(port, () => console.log(`Server is running at Port no ${port}`));

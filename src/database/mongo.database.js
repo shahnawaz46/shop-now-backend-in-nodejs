@@ -9,9 +9,9 @@ const mongoDBConnection = async () => {
       `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@ecommerce-app.x82kj.mongodb.net/ecommerce-detail?retryWrites=true&w=majority`,
       { autoIndex: true }
     );
-    console.log('Database Connected', mongoose.version);
+    console.log('mongoDB Database Connected', mongoose.version);
   } catch (err) {
-    console.log('Database Connection:- ', err);
+    console.log('mongoDB Database Connection Error: ', err);
   }
 };
 

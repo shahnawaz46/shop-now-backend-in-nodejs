@@ -7,6 +7,7 @@ import {
   deleteBannerPicture,
   uploadBannerPicture,
 } from '../../services/cloudinary.service.js';
+import { redisClient } from '../../database/redis.database.js';
 
 export const addBanner = async (req, res) => {
   try {
@@ -19,6 +20,9 @@ export const addBanner = async (req, res) => {
     const image = await uploadBannerPicture(req.file.path);
 
     const banner = await Banner.create({ title, show, screen, image });
+
+    // whenever admin add banner to the database, then i deleting the banner data from Redis.
+    await redisClient.del('banner');
 
     return res.status(201).json({ banner });
   } catch (error) {
@@ -95,6 +99,9 @@ export const deleteBanner = async (req, res) => {
     // then i am deleting banner collection from mongodb
     await Banner.findByIdAndDelete(banner._id);
 
+    // whenever admin delete banner from the database, then i am also deleting the banner data from Redis.
+    await redisClient.del('banner');
+
     return res.status(200).json({ message: 'Banner Deleted Successfully' });
   } catch (error) {
     // send error to email
@@ -128,6 +135,9 @@ export const updateBannerVisibility = async (req, res) => {
     banner.show = show;
     // updating show field
     await banner.save();
+
+    // whenever admin updates the banner visibility in the database, then i am deleting the banner data from Redis.
+    await redisClient.del('banner');
 
     return res.status(200).json({ message: 'Banner Updated Successfully' });
   } catch (error) {

@@ -10,12 +10,15 @@ export const wakeUpTheServer = () => {
   }
   timer = setInterval(() => {
     https
-      .get('https://ecommerce-server-1cz2.onrender.com/api/pinged', (res) => {
-        totalNoOfTimePinged += 1;
-        console.log(
-          `Pinged server ${totalNoOfTimePinged}, status code: ${res.statusCode}`
-        );
-      })
+      .get(
+        'https://ecommerce-server-1cz2.onrender.com/api/user/pinged',
+        (res) => {
+          totalNoOfTimePinged += 1;
+          console.log(
+            `Pinged server ${totalNoOfTimePinged}, status code: ${res.statusCode}`
+          );
+        }
+      )
       .on('error', (err) => {
         console.error('Error pinging server:', err.message);
       });
