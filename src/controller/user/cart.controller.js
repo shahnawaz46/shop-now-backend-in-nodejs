@@ -73,9 +73,9 @@ export const getCartItem = async (req, res) => {
     if (userCart) {
       const cartItem = userCart.cartItems.map((item) => {
         return {
+          _id: item.productId._id,
           qty: item.qty,
           size: item.size,
-          _id: item.productId._id,
           productName: item.productId.productName,
           sellingPrice: item.productId.sellingPrice,
           productImage: item.productId.productPictures[0]?.img,

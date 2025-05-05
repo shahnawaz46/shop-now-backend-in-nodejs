@@ -222,6 +222,7 @@ export const getOrder = async (req, res) => {
       customer: req.data._id,
       orderStatus: { $ne: 'pending' },
     })
+      .select("-createdAt -updatedAt -__v -paymentDetails")
       .populate('items.product', 'productName productPictures')
       .populate('address', 'address locality cityDistrictTown pinCode state')
       .sort({ createdAt: -1 });

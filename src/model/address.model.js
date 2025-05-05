@@ -15,14 +15,14 @@ const addressSchema = new mongoose.Schema(
       max: 50,
     },
     mobileNumber: {
-      type: String,
+      type: Number,
       required: true,
-      trim: true,
+      // trim: true,
     },
     pinCode: {
-      type: String,
+      type: Number,
       required: true,
-      trim: true,
+      // trim: true,
     },
     locality: {
       type: String,
@@ -54,7 +54,7 @@ const addressSchema = new mongoose.Schema(
       max: 100,
     },
     alternatePhone: {
-      type: String,
+      type: Number,
     },
     addressType: {
       type: String,

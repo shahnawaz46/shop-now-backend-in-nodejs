@@ -288,7 +288,9 @@ export const userProfile = async (req, res) => {
     const userDetail = await User.findOne({
       _id: req.data._id,
     }).select('firstName lastName email phoneNo profilePicture location');
-    const address = await Address.find({ userId: req.data._id });
+    const address = await Address.find({ userId: req.data._id }).select(
+      'name mobileNumber pinCode state address locality cityDistrictTown landmark alternatePhone addressType'
+    );
 
     return res.status(200).json({ userDetail, address });
   } catch (error) {

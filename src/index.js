@@ -28,6 +28,7 @@ import userRouterForAdmin from './routes/admin/user.routes.js';
 // script file
 import { allScript } from './script/AllScript.js';
 import { wakeUpTheServer } from './utils/WakeUpTheServer.js';
+// import { tokenBucket } from './utils/rate-limiting/TokenBucket.js';
 
 const app = express();
 dotenv.config({});
@@ -38,9 +39,9 @@ redisConnection();
 const origin =
   process.env.NODE_ENV === 'production'
     ? [
-        'https://shop-now-reactjs.netlify.app',
-        'https://shop-now-admin-panel.vercel.app',
-      ]
+      'https://shop-now-reactjs.netlify.app',
+      'https://shop-now-admin-panel.vercel.app',
+    ]
     : true;
 
 app.set('trust proxy', true);
@@ -50,6 +51,8 @@ app.use(express.json({ limit: '200mb' }));
 app.use(express.urlencoded({ limit: '200mb', extended: true }));
 app.use(express.text({ limit: '200mb' }));
 app.use(express.static('public'));
+
+// app.use('/api', tokenBucket);
 
 // admin routes
 app.use('/api/admin', adminUserRouter);

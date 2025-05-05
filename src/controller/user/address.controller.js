@@ -9,7 +9,10 @@ export const addAddress = async (req, res) => {
   const addressDetails = { userId: req.data._id, ...userAddress };
 
   try {
-    const address = await Address.create(addressDetails);
+    const addressAdded = await Address.create(addressDetails);
+    const address = await Address.findById(addressAdded._id).select(
+      'name mobileNumber pinCode state address locality cityDistrictTown landmark alternatePhone addressType'
+    );
 
     return res.status(200).json({
       msg: 'Address Added Successfully',
@@ -36,7 +39,10 @@ export const addAddress = async (req, res) => {
 
 export const getAddress = async (req, res) => {
   try {
-    const address = await Address.find({ userId: req.data._id });
+    const address = await Address.find({ userId: req.data._id }).select(
+      'name mobileNumber pinCode state address locality cityDistrictTown landmark alternatePhone addressType'
+    );
+
     if (address) {
       return res.status(200).json({ userAddress: address });
     } else {
@@ -67,6 +73,8 @@ export const updateAddress = async (req, res) => {
       req.body._id,
       { $set: { ...req.body } },
       { new: true }
+    ).select(
+      'name mobileNumber pinCode state address locality cityDistrictTown landmark alternatePhone addressType'
     );
 
     return res.status(200).json({

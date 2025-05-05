@@ -41,7 +41,7 @@ export const getAllProducts = async (req, res) => {
     return res.status(200).json({
       products: {
         next: allProducts.length < LIMIT ? null : nextRoute,
-        item: allProducts,
+        items: allProducts,
       },
     });
   } catch (error) {
@@ -104,7 +104,7 @@ export const getFilteredProducts = async (req, res) => {
         return res.status(200).json({
           products: {
             next: subCategoryProducts.length < LIMIT ? null : nextRoute,
-            subCategoryProducts,
+            items: subCategoryProducts,
           },
         });
       }
@@ -129,7 +129,7 @@ export const getFilteredProducts = async (req, res) => {
       return res.status(200).json({
         products: {
           next: subCategoryProducts.length < LIMIT ? null : nextRoute,
-          subCategoryProducts,
+          items: subCategoryProducts,
         },
       });
     }
@@ -155,7 +155,7 @@ export const getFilteredProducts = async (req, res) => {
       return res.status(200).json({
         products: {
           next: subCategoryProducts.length < LIMIT ? null : nextRoute,
-          subCategoryProducts,
+          items: subCategoryProducts,
         },
       });
     }
@@ -184,7 +184,11 @@ export const getSingleProductById = async (req, res) => {
   try {
     const product = await Product.findOne({
       _id: productId,
-    }).populate('reviews.userId', 'firstName lastName profilePicture');
+    })
+      .select(
+        'productName actualPrice sellingPrice description productPictures reviews size slug stocks targetAudience totalSales'
+      )
+      .populate('reviews.userId', 'firstName lastName profilePicture');
 
     if (!product) {
       return res.status(404).json({ error: 'product not found' });
@@ -394,7 +398,7 @@ export const topRatingProducts = async (req, res) => {
       {
         // The $group stage takes a collection of documents and groups them based on a specified field or fields. This means it gathers together all documents that share the same value(s) in the specified field(s).
         $group: {
-          _id: '$_id',
+          _id: '$_id', // <- This is the only field used to define group boundaries
           productPictures: { $first: '$productPictures' },
           averageRating: {
             $avg: '$reviews.rating',
@@ -412,7 +416,8 @@ export const topRatingProducts = async (req, res) => {
         // $project stage is used for return only the fields you need in the result.
         // 1 means add and 0 means remove fields
         $project: {
-          _id: 1,
+          _id: 0,
+          productId: '$_id',
           productPicture: {
             $arrayElemAt: ['$productPictures', 0], // Extract the first image from the productPictures array and also renaming the field from productPictures to productPicture.
           },
@@ -531,7 +536,7 @@ export const getTopSellingProducts = async (req, res) => {
     return res.status(200).json({
       products: {
         next: product.length < LIMIT ? null : nextRoute,
-        item: product,
+        items: product,
       },
     });
   } catch (error) {
@@ -614,7 +619,7 @@ export const getNewestProducts = async (req, res) => {
     return res.status(200).json({
       products: {
         next: newestProducts.length < LIMIT ? null : nextRoute,
-        item: newestProducts,
+        items: newestProducts,
       },
     });
   } catch (error) {
