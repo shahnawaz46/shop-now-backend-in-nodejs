@@ -2,7 +2,7 @@ import slugify from 'slugify';
 
 // internal
 import { Category } from '../../model/category.model.js';
-import getAllCategory from '../../utils/getAllCategory.js';
+import { getAllCategory } from '../../utils/Category.js';
 import sendMail from '../../services/mail.service.js';
 import { errorTemplate } from '../../template/ErrorMailTemplate.js';
 import { generateURL } from '../../utils/GenerateURL.js';
