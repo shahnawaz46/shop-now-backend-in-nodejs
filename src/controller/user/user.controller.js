@@ -1,18 +1,18 @@
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 
 // internal
-import { User } from '../../model/user.model.js';
-import { Address } from '../../model/address.model.js';
-import { uploadProfilePictures } from '../../services/cloudinary.service.js';
-import { Otp } from '../../model/otp.model.js';
-import sendMail from '../../services/mail.service.js';
-import { generateURL } from '../../utils/GenerateURL.js';
-import { errorTemplate } from '../../template/ErrorMailTemplate.js';
+import { User } from "../../model/user.model.js";
+import { Address } from "../../model/address.model.js";
+import { uploadProfilePictures } from "../../services/cloudinary.service.js";
+import { Otp } from "../../model/otp.model.js";
+import sendMail from "../../services/mail.service.js";
+import { generateURL } from "../../utils/GenerateURL.js";
+import { errorTemplate } from "../../template/ErrorMailTemplate.js";
 import {
   registrationVerificationEmail,
   thankForRegistration,
-} from '../../template/RegistrationMailTemplate.js';
+} from "../../template/RegistrationMailTemplate.js";
 
 export const signup = async (req, res) => {
   const {
@@ -28,7 +28,7 @@ export const signup = async (req, res) => {
   } = req.body;
 
   const ipAddress =
-    req?.headers?.['x-forwarded-for'] || req?.socket?.remoteAddress || req?.ip;
+    req?.headers?.["x-forwarded-for"] || req?.socket?.remoteAddress || req?.ip;
 
   try {
     const isUserAlreadyExist = await User.findOne({ email });
@@ -37,11 +37,11 @@ export const signup = async (req, res) => {
     if (isUserAlreadyExist && isUserAlreadyExist.isEmailVerified) {
       return res
         .status(400)
-        .json({ error: 'User Already Exist Please Signin' });
+        .json({ error: "User Already Exist Please Signin" });
     }
 
     if (password !== confirm_password) {
-      return res.status(400).json({ error: 'Password do not match' });
+      return res.status(400).json({ error: "Password do not match" });
     }
 
     // hash the password by using bcrypt to store inside database
@@ -68,7 +68,7 @@ export const signup = async (req, res) => {
       // after the account is updated now sending otp to the mail
       await sendMail(
         email,
-        'Account Verification',
+        "Account Verification",
         registrationVerificationEmail(otp)
       );
 
@@ -81,7 +81,7 @@ export const signup = async (req, res) => {
 
       return res
         .status(200)
-        .json({ msg: 'Signup Successfully', email: userUpdated.email });
+        .json({ msg: "Signup Successfully", email: userUpdated.email });
     }
 
     // if user is not exists then creating new document
@@ -98,7 +98,7 @@ export const signup = async (req, res) => {
     // after the account is created now sending otp to the mail
     await sendMail(
       email,
-      'Account Verification',
+      "Account Verification",
       registrationVerificationEmail(otp)
     );
 
@@ -107,13 +107,13 @@ export const signup = async (req, res) => {
 
     return res
       .status(200)
-      .json({ msg: 'Signup Successfully', email: newUser.email });
+      .json({ msg: "Signup Successfully", email: newUser.email });
   } catch (error) {
     // send error to email
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === "production") {
       sendMail(
         process.env.ADMIN_EMAIL,
-        'Error in Signup',
+        "Error in Signup",
         errorTemplate(generateURL(req), error.message)
       );
     } else {
@@ -134,12 +134,12 @@ export const otpVerification = async (req, res) => {
     if (!user) {
       return res
         .status(404)
-        .json({ error: 'User not found please signup again' });
+        .json({ error: "User not found please signup again" });
     }
 
     const isOtpExists = await Otp.findOne({ user: user._id });
     if (!isOtpExists) {
-      return res.status(400).json({ error: 'Invalid OTP or OTP expired' });
+      return res.status(400).json({ error: "Invalid OTP or OTP expired" });
     }
 
     const now = new Date();
@@ -148,13 +148,13 @@ export const otpVerification = async (req, res) => {
     if (now > user.otpExpiresAt) {
       await Otp.findByIdAndDelete(isOtpExists._id);
 
-      return res.status(400).json({ error: 'OTP expired' });
+      return res.status(400).json({ error: "OTP expired" });
     }
 
     if (isOtpExists.otp !== Number(otp)) {
       return res
         .status(400)
-        .json({ error: 'The OTP you entered is incorrect' });
+        .json({ error: "The OTP you entered is incorrect" });
     }
 
     // if otp matched then deleting OTP document and updating USER document
@@ -167,29 +167,30 @@ export const otpVerification = async (req, res) => {
     const token = jwt.sign(
       { _id: user._id, role: user.role },
       process.env.JWT_SECRET,
-      { expiresIn: '30d' }
+      { expiresIn: "7d" }
     );
 
     // if origin is same (means if client and server domain is same) then sameSite = lax, otherwise sameSite = none
-    res.cookie('_f_id', token, {
+    res.cookie("_f_id", token, {
       httpOnly: true,
-      sameSite: 'none',
+      sameSite: "none",
       secure: true,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
     res.status(200).json({ userId: user._id });
 
     await sendMail(
       email,
-      'Registration Successfully',
+      "Registration Successfully",
       thankForRegistration(`${user.firstName} ${user.lastName}`)
     );
   } catch (error) {
     // send error to email
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === "production") {
       sendMail(
         process.env.ADMIN_EMAIL,
-        'Error in OTP Verification',
+        "Error in OTP Verification",
         errorTemplate(generateURL(req), error.message)
       );
     } else {
@@ -207,7 +208,7 @@ export const signin = async (req, res) => {
   const { email, password, browser, device } = req.body;
 
   const ipAddress =
-    req?.headers?.['x-forwarded-for'] || req?.socket?.remoteAddress || req?.ip;
+    req?.headers?.["x-forwarded-for"] || req?.socket?.remoteAddress || req?.ip;
 
   try {
     // role can be user and admin
@@ -215,13 +216,13 @@ export const signin = async (req, res) => {
 
     // if user not found
     if (!user) {
-      return res.status(404).json({ error: 'User not found please Register' });
+      return res.status(404).json({ error: "User not found please Register" });
     }
 
     // comparing login password with hash password
     const isPasswordCorrect = await bcrypt.compare(password, user.password);
     if (!isPasswordCorrect) {
-      return res.status(401).json({ error: 'Wrong credentials' });
+      return res.status(401).json({ error: "Wrong credentials" });
     }
 
     // save user login info
@@ -235,7 +236,7 @@ export const signin = async (req, res) => {
 
       await sendMail(
         email,
-        'Account Verification',
+        "Account Verification",
         registrationVerificationEmail(otp)
       );
 
@@ -244,31 +245,32 @@ export const signin = async (req, res) => {
 
       return res
         .status(400)
-        .json({ error: 'User not verified, Please verify' });
+        .json({ error: "User not verified, Please verify" });
     }
 
     const token = jwt.sign(
       { _id: user._id, role: user.role },
       process.env.JWT_SECRET,
-      { expiresIn: '30d' }
+      { expiresIn: "7d" }
     );
 
     // if the origin is same (means if client and server domain are same) then sameSite = lax, otherwise sameSite = none
-    res.cookie('_f_id', token, {
+    res.cookie("_f_id", token, {
       httpOnly: true,
-      sameSite: 'none',
+      sameSite: "none",
       secure: true,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
     return res
       .status(200)
-      .json({ msg: 'Login Successfully', userId: user._id });
+      .json({ msg: "Login Successfully", userId: user._id });
   } catch (error) {
     // send error to email
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === "production") {
       sendMail(
         process.env.ADMIN_EMAIL,
-        'Error in Signin',
+        "Error in Signin",
         errorTemplate(generateURL(req), error.message)
       );
     } else {
@@ -287,18 +289,18 @@ export const userProfile = async (req, res) => {
     // returning logged in user personal details and address
     const userDetail = await User.findOne({
       _id: req.data._id,
-    }).select('firstName lastName email phoneNo profilePicture location');
+    }).select("firstName lastName email phoneNo profilePicture location");
     const address = await Address.find({ userId: req.data._id }).select(
-      'name mobileNumber pinCode state address locality cityDistrictTown landmark alternatePhone addressType'
+      "name mobileNumber pinCode state address locality cityDistrictTown landmark alternatePhone addressType"
     );
 
     return res.status(200).json({ userDetail, address });
   } catch (error) {
     // send error to email
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === "production") {
       sendMail(
         process.env.ADMIN_EMAIL,
-        'Error in Get User Profile',
+        "Error in Get User Profile",
         errorTemplate(generateURL(req), error.message)
       );
     } else {
@@ -329,19 +331,19 @@ export const updateProfilePic = async (req, res) => {
         { _id: req.data._id },
         { profilePicture: imageUrl },
         { new: true }
-      ).select('firstName lastName email phoneNo profilePicture location');
+      ).select("firstName lastName email phoneNo profilePicture location");
 
       return res.status(200).json({
-        msg: 'Profile Pic Update Successfully',
+        msg: "Profile Pic Update Successfully",
         userDetails: result,
       });
     }
   } catch (error) {
     // send error to email
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === "production") {
       sendMail(
         process.env.ADMIN_EMAIL,
-        'Error in Update Profile Pic',
+        "Error in Update Profile Pic",
         errorTemplate(generateURL(req), error.message)
       );
     } else {
@@ -361,21 +363,21 @@ export const editUserProfileDetail = async (req, res) => {
   try {
     const result = await User.findByIdAndUpdate(req.data._id, userDetail, {
       new: true,
-    }).select('firstName lastName email phoneNo profilePicture location');
+    }).select("firstName lastName email phoneNo profilePicture location");
 
     return res
       .status(200)
-      .json({ msg: 'Profile Update Successfully', userDetail: result });
+      .json({ msg: "Profile Update Successfully", userDetail: result });
   } catch (error) {
-    if (error.codeName == 'DuplicateKey') {
-      return res.status(400).json({ error: 'This Email Already Exist' });
+    if (error.codeName == "DuplicateKey") {
+      return res.status(400).json({ error: "This Email Already Exist" });
     }
 
     // send error to email
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === "production") {
       sendMail(
         process.env.ADMIN_EMAIL,
-        'Error in Update User Profile Details',
+        "Error in Update User Profile Details",
         errorTemplate(generateURL(req), error.message)
       );
     } else {
@@ -390,6 +392,6 @@ export const editUserProfileDetail = async (req, res) => {
 };
 
 export const signout = (req, res) => {
-  res.clearCookie('_f_id');
-  return res.status(200).json({ msg: 'Signout Successfully' });
+  res.clearCookie("_f_id");
+  return res.status(200).json({ msg: "Signout Successfully" });
 };

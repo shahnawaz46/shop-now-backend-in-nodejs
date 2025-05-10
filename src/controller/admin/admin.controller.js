@@ -1,11 +1,11 @@
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 
 // internal
-import { User } from '../../model/user.model.js';
-import sendMail from '../../services/mail.service.js';
-import { errorTemplate } from '../../template/ErrorMailTemplate.js';
-import { generateURL } from '../../utils/GenerateURL.js';
+import { User } from "../../model/user.model.js";
+import sendMail from "../../services/mail.service.js";
+import { errorTemplate } from "../../template/ErrorMailTemplate.js";
+import { generateURL } from "../../utils/GenerateURL.js";
 
 export const signup = async (req, res) => {
   const {
@@ -25,13 +25,13 @@ export const signup = async (req, res) => {
     if (alreadyUser) {
       return res
         .status(409)
-        .json({ error: 'User Already Exist Please Signin' });
+        .json({ error: "User Already Exist Please Signin" });
     }
 
     if (password !== confirm_password) {
       return res
         .status(400)
-        .json({ error: 'Password and Confirm Password not Matched' });
+        .json({ error: "Password and Confirm Password not Matched" });
     }
 
     // hasing the password
@@ -47,14 +47,14 @@ export const signup = async (req, res) => {
       role,
     });
 
-    return res.status(200).json({ msg: 'Signup Successfully' });
+    return res.status(200).json({ msg: "Signup Successfully" });
   } catch (error) {
     // send error to email
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === "production") {
       sendMail(
         process.env.ADMIN_EMAIL,
-        '(Admin Panel) Error in Signup',
-        errorTemplate(generateURL(req, '', true), error.message)
+        "(Admin Panel) Error in Signup",
+        errorTemplate(generateURL(req, "", true), error.message)
       );
     } else {
       console.log(error);
@@ -71,23 +71,23 @@ export const signin = async (req, res) => {
   const { email, password, browser, device } = req.body;
 
   const ipAddress =
-    req?.headers?.['x-forwarded-for'] || req?.socket?.remoteAddress || req?.ip;
+    req?.headers?.["x-forwarded-for"] || req?.socket?.remoteAddress || req?.ip;
 
   try {
     const admin = await User.findOne({ email });
 
     if (!admin) {
-      return res.status(404).json({ error: 'User not found please Register' });
+      return res.status(404).json({ error: "User not found please Register" });
     }
 
-    if (admin.role !== 'admin') {
+    if (admin.role !== "admin") {
       return res.status(404).json({ error: "You don't have permission" });
     }
 
     // comparing login password with hash password
     const isPasswordCorrect = await bcrypt.compare(password, admin.password);
     if (!isPasswordCorrect) {
-      return res.status(401).json({ error: 'Wrong credentials' });
+      return res.status(401).json({ error: "Wrong credentials" });
     }
 
     // save user login info
@@ -97,17 +97,18 @@ export const signin = async (req, res) => {
     const token = jwt.sign(
       { _id: admin._id, role: admin.role },
       process.env.JWT_SECRET,
-      { expiresIn: '30d' }
+      { expiresIn: "1d" }
     );
 
-    res.cookie('_a_tn', token, {
+    res.cookie("_a_tn", token, {
       httpOnly: true,
-      sameSite: 'none',
+      sameSite: "none",
       secure: true,
+      maxAge: 24 * 60 * 60 * 1000,
     });
 
     return res.status(200).json({
-      msg: 'Login Successfully',
+      msg: "Login Successfully",
       details: {
         firstName: admin?.firstName,
         lastName: admin?.lastName,
@@ -119,11 +120,11 @@ export const signin = async (req, res) => {
     });
   } catch (error) {
     // send error to email
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === "production") {
       sendMail(
         process.env.ADMIN_EMAIL,
-        '(Admin Panel) Error in Signin',
-        errorTemplate(generateURL(req, '', true), error.message)
+        "(Admin Panel) Error in Signin",
+        errorTemplate(generateURL(req, "", true), error.message)
       );
     } else {
       console.log(error);
@@ -137,8 +138,8 @@ export const signin = async (req, res) => {
 };
 
 export const signout = (req, res) => {
-  res.clearCookie('_a_tn');
-  return res.status(200).json({ msg: 'Signout Successfully' });
+  res.clearCookie("_a_tn");
+  return res.status(200).json({ msg: "Signout Successfully" });
 };
 
 export const updatePassword = async (req, res) => {
@@ -149,26 +150,26 @@ export const updatePassword = async (req, res) => {
     if (!user) {
       return res
         .status(404)
-        .json({ error: 'User not found! Please contact with Admin' });
+        .json({ error: "User not found! Please contact with Admin" });
     }
 
-    if (user.role !== 'admin') {
+    if (user.role !== "admin") {
       return res
         .status(404)
-        .json({ error: 'User not found! Please contact with Admin' });
+        .json({ error: "User not found! Please contact with Admin" });
     }
 
     const hashPassword = await bcrypt.hash(newPassword, 12);
     user.password = hashPassword;
     await user.save();
 
-    return res.status(200).json({ msg: 'Updated updated successfully' });
+    return res.status(200).json({ msg: "Updated updated successfully" });
   } catch (error) {
     // send error to email
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === "production") {
       sendMail(
         process.env.ADMIN_EMAIL,
-        'Error in Update Password',
+        "Error in Update Password",
         errorTemplate(generateURL(req), error.message)
       );
     } else {
@@ -187,16 +188,16 @@ export const userProfile = async (req, res) => {
     // returning logged in user personal details and address
     const userDetail = await User.findOne({
       _id: req.data._id,
-    }).select('firstName lastName email phoneNo profilePicture location');
+    }).select("firstName lastName email phoneNo profilePicture location");
 
     return res.status(200).json({ details: userDetail });
   } catch (error) {
     // send error to email
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === "production") {
       sendMail(
         process.env.ADMIN_EMAIL,
-        '(Admin Panel) Error in Profile',
-        errorTemplate(generateURL(req, '', true), error.message)
+        "(Admin Panel) Error in Profile",
+        errorTemplate(generateURL(req, "", true), error.message)
       );
     } else {
       console.log(error);
