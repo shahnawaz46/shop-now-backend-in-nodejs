@@ -1,5 +1,5 @@
-import mongoose from 'mongoose';
-import bcrypt from 'bcryptjs';
+import mongoose from "mongoose";
+import bcrypt from "bcryptjs";
 
 const userSchema = new mongoose.Schema(
   {
@@ -37,12 +37,12 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ['user', 'admin'],
-      default: 'user',
+      enum: ["user", "admin"],
+      default: "user",
     },
     profilePicture: {
-      type: String,
-      default: null,
+      URL: { type: String, default: null },
+      public_id: { type: String, default: null },
     },
     location: {
       type: String,
@@ -67,4 +67,4 @@ const userSchema = new mongoose.Schema(
 //     next()
 // })
 
-export const User = mongoose.model('User', userSchema);
+export const User = mongoose.model("User", userSchema);

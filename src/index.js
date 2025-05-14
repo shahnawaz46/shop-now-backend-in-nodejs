@@ -4,7 +4,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 
 import mongoDBConnection from "./database/mongo.database.js";
-import redisConnection from "./database/redis.database.js";
+import redisConnection from "./config/redis.config.js";
 
 // user router
 import userRouter from "./routes/user/user.routes.js";
@@ -50,6 +50,10 @@ app.use(cookieParser());
 app.use(express.json({ limit: "200mb" }));
 app.use(express.urlencoded({ limit: "200mb", extended: true }));
 app.use(express.text({ limit: "200mb" }));
+app.use((req, res, next) => {
+  res.removeHeader("X-Powered-By");
+  next();
+});
 
 // app.use('/api', tokenBucket);
 

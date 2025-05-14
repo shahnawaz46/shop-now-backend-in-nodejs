@@ -1,16 +1,16 @@
-import slugify from 'slugify';
+import slugify from "slugify";
 
 // internal
-import { Product } from '../../model/product.model.js';
+import { Product } from "../../model/product.model.js";
 import {
-  deleteProductPictures,
-  uploadProductPictures,
-} from '../../services/cloudinary.service.js';
-import { Order } from '../../model/order.model.js';
-import { LIMIT } from '../../utils/Constant.js';
-import { generateURL } from '../../utils/GenerateURL.js';
-import sendMail from '../../services/mail.service.js';
-import { errorTemplate } from '../../template/ErrorMailTemplate.js';
+  uploadMediaOnCloudinary,
+  deleteMediaOnCloudinary,
+} from "../../services/cloudinary.service.js";
+import { Order } from "../../model/order.model.js";
+import { LIMIT } from "../../utils/Constant.js";
+import { generateURL } from "../../utils/GenerateURL.js";
+import sendMail from "../../services/mail.service.js";
+import { errorTemplate } from "../../template/ErrorMailTemplate.js";
 
 export const addProduct = async (req, res) => {
   const {
@@ -27,13 +27,20 @@ export const addProduct = async (req, res) => {
   if (!req.files || req.files.length === 0) {
     return res
       .status(404)
-      .json({ error: 'Image not Found Please Select Images' });
+      .json({ error: "Image not Found Please Select Images" });
   }
 
   const productPictures = [];
   for (const file of req.files) {
-    const result = await uploadProductPictures(file.path);
-    productPictures.push(result);
+    const result = await uploadMediaOnCloudinary(file.path, {
+      upload_preset: "shop-now-product-images",
+      allowed_formats: ["png", "jpg", "jpeg", "webp", "ico", "avif", "svg"],
+    });
+
+    productPictures.push({
+      img: result?.secure_url,
+      public_id: result.public_id,
+    });
   }
 
   try {
@@ -52,16 +59,16 @@ export const addProduct = async (req, res) => {
 
     const product = await Product.findById(newProduct._id)
       .select(
-        '_id productName actualPrice sellingPrice stocks categoryId targetAudience description productPictures'
+        "_id productName actualPrice sellingPrice stocks categoryId targetAudience description productPictures"
       )
-      .populate({ path: 'categoryId', select: '_id categoryName' });
+      .populate({ path: "categoryId", select: "_id categoryName" });
 
     // after product is added here i am again calculating productData details
     const productData = await Product.aggregate([
       {
         $group: {
           _id: null,
-          totalStocks: { $sum: '$stocks' },
+          totalStocks: { $sum: "$stocks" },
           totalProducts: { $sum: 1 },
         },
       },
@@ -75,17 +82,17 @@ export const addProduct = async (req, res) => {
     ]);
 
     return res.status(200).json({
-      message: 'Product Added Successfully',
+      message: "Product Added Successfully",
       product,
       productData: productData?.[0] || {},
     });
   } catch (error) {
     // send error to email
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === "production") {
       sendMail(
         process.env.ADMIN_EMAIL,
-        '(Admin Panel) Error in Add Product',
-        errorTemplate(generateURL(req, '', true), error.message)
+        "(Admin Panel) Error in Add Product",
+        errorTemplate(generateURL(req, "", true), error.message)
       );
     } else {
       console.log(error);
@@ -104,9 +111,9 @@ export const getAllProducts = async (req, res) => {
   try {
     const allProducts = await Product.find({})
       .select(
-        '_id productName actualPrice sellingPrice stocks categoryId targetAudience description productPictures totalSales'
+        "_id productName actualPrice sellingPrice stocks categoryId targetAudience description productPictures totalSales"
       )
-      .populate({ path: 'categoryId', select: '_id categoryName' })
+      .populate({ path: "categoryId", select: "_id categoryName" })
       .sort({ createdAt: -1 })
       .skip((page - 1) * LIMIT)
       .limit(LIMIT);
@@ -120,11 +127,11 @@ export const getAllProducts = async (req, res) => {
     });
   } catch (error) {
     // send error to email
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === "production") {
       sendMail(
         process.env.ADMIN_EMAIL,
-        '(Admin Panel) Error in Get All Products',
-        errorTemplate(generateURL(req, '', true), error.message)
+        "(Admin Panel) Error in Get All Products",
+        errorTemplate(generateURL(req, "", true), error.message)
       );
     } else {
       console.log(error);
@@ -144,7 +151,7 @@ export const productSalesDetails = async (req, res) => {
       {
         $group: {
           _id: null,
-          totalStocks: { $sum: '$stocks' },
+          totalStocks: { $sum: "$stocks" },
           totalProducts: { $sum: 1 },
         },
       },
@@ -153,13 +160,13 @@ export const productSalesDetails = async (req, res) => {
     // 2nd calculating totalSellings and totalRevenue
     const orderData = await Order.aggregate([
       {
-        $match: { status: 'delivered' }, // match orders with 'delivered' status
+        $match: { status: "delivered" }, // match orders with 'delivered' status
       },
       {
         $group: {
           _id: null,
           totalSellings: { $sum: 1 }, // sum total order(status delivered) of all order
-          totalRevenue: { $sum: '$totalPrice' }, // sum total price of all order
+          totalRevenue: { $sum: "$totalPrice" }, // sum total price of all order
         },
       },
       {
@@ -184,11 +191,11 @@ export const productSalesDetails = async (req, res) => {
     return res.status(200).json({ ...productSales });
   } catch (error) {
     // send error to email
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === "production") {
       sendMail(
         process.env.ADMIN_EMAIL,
-        '(Admin Panel) Error in Get Product Sales Details',
-        errorTemplate(generateURL(req, '', true), error.message)
+        "(Admin Panel) Error in Get Product Sales Details",
+        errorTemplate(generateURL(req, "", true), error.message)
       );
     } else {
       console.log(error);
@@ -209,11 +216,16 @@ export const deleteProduct = async (req, res) => {
     if (!deleteProduct) {
       return res
         .status(404)
-        .json({ error: 'Product not found please check again' });
+        .json({ error: "Product not found please check again" });
     }
 
     // then i am deleting productPictures from cloudinary
-    await deleteProductPictures(deletedProduct.productPictures);
+    const productImages = deletedProduct.productPictures;
+    productImages &&
+      productImages.length > 0 &&
+      productImages.forEach(
+        async (image) => await await deleteMediaOnCloudinary(image.public_id)
+      );
 
     // finally i am deleting product from mongodb
     await Product.findByIdAndDelete({
@@ -225,7 +237,7 @@ export const deleteProduct = async (req, res) => {
       {
         $group: {
           _id: null,
-          totalStocks: { $sum: '$stocks' },
+          totalStocks: { $sum: "$stocks" },
           totalProducts: { $sum: 1 },
         },
       },
@@ -239,16 +251,16 @@ export const deleteProduct = async (req, res) => {
     ]);
 
     return res.status(200).json({
-      message: 'Product Deleted Successfully',
+      message: "Product Deleted Successfully",
       productData: productData?.[0] || {},
     });
   } catch (error) {
     // send error to email
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === "production") {
       sendMail(
         process.env.ADMIN_EMAIL,
-        '(Admin Panel) Error in Delete Product',
-        errorTemplate(generateURL(req, '', true), error.message)
+        "(Admin Panel) Error in Delete Product",
+        errorTemplate(generateURL(req, "", true), error.message)
       );
     } else {
       console.log(error);
@@ -269,13 +281,25 @@ export const editProduct = async (req, res) => {
     const product = await Product.findById(_id);
 
     // first removing previous productPictures from cloudinary
-    await deleteProductPictures(product.productPictures);
+    const productImages = product.productPictures;
+    productImages &&
+      productImages.length > 0 &&
+      productImages.forEach(
+        async (image) => await await deleteMediaOnCloudinary(image.public_id)
+      );
 
     // then uploading new product pictures
     const productPictures = [];
     for (const file of req.files) {
-      const result = await uploadProductPictures(file.path);
-      productPictures.push(result);
+      const result = await uploadMediaOnCloudinary(file.path, {
+        upload_preset: "shop-now-product-images",
+        allowed_formats: ["png", "jpg", "jpeg", "webp", "ico", "avif", "svg"],
+      });
+
+      productPictures.push({
+        img: result?.secure_url,
+        public_id: result.public_id,
+      });
     }
 
     // then updating state for upload in mongodb
@@ -293,14 +317,14 @@ export const editProduct = async (req, res) => {
       new: true,
     })
       .select(
-        '_id productName actualPrice sellingPrice stocks categoryId targetAudience description productPictures'
+        "_id productName actualPrice sellingPrice stocks categoryId targetAudience description productPictures"
       )
-      .populate({ path: 'categoryId', select: '_id categoryName' });
+      .populate({ path: "categoryId", select: "_id categoryName" });
 
     // if both stock and target audience are not present in the payload/req then there is no need to calculate productData
     if (!rest?.stocks && !rest?.targetAudience) {
       return res.status(200).json({
-        message: 'Product Edit Successfully',
+        message: "Product Edit Successfully",
         product,
       });
     }
@@ -310,7 +334,7 @@ export const editProduct = async (req, res) => {
       {
         $group: {
           _id: null,
-          totalStocks: { $sum: '$stocks' },
+          totalStocks: { $sum: "$stocks" },
           totalProducts: { $sum: 1 },
         },
       },
@@ -324,17 +348,17 @@ export const editProduct = async (req, res) => {
     ]);
 
     return res.status(200).json({
-      message: 'Product Edit Successfully',
+      message: "Product Edit Successfully",
       product,
       productData: productData?.[0] || {},
     });
   } catch (error) {
     // send error to email
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === "production") {
       sendMail(
         process.env.ADMIN_EMAIL,
-        '(Admin Panel) Error in Edit/update Product',
-        errorTemplate(generateURL(req, '', true), error.message)
+        "(Admin Panel) Error in Edit/update Product",
+        errorTemplate(generateURL(req, "", true), error.message)
       );
     } else {
       console.log(error);
@@ -352,18 +376,18 @@ export const getSingleProductById = async (req, res) => {
   try {
     const product = await Product.findOne({
       _id: productId,
-    }).populate('reviews.userId', 'firstName lastName profilePicture');
+    }).populate("reviews.userId", "firstName lastName profilePicture");
     if (product) {
       return res.status(200).json({ product });
     }
-    return res.status(404).json({ error: 'product not found' });
+    return res.status(404).json({ error: "product not found" });
   } catch (error) {
     // send error to email
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === "production") {
       sendMail(
         process.env.ADMIN_EMAIL,
-        '(Admin Panel) Error in Get Single Product By Id',
-        errorTemplate(generateURL(req, '', true), error.message)
+        "(Admin Panel) Error in Get Single Product By Id",
+        errorTemplate(generateURL(req, "", true), error.message)
       );
     } else {
       console.log(error);
@@ -382,12 +406,12 @@ export const searchProducts = async (req, res) => {
   try {
     // 'i': This option makes the regex search case-insensitive ex: PANT, Pant, pant
     const products = await Product.find({
-      $or: [{ productName: { $regex: query, $options: 'i' } }],
+      $or: [{ productName: { $regex: query, $options: "i" } }],
     })
       .select(
-        '_id productName actualPrice sellingPrice stocks categoryId targetAudience description productPictures'
+        "_id productName actualPrice sellingPrice stocks categoryId targetAudience description productPictures"
       )
-      .populate('categoryId', '_id categoryName')
+      .populate("categoryId", "_id categoryName")
       .skip((page - 1) * LIMIT)
       .limit(LIMIT);
 
@@ -398,11 +422,11 @@ export const searchProducts = async (req, res) => {
       .json({ next: products.length < LIMIT ? null : nextURL, products });
   } catch (error) {
     // send error to email
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === "production") {
       sendMail(
         process.env.ADMIN_EMAIL,
-        '(Admin Panel) Error in Search Products',
-        errorTemplate(generateURL(req, '', true), error.message)
+        "(Admin Panel) Error in Search Products",
+        errorTemplate(generateURL(req, "", true), error.message)
       );
     } else {
       console.log(error);

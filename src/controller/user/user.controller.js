@@ -4,7 +4,10 @@ import jwt from "jsonwebtoken";
 // internal
 import { User } from "../../model/user.model.js";
 import { Address } from "../../model/address.model.js";
-import { uploadProfilePictures } from "../../services/cloudinary.service.js";
+import {
+  uploadMediaOnCloudinary,
+  deleteMediaOnCloudinary,
+} from "../../services/cloudinary.service.js";
 import { Otp } from "../../model/otp.model.js";
 import sendMail from "../../services/mail.service.js";
 import { generateURL } from "../../utils/GenerateURL.js";
@@ -287,12 +290,17 @@ export const signin = async (req, res) => {
 export const userProfile = async (req, res) => {
   try {
     // returning logged in user personal details and address
-    const userDetail = await User.findOne({
+    const user = await User.findOne({
       _id: req.data._id,
     }).select("firstName lastName email phoneNo profilePicture location");
     const address = await Address.find({ userId: req.data._id }).select(
       "name mobileNumber pinCode state address locality cityDistrictTown landmark alternatePhone addressType"
     );
+
+    const userDetail = {
+      ...user._doc,
+      profilePicture: user.profilePicture?.URL || null,
+    };
 
     return res.status(200).json({ userDetail, address });
   } catch (error) {
@@ -319,23 +327,37 @@ export const updateProfilePic = async (req, res) => {
     // first checking user is exist or not
     let userDetail = await User.findOne({ _id: req.data._id });
     if (userDetail && req.file) {
+      // if user have already uploaded the profile picture then first deleting
+      if (userDetail.profilePicture.public_id) {
+        await deleteMediaOnCloudinary(userDetail.profilePicture.public_id);
+      }
+
       // here i am uploading profile picture to cloudinary and getting url in res
-      const imageUrl = await uploadProfilePictures(
-        req.file.path,
-        userDetail?.firstName,
-        userDetail?.lastName
-      );
+      const image = await uploadMediaOnCloudinary(req.file.path, {
+        upload_preset: "shop-now-profile-images",
+        public_id: `user_${userDetail?.firstName}_${
+          userDetail?.lastName
+        }_${Date.now()}`,
+        allowed_formats: ["png", "jpg", "jpeg", "webp", "ico", "avif"],
+      });
 
       // then updating user model with profile picture url
       const result = await User.findByIdAndUpdate(
         { _id: req.data._id },
-        { profilePicture: imageUrl },
+        {
+          profilePicture: { URL: image.secure_url, public_id: image.public_id },
+        },
         { new: true }
       ).select("firstName lastName email phoneNo profilePicture location");
 
+      const userDetails = {
+        ...result._doc,
+        profilePicture: result.profilePicture?.URL || null,
+      };
+
       return res.status(200).json({
         msg: "Profile Pic Update Successfully",
-        userDetails: result,
+        userDetails,
       });
     }
   } catch (error) {

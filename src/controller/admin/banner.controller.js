@@ -1,37 +1,45 @@
 // internal
-import { Banner } from '../../model/banner.model.js';
-import sendMail from '../../services/mail.service.js';
-import { generateURL } from '../../utils/GenerateURL.js';
-import { errorTemplate } from '../../template/ErrorMailTemplate.js';
+import { Banner } from "../../model/banner.model.js";
+import sendMail from "../../services/mail.service.js";
+import { generateURL } from "../../utils/GenerateURL.js";
+import { errorTemplate } from "../../template/ErrorMailTemplate.js";
 import {
-  deleteBannerPicture,
-  uploadBannerPicture,
-} from '../../services/cloudinary.service.js';
-import { redisClient } from '../../database/redis.database.js';
+  uploadMediaOnCloudinary,
+  deleteMediaOnCloudinary,
+} from "../../services/cloudinary.service.js";
+import { redisClient } from "../../config/redis.config.js";
 
 export const addBanner = async (req, res) => {
   try {
     const { title, show, screen } = req.body;
 
     if (!title || !show || !screen || !req.file) {
-      return res.status(400).json({ error: 'All fields requried' });
+      return res.status(400).json({ error: "All fields requried" });
     }
 
-    const image = await uploadBannerPicture(req.file.path);
+    const bannerImage = await uploadMediaOnCloudinary(req.file.path, {
+      upload_preset: "shop-now-banner-images",
+      allowed_formats: ["png", "jpg", "jpeg", "webp", "ico", "avif"],
+    });
+
+    const image = {
+      URL: bannerImage.secure_url,
+      public_id: bannerImage.public_id,
+    };
 
     const banner = await Banner.create({ title, show, screen, image });
 
     // whenever admin add banner to the database, then i deleting the banner data from Redis.
-    await redisClient.del('banner');
+    await redisClient.del("banner");
 
     return res.status(201).json({ banner });
   } catch (error) {
     // send error to email
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === "production") {
       sendMail(
         process.env.ADMIN_EMAIL,
-        '(Admin Panel) Error in Add Banner',
-        errorTemplate(generateURL(req, '', true), error.message)
+        "(Admin Panel) Error in Add Banner",
+        errorTemplate(generateURL(req, "", true), error.message)
       );
     } else {
       console.log(error);
@@ -49,7 +57,7 @@ export const getBanner = async (req, res) => {
     const banners = await Banner.find({});
 
     if (!banners) {
-      return res.status(404).json({ error: 'Banner not Found' });
+      return res.status(404).json({ error: "Banner not Found" });
     }
 
     const computerBanner = [];
@@ -57,7 +65,7 @@ export const getBanner = async (req, res) => {
 
     // separate banner based on screen
     banners.forEach((banner) => {
-      if (banner.screen === 'computer') {
+      if (banner.screen === "computer") {
         computerBanner.push(banner);
       } else {
         mobileBanner.push(banner);
@@ -67,11 +75,11 @@ export const getBanner = async (req, res) => {
     return res.status(200).json({ computerBanner, mobileBanner });
   } catch (error) {
     // send error to email
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === "production") {
       sendMail(
         process.env.ADMIN_EMAIL,
-        '(Admin Panel) Error in Get Banner',
-        errorTemplate(generateURL(req, '', true), error.message)
+        "(Admin Panel) Error in Get Banner",
+        errorTemplate(generateURL(req, "", true), error.message)
       );
     } else {
       console.log(error);
@@ -90,26 +98,26 @@ export const deleteBanner = async (req, res) => {
     if (!banner) {
       return res
         .status(404)
-        .json({ error: 'Banner not found please check again' });
+        .json({ error: "Banner not found please check again" });
     }
 
     // first i am deleting banner picture from cloudinary
-    await deleteBannerPicture(banner.image.public_id);
+    await deleteMediaOnCloudinary(banner.image.public_id);
 
     // then i am deleting banner collection from mongodb
     await Banner.findByIdAndDelete(banner._id);
 
     // whenever admin delete banner from the database, then i am also deleting the banner data from Redis.
-    await redisClient.del('banner');
+    await redisClient.del("banner");
 
-    return res.status(200).json({ message: 'Banner Deleted Successfully' });
+    return res.status(200).json({ message: "Banner Deleted Successfully" });
   } catch (error) {
     // send error to email
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === "production") {
       sendMail(
         process.env.ADMIN_EMAIL,
-        '(Admin Panel) Error in Delete Banner',
-        errorTemplate(generateURL(req, '', true), error.message)
+        "(Admin Panel) Error in Delete Banner",
+        errorTemplate(generateURL(req, "", true), error.message)
       );
     } else {
       console.log(error);
@@ -129,7 +137,7 @@ export const updateBannerVisibility = async (req, res) => {
     if (!banner) {
       return res
         .status(404)
-        .json({ error: 'Banner not found please check again' });
+        .json({ error: "Banner not found please check again" });
     }
 
     banner.show = show;
@@ -137,16 +145,16 @@ export const updateBannerVisibility = async (req, res) => {
     await banner.save();
 
     // whenever admin updates the banner visibility in the database, then i am deleting the banner data from Redis.
-    await redisClient.del('banner');
+    await redisClient.del("banner");
 
-    return res.status(200).json({ message: 'Banner Updated Successfully' });
+    return res.status(200).json({ message: "Banner Updated Successfully" });
   } catch (error) {
     // send error to email
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === "production") {
       sendMail(
         process.env.ADMIN_EMAIL,
-        '(Admin Panel) Error in Update Banner Visibility',
-        errorTemplate(generateURL(req, '', true), error.message)
+        "(Admin Panel) Error in Update Banner Visibility",
+        errorTemplate(generateURL(req, "", true), error.message)
       );
     } else {
       console.log(error);
@@ -165,14 +173,14 @@ export const editBanner = async (req, res) => {
     await { Banner }.findByIdAndUpdate({ _id: bannerValue._id }, bannerValue, {
       new: true,
     });
-    return res.status(200).json({ message: 'Banner Edited Successfully' });
+    return res.status(200).json({ message: "Banner Edited Successfully" });
   } catch (error) {
     // send error to email
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === "production") {
       sendMail(
         process.env.ADMIN_EMAIL,
-        '(Admin Panel) Error in Add Banner',
-        errorTemplate(generateURL(req, '', true), error.message)
+        "(Admin Panel) Error in Add Banner",
+        errorTemplate(generateURL(req, "", true), error.message)
       );
     } else {
       console.log(error);

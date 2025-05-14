@@ -1,12 +1,12 @@
 // internal
-import { Product, sizeDescription } from '../../model/product.model.js';
-import { Category } from '../../model/category.model.js';
-import { Order } from '../../model/order.model.js';
-import { TrendingProduct } from '../../model/trendingProduct.model.js';
-import { LIMIT } from '../../utils/Constant.js';
-import { generateURL } from '../../utils/GenerateURL.js';
-import sendMail from '../../services/mail.service.js';
-import { errorTemplate } from '../../template/ErrorMailTemplate.js';
+import { Product, sizeDescription } from "../../model/product.model.js";
+import { Category } from "../../model/category.model.js";
+import { Order } from "../../model/order.model.js";
+import { TrendingProduct } from "../../model/trendingProduct.model.js";
+import { LIMIT } from "../../utils/Constant.js";
+import { generateURL } from "../../utils/GenerateURL.js";
+import sendMail from "../../services/mail.service.js";
+import { errorTemplate } from "../../template/ErrorMailTemplate.js";
 
 // find method in Mongoose takes three arguments:
 // 1st -> filter
@@ -46,10 +46,10 @@ export const getAllProducts = async (req, res) => {
     });
   } catch (error) {
     // send error to email
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === "production") {
       sendMail(
         process.env.ADMIN_EMAIL,
-        'Error in Get All Products',
+        "Error in Get All Products",
         errorTemplate(generateURL(req), error.message)
       );
     } else {
@@ -68,7 +68,7 @@ export const getFilteredProducts = async (req, res) => {
   const { category, price, targetAudience, page = 1 } = req.query;
   try {
     if (price) {
-      const [minPrice, maxPrice] = price.split('-');
+      const [minPrice, maxPrice] = price.split("-");
       // if maxPrice is 2500(default value) that's means user only selected minPrice So, i am returning all the products that is greater than minPrice.
       // if maxPrice is not 2500(default value) then i am returning all the products that price is between minPrice and maxPrice
       const sellingPrice =
@@ -89,7 +89,7 @@ export const getFilteredProducts = async (req, res) => {
           categoryId: subCategory._id,
           sellingPrice,
         })
-          .select('productName productPictures actualPrice sellingPrice')
+          .select("productName productPictures actualPrice sellingPrice")
           .skip((page - 1) * LIMIT)
           .limit(LIMIT);
 
@@ -114,7 +114,7 @@ export const getFilteredProducts = async (req, res) => {
         sellingPrice,
         targetAudience,
       })
-        .select('productName productPictures actualPrice sellingPrice')
+        .select("productName productPictures actualPrice sellingPrice")
         .skip((page - 1) * LIMIT)
         .limit(LIMIT);
 
@@ -140,7 +140,7 @@ export const getFilteredProducts = async (req, res) => {
       const subCategoryProducts = await Product.find({
         categoryId: subCategory._id,
       })
-        .select('productName productPictures actualPrice sellingPrice')
+        .select("productName productPictures actualPrice sellingPrice")
         .skip((page - 1) * LIMIT)
         .limit(LIMIT);
 
@@ -161,10 +161,10 @@ export const getFilteredProducts = async (req, res) => {
     }
   } catch (error) {
     // send error to email
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === "production") {
       sendMail(
         process.env.ADMIN_EMAIL,
-        'Error in Get Filtered Products',
+        "Error in Get Filtered Products",
         errorTemplate(generateURL(req), error.message)
       );
     } else {
@@ -186,12 +186,12 @@ export const getSingleProductById = async (req, res) => {
       _id: productId,
     })
       .select(
-        'productName actualPrice sellingPrice description productPictures reviews size slug stocks targetAudience totalSales'
+        "productName actualPrice sellingPrice description productPictures reviews size slug stocks targetAudience totalSales"
       )
-      .populate('reviews.userId', 'firstName lastName profilePicture');
+      .populate("reviews.userId", "firstName lastName profilePicture");
 
     if (!product) {
-      return res.status(404).json({ error: 'product not found' });
+      return res.status(404).json({ error: "product not found" });
     }
 
     // update size key
@@ -199,16 +199,26 @@ export const getSingleProductById = async (req, res) => {
     product.size.forEach(
       (item) => (sizeWithDescription[item] = sizeDescription.get(item))
     );
-    let updatedProduct = { ...product._doc };
-    updatedProduct.size = sizeWithDescription;
+
+    const updatedProduct = {
+      ...product._doc,
+      size: sizeWithDescription,
+      reviews: product.reviews.map((review) => ({
+        ...review._doc,
+        userId: {
+          ...review.userId._doc,
+          profilePicture: review.userId?.profilePicture?.URL || null,
+        },
+      })),
+    };
 
     return res.status(200).json({ product: updatedProduct });
   } catch (error) {
     // send error to email
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === "production") {
       sendMail(
         process.env.ADMIN_EMAIL,
-        'Error in Get Single Product',
+        "Error in Get Single Product",
         errorTemplate(generateURL(req), error.message)
       );
     } else {
@@ -228,19 +238,19 @@ export const getSingleProductByIdDuringCheckout = async (req, res) => {
   try {
     const product = await Product.findOne({
       _id: productId,
-    }).select('productName productPictures sellingPrice');
+    }).select("productName productPictures sellingPrice");
 
     if (!product) {
-      return res.status(404).json({ error: 'product not found' });
+      return res.status(404).json({ error: "product not found" });
     }
 
     return res.status(200).json({ product });
   } catch (error) {
     // send error to email
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === "production") {
       sendMail(
         process.env.ADMIN_EMAIL,
-        'Error in Get Single Product during Checkout/Buy',
+        "Error in Get Single Product during Checkout/Buy",
         errorTemplate(generateURL(req), error.message)
       );
     } else {
@@ -260,7 +270,7 @@ export const updateTopTrendingProduct = async (req, res) => {
   try {
     const { productId, userId, eventType } = req.body;
     if (!userId || !productId) {
-      return res.status(200).json({ msg: 'unsuccessfully' });
+      return res.status(200).json({ msg: "unsuccessfully" });
     }
     await TrendingProduct.findOneAndUpdate(
       { productId, userId },
@@ -268,13 +278,13 @@ export const updateTopTrendingProduct = async (req, res) => {
       { upsert: true }
     );
 
-    return res.status(200).json({ msg: 'successfully' });
+    return res.status(200).json({ msg: "successfully" });
   } catch (error) {
     // send error to email
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === "production") {
       sendMail(
         process.env.ADMIN_EMAIL,
-        'Error in Update Top Trending Product',
+        "Error in Update Top Trending Product",
         errorTemplate(generateURL(req), error.message)
       );
     } else {
@@ -293,7 +303,7 @@ const trendingProductsPipeLine = async (cutoffDate = null) => {
   const pipeLine = [
     {
       $group: {
-        _id: '$productId',
+        _id: "$productId",
         count: { $sum: 1 },
       },
     },
@@ -302,24 +312,24 @@ const trendingProductsPipeLine = async (cutoffDate = null) => {
     },
     {
       $lookup: {
-        from: 'products', // model name
-        localField: '_id',
-        foreignField: '_id',
-        as: 'productDetails',
+        from: "products", // model name
+        localField: "_id",
+        foreignField: "_id",
+        as: "productDetails",
       },
     },
     {
-      $unwind: '$productDetails',
+      $unwind: "$productDetails",
     },
     {
       $group: {
-        _id: '$productDetails.targetAudience',
+        _id: "$productDetails.targetAudience",
         trendingProducts: {
           $push: {
-            productId: '$_id',
-            totalCount: '$count',
+            productId: "$_id",
+            totalCount: "$count",
             productPicture: {
-              $arrayElemAt: ['$productDetails.productPictures', 0], // Extract the first image from the productPictures array and also renaming the field from productPictures to productPicture.
+              $arrayElemAt: ["$productDetails.productPictures", 0], // Extract the first image from the productPictures array and also renaming the field from productPictures to productPicture.
             },
           },
         },
@@ -328,9 +338,9 @@ const trendingProductsPipeLine = async (cutoffDate = null) => {
     {
       $project: {
         _id: 0, // removing the _id field
-        targetAudience: '$_id', // renaming the _id field to targetAudience field
+        targetAudience: "$_id", // renaming the _id field to targetAudience field
         trendingProducts: {
-          $slice: ['$trendingProducts', 15], // here i am slicing the 15 products
+          $slice: ["$trendingProducts", 15], // here i am slicing the 15 products
         },
       },
     },
@@ -339,11 +349,11 @@ const trendingProductsPipeLine = async (cutoffDate = null) => {
   // if cutoffDate is present then i am fetching topTrendingProducts based on cutoffDate(it can be last 14 days, 30 days)
   if (cutoffDate) {
     pipeLine.unshift({
-      $match: { updatedAt: { $gt: cutoffDate }, eventType: 'visit' },
+      $match: { updatedAt: { $gt: cutoffDate }, eventType: "visit" },
     });
   } else {
     pipeLine.unshift({
-      $match: { eventType: 'visit' },
+      $match: { eventType: "visit" },
     });
   }
 
@@ -370,10 +380,10 @@ export const getTopTrendingProducts = async (req, res) => {
     }
   } catch (error) {
     // send error to email
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === "production") {
       sendMail(
         process.env.ADMIN_EMAIL,
-        'Error in Get Top Trending Products',
+        "Error in Get Top Trending Products",
         errorTemplate(generateURL(req), error.message)
       );
     } else {
@@ -393,15 +403,15 @@ export const topRatingProducts = async (req, res) => {
     // Finding top 20 products that have highest rating by using aggregate pipeline.
     const products = await Product.aggregate([
       {
-        $unwind: '$reviews', // Split the array of reviews into separate documents.
+        $unwind: "$reviews", // Split the array of reviews into separate documents.
       },
       {
         // The $group stage takes a collection of documents and groups them based on a specified field or fields. This means it gathers together all documents that share the same value(s) in the specified field(s).
         $group: {
-          _id: '$_id', // <- This is the only field used to define group boundaries
-          productPictures: { $first: '$productPictures' },
+          _id: "$_id", // <- This is the only field used to define group boundaries
+          productPictures: { $first: "$productPictures" },
           averageRating: {
-            $avg: '$reviews.rating',
+            $avg: "$reviews.rating",
           },
         },
       },
@@ -417,9 +427,9 @@ export const topRatingProducts = async (req, res) => {
         // 1 means add and 0 means remove fields
         $project: {
           _id: 0,
-          productId: '$_id',
+          productId: "$_id",
           productPicture: {
-            $arrayElemAt: ['$productPictures', 0], // Extract the first image from the productPictures array and also renaming the field from productPictures to productPicture.
+            $arrayElemAt: ["$productPictures", 0], // Extract the first image from the productPictures array and also renaming the field from productPictures to productPicture.
           },
           averageRating: 1,
         },
@@ -428,10 +438,10 @@ export const topRatingProducts = async (req, res) => {
     return res.status(200).json({ products });
   } catch (error) {
     // send error to email
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === "production") {
       sendMail(
         process.env.ADMIN_EMAIL,
-        'Error in Get Top Rating Products',
+        "Error in Get Top Rating Products",
         errorTemplate(generateURL(req), error.message)
       );
     } else {
@@ -452,14 +462,14 @@ export const getTopSellingProducts = async (req, res) => {
   // logic for price range
   let priceQuery;
   if (price) {
-    const [minPrice, maxPrice] = price.split('-');
+    const [minPrice, maxPrice] = price.split("-");
     // if maxPrice is 2500(default value) that's means user selected only minPrice So, i am returning all the products that is greater than minPrice.
     // if maxPrice is not 2500(default value) then i am returning all the products that price is between minPrice and maxPrice
     priceQuery =
       maxPrice == 2500
-        ? { 'productDetails.sellingPrice': { $gte: Number(minPrice) } }
+        ? { "productDetails.sellingPrice": { $gte: Number(minPrice) } }
         : {
-            'productDetails.sellingPrice': {
+            "productDetails.sellingPrice": {
               $gte: Number(minPrice),
               $lt: Number(maxPrice),
             },
@@ -468,13 +478,13 @@ export const getTopSellingProducts = async (req, res) => {
 
   try {
     const product = await Order.aggregate([
-      { $match: { orderStatus: 'delivered' } },
+      { $match: { orderStatus: "delivered" } },
       {
-        $unwind: '$items',
+        $unwind: "$items",
       },
       {
         $group: {
-          _id: '$items.product',
+          _id: "$items.product",
           totalSale: { $sum: 1 },
         },
       },
@@ -486,19 +496,19 @@ export const getTopSellingProducts = async (req, res) => {
       },
       {
         $lookup: {
-          from: 'products', // model name
-          localField: '_id',
-          foreignField: '_id',
-          as: 'productDetails',
+          from: "products", // model name
+          localField: "_id",
+          foreignField: "_id",
+          as: "productDetails",
         },
       },
       {
-        $unwind: '$productDetails',
+        $unwind: "$productDetails",
       },
       {
         $match: {
           $and: [
-            category ? { 'productDetails.targetAudience': category } : {},
+            category ? { "productDetails.targetAudience": category } : {},
             price ? priceQuery : {},
           ],
         },
@@ -506,11 +516,11 @@ export const getTopSellingProducts = async (req, res) => {
       {
         $project: {
           totalSale: 1,
-          productName: '$productDetails.productName',
-          actualPrice: '$productDetails.actualPrice',
-          sellingPrice: '$productDetails.sellingPrice',
+          productName: "$productDetails.productName",
+          actualPrice: "$productDetails.actualPrice",
+          sellingPrice: "$productDetails.sellingPrice",
           productPictures: {
-            $slice: ['$productDetails.productPictures', 1],
+            $slice: ["$productDetails.productPictures", 1],
           },
         },
       },
@@ -541,10 +551,10 @@ export const getTopSellingProducts = async (req, res) => {
     });
   } catch (error) {
     // send error to email
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === "production") {
       sendMail(
         process.env.ADMIN_EMAIL,
-        'Error in Get Top Selling Products',
+        "Error in Get Top Selling Products",
         errorTemplate(generateURL(req), error.message)
       );
     } else {
@@ -565,7 +575,7 @@ export const getNewestProducts = async (req, res) => {
   // logic for price range
   let priceQuery;
   if (price) {
-    const [minPrice, maxPrice] = price.split('-');
+    const [minPrice, maxPrice] = price.split("-");
     // if maxPrice is 2500(default value) that's means user only selected minPrice So, i am returning all the products that is greater than minPrice.
     // if maxPrice is not 2500(default value) then i am returning all the products that price is between minPrice and maxPrice
     priceQuery =
@@ -624,10 +634,10 @@ export const getNewestProducts = async (req, res) => {
     });
   } catch (error) {
     // send error to email
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === "production") {
       sendMail(
         process.env.ADMIN_EMAIL,
-        'Error in Get Newest Products',
+        "Error in Get Newest Products",
         errorTemplate(generateURL(req), error.message)
       );
     } else {
@@ -648,7 +658,7 @@ export const writeProductReview = async (req, res) => {
     // first checking, user has purchased this product or not
     const order = await Order.findOne({
       customer: req.data._id,
-      'items.product': product_id,
+      "items.product": product_id,
     });
 
     if (!order) {
@@ -657,9 +667,9 @@ export const writeProductReview = async (req, res) => {
       });
     }
 
-    if (order.orderStatus !== 'delivered') {
+    if (order.orderStatus !== "delivered") {
       return res.status(400).json({
-        error: 'You can write a review after the product has been delivered',
+        error: "You can write a review after the product has been delivered",
       });
     }
 
@@ -674,21 +684,21 @@ export const writeProductReview = async (req, res) => {
     // and also returning list of updated review
     if (reviewIsAlready) {
       const review = await Product.findOneAndUpdate(
-        { _id: product_id, 'reviews.userId': req.data._id },
+        { _id: product_id, "reviews.userId": req.data._id },
         {
           $set: {
-            'reviews.$.message': message,
-            'reviews.$.rating': rating,
-            'reviews.$.update_date': date,
+            "reviews.$.message": message,
+            "reviews.$.rating": rating,
+            "reviews.$.update_date": date,
           },
         },
         { new: true }
       )
-        .select('reviews')
-        .populate('reviews.userId', 'firstName lastName profilePicture');
+        .select("reviews")
+        .populate("reviews.userId", "firstName lastName profilePicture");
 
       return res.status(200).json({
-        message: 'Review Edit Successfully',
+        message: "Review Edit Successfully",
         allReviews: review.reviews,
       });
     }
@@ -709,20 +719,20 @@ export const writeProductReview = async (req, res) => {
         },
         { new: true }
       )
-        .select('reviews')
-        .populate('reviews.userId', 'firstName lastName profilePicture');
+        .select("reviews")
+        .populate("reviews.userId", "firstName lastName profilePicture");
 
       return res.status(200).json({
-        message: 'Review Add Successfully',
+        message: "Review Add Successfully",
         allReviews: review.reviews,
       });
     }
   } catch (error) {
     // send error to email
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === "production") {
       sendMail(
         process.env.ADMIN_EMAIL,
-        'Error in Write Product Review',
+        "Error in Write Product Review",
         errorTemplate(generateURL(req), error.message)
       );
     } else {

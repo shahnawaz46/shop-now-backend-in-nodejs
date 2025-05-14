@@ -1,6 +1,6 @@
-import { Order } from '../model/order.model.js';
-import { Product, sizeDescription } from '../model/product.model.js';
-import { User } from '../model/user.model.js';
+import { Order } from "../model/order.model.js";
+import { Product, sizeDescription } from "../model/product.model.js";
+import { User } from "../model/user.model.js";
 
 export const migration = async () => {
   try {
@@ -40,9 +40,9 @@ export const migration = async () => {
     //   },
     //   { runValidators: true }
     // );
-    console.log('migration done');
+    console.log("migration done");
   } catch (err) {
-    console.log('Migration Error: ', err);
+    console.log("Migration Error: ", err);
   }
 };
 
@@ -66,7 +66,7 @@ export const updateUserDetails = async () => {
   //   await userUpdate.save();
   //   console.log(`${userUpdate.email} updated`);
   // });
-  console.log('field updated');
+  console.log("field updated");
 };
 
 export const updateOrderModel = async () => {
@@ -87,34 +87,39 @@ export const updateOrderModel = async () => {
     //   { orderStatus: 'failed' },
     //   { runValidators: true }
     // );
-    console.log('Updated');
+    console.log("Updated");
   } catch (err) {
     console.log(err);
   }
 };
 
-export const updatePublicIdToEachProductIamges = async () => {
-  // update public_id to each product images
-  // try {
-  //   // Fetch all products
-  //   const products = await Product.find();
-  //   for (const product of products) {
-  //     product.productPictures.forEach((image, index) => {
-  //       const publicId = getPublicIdFromUrl(image.img);
-  //       if (publicId) {
-  //         product.productPictures[index].public_id = publicId;
-  //       }
-  //     });
-  //     await product.save();
-  //     console.log(`Updated product ${product._id}`);
-  //   }
-  // } catch (error) {
-  //   console.error('Error updating products:', error);
-  // }
+export const updatePublicId = async () => {
+  // update public_id
+  try {
+    // Fetch all products
+    const Users = await User.find();
+    // for (const user of Users) {
+    //   if (newOBJ[user._id]) {
+    //     console.log("YES");
+    //     user.profilePicture = newOBJ[user._id];
+    //   } else {
+    //     user.profilePicture = { URL: null, public_id: null };
+    //   }
+    //   await user.save();
+
+    //   // console.log(`Updated product ${product._id}`);
+    // }
+    // console.log(newOBJ);
+  } catch (error) {
+    console.error("Error updating products:", error);
+  }
 };
 
 const getPublicIdFromUrl = (url) => {
+  const urlObj = new URL(url);
+  const pathname = urlObj.pathname;
+
   const regex = /\/([^\/]+)\/([^\/]+)\.(jpg|jpeg|png|gif|webp|bmp|svg|avif)$/; // Adjust extensions as needed
-  const match = url.match(regex);
-  return match ? `${match[1]}/${match[2]}` : null; // match[2] contains the public_id
+  const match = pathname.match(regex);
+  return match ? `${match[1]}/${match[2]}` : null;
 };
