@@ -383,9 +383,14 @@ export const editUserProfileDetail = async (req, res) => {
   const userDetail = req.body.userDetail;
 
   try {
-    const result = await User.findByIdAndUpdate(req.data._id, userDetail, {
+    const user = await User.findByIdAndUpdate(req.data._id, userDetail, {
       new: true,
     }).select("firstName lastName email phoneNo profilePicture location");
+
+    const result = {
+      ...user._doc,
+      profilePicture: user.profilePicture?.URL || null,
+    };
 
     return res
       .status(200)
