@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 
-import mongoDBConnection from "./database/mongo.database.js";
+import mongoDBConnection from "./config/mongo.config.js";
 import redisConnection from "./config/redis.config.js";
 
 // user router
@@ -23,12 +23,10 @@ import adminOrderRouter from "./routes/admin/order.routes.js";
 import adminBannerRouter from "./routes/admin/banner.routes.js";
 import userRouterForAdmin from "./routes/admin/user.routes.js";
 
-// import bannerRoute from './routes/banner.routes.js';
-
 // script file
 import { allScript } from "./script/AllScript.js";
 import { wakeUpTheServer } from "./utils/WakeUpTheServer.js";
-// import { tokenBucket } from './utils/rate-limiting/TokenBucket.js';
+// import { tokenBucket } from './middleware/rate-limiting/TokenBucket.js';
 
 const app = express();
 dotenv.config({});

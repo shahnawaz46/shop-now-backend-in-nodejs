@@ -1,4 +1,4 @@
-const TOKEN_SIZE = 500;
+const TOKEN_SIZE = 100;
 const time = 1000 * 60;
 
 let token = TOKEN_SIZE;
@@ -21,6 +21,6 @@ export const tokenBucket = (req, res, next) => {
 
     // if all token have used then throw error
   } else {
-    return res.status(420).json({ error: 'Service not available' });
+    return res.status(420).json({ error: "Service not available" });
   }
 };
