@@ -3,11 +3,11 @@ import { Banner } from "../../model/banner.model.js";
 import sendMail from "../../services/mail.service.js";
 import { generateURL } from "../../utils/GenerateURL.js";
 import { errorTemplate } from "../../template/ErrorMailTemplate.js";
-import {
-  uploadMediaOnCloudinary,
-  deleteMediaOnCloudinary,
-} from "../../services/cloudinary.service.js";
 import { redisClient } from "../../config/redis.config.js";
+import {
+  deleteMediaOnImageKit,
+  uploadMediaOnImageKit,
+} from "../../services/imageKit.service.js";
 
 export const addBanner = async (req, res) => {
   try {
@@ -17,14 +17,18 @@ export const addBanner = async (req, res) => {
       return res.status(400).json({ error: "All fields requried" });
     }
 
-    const bannerImage = await uploadMediaOnCloudinary(req.file.path, {
-      upload_preset: "shop-now-banner-images",
-      allowed_formats: ["png", "jpg", "jpeg", "webp", "ico", "avif"],
+    const bannerImage = await uploadMediaOnImageKit({
+      file: req.file.buffer,
+      fileName: req.file.originalname,
+      folder: "/ShopNow_Banner",
+      tags: ["banner", "shopnow", "offers", "cloths", "men", "women"],
+      transformation: { pre: "quality: 80" },
+      checks: `"file.size" < "1mb"`,
     });
 
     const image = {
-      URL: bannerImage.secure_url,
-      public_id: bannerImage.public_id,
+      URL: bannerImage.url,
+      fileId: bannerImage.fileId,
     };
 
     const banner = await Banner.create({ title, show, screen, image });
@@ -101,8 +105,8 @@ export const deleteBanner = async (req, res) => {
         .json({ error: "Banner not found please check again" });
     }
 
-    // first i am deleting banner picture from cloudinary
-    await deleteMediaOnCloudinary(banner.image.public_id);
+    // first i am deleting banner picture from ImageKit
+    await deleteMediaOnImageKit(banner.image.fileId);
 
     // then i am deleting banner collection from mongodb
     await Banner.findByIdAndDelete(banner._id);

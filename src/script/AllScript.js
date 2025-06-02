@@ -2,12 +2,12 @@ import {
   migration,
   updateUserDetails,
   updateOrderModel,
-  updatePublicId,
+  migrateProfilePicturesToImageKit,
 } from "./Migration.js";
 
 export const allScript = () => {
   // migration();
   // updateUserDetails();
   // updateOrderModel();
-  // updatePublicId();
+  // migrateProfilePicturesToImageKit();
 };

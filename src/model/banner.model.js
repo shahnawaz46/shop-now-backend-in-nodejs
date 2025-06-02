@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const bannerSchema = new mongoose.Schema(
   {
@@ -15,14 +15,14 @@ const bannerSchema = new mongoose.Schema(
     screen: {
       type: String,
       required: true,
-      enum: ['computer', 'mobile'],
+      enum: ["computer", "mobile"],
     },
     image: {
       URL: { type: String, required: true },
-      public_id: { type: String, required: true },
+      fileId: { type: String, required: true },
     },
   },
   { timestamps: true }
 );
 
-export const Banner = mongoose.model('Banner', bannerSchema);
+export const Banner = mongoose.model("Banner", bannerSchema);

@@ -4,10 +4,6 @@ import jwt from "jsonwebtoken";
 // internal
 import { User } from "../../model/user.model.js";
 import { Address } from "../../model/address.model.js";
-import {
-  uploadMediaOnCloudinary,
-  deleteMediaOnCloudinary,
-} from "../../services/cloudinary.service.js";
 import { Otp } from "../../model/otp.model.js";
 import sendMail from "../../services/mail.service.js";
 import { generateURL } from "../../utils/GenerateURL.js";
@@ -16,6 +12,10 @@ import {
   registrationVerificationEmail,
   thankForRegistration,
 } from "../../template/RegistrationMailTemplate.js";
+import {
+  deleteMediaOnImageKit,
+  uploadMediaOnImageKit,
+} from "../../services/imageKit.service.js";
 
 export const signup = async (req, res) => {
   const {
@@ -328,24 +328,25 @@ export const updateProfilePic = async (req, res) => {
     let userDetail = await User.findOne({ _id: req.data._id });
     if (userDetail && req.file) {
       // if user have already uploaded the profile picture then first deleting
-      if (userDetail.profilePicture.public_id) {
-        await deleteMediaOnCloudinary(userDetail.profilePicture.public_id);
+      if (userDetail.profilePicture.fileId) {
+        await deleteMediaOnImageKit(userDetail.profilePicture.fileId);
       }
 
-      // here i am uploading profile picture to cloudinary and getting url in res
-      const image = await uploadMediaOnCloudinary(req.file.path, {
-        upload_preset: "shop-now-profile-images",
-        public_id: `user_${userDetail?.firstName}_${
-          userDetail?.lastName
-        }_${Date.now()}`,
-        allowed_formats: ["png", "jpg", "jpeg", "webp", "ico", "avif"],
+      // here i am uploading profile picture to ImageKit and getting url in res
+      const image = await uploadMediaOnImageKit({
+        file: req.file.buffer,
+        fileName: req.file.originalname,
+        folder: "/ShopNow_Profile",
+        tags: ["shopnow", "profile pic", "image"],
+        transformation: { pre: "quality: 80" },
+        checks: `"file.size" < "1mb"`,
       });
 
       // then updating user model with profile picture url
       const result = await User.findByIdAndUpdate(
         { _id: req.data._id },
         {
-          profilePicture: { URL: image.secure_url, public_id: image.public_id },
+          profilePicture: { URL: image.url, fileId: image.fileId },
         },
         { new: true }
       ).select("firstName lastName email phoneNo profilePicture location");

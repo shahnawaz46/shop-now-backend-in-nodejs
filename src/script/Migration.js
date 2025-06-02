@@ -1,6 +1,10 @@
+import { userInfo } from "os";
+import imageKit from "../config/imagekit.config.js";
+import { Banner } from "../model/banner.model.js";
 import { Order } from "../model/order.model.js";
 import { Product, sizeDescription } from "../model/product.model.js";
 import { User } from "../model/user.model.js";
+import axios from "axios";
 
 export const migration = async () => {
   try {
@@ -93,33 +97,19 @@ export const updateOrderModel = async () => {
   }
 };
 
-export const updatePublicId = async () => {
-  // update public_id
+import { promises as fs } from "fs";
+
+// Function to migrate images from Cloudinary to ImageKit
+export const migrateProfilePicturesToImageKit = async () => {
   try {
-    // Fetch all products
-    const Users = await User.find();
-    // for (const user of Users) {
-    //   if (newOBJ[user._id]) {
-    //     console.log("YES");
-    //     user.profilePicture = newOBJ[user._id];
-    //   } else {
-    //     user.profilePicture = { URL: null, public_id: null };
-    //   }
-    //   await user.save();
+    // Fetch all users with profile pictures
+    await User.updateMany(
+      {},
+      { $rename: { "profilePicture.public_id": "profilePicture.fileId" } }
+    );
 
-    //   // console.log(`Updated product ${product._id}`);
-    // }
-    // console.log(newOBJ);
-  } catch (error) {
-    console.error("Error updating products:", error);
+    console.log("DONE");
+  } catch (err) {
+    console.log("migrateProfilePicturesToImageKit: ", err);
   }
-};
-
-const getPublicIdFromUrl = (url) => {
-  const urlObj = new URL(url);
-  const pathname = urlObj.pathname;
-
-  const regex = /\/([^\/]+)\/([^\/]+)\.(jpg|jpeg|png|gif|webp|bmp|svg|avif)$/; // Adjust extensions as needed
-  const match = pathname.match(regex);
-  return match ? `${match[1]}/${match[2]}` : null;
 };

@@ -42,7 +42,7 @@ const userSchema = new mongoose.Schema(
     },
     profilePicture: {
       URL: { type: String, default: null },
-      public_id: { type: String, default: null },
+      fileId: { type: String, default: null },
     },
     location: {
       type: String,

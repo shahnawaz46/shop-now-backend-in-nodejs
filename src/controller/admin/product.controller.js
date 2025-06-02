@@ -2,15 +2,15 @@ import slugify from "slugify";
 
 // internal
 import { Product } from "../../model/product.model.js";
-import {
-  uploadMediaOnCloudinary,
-  deleteMediaOnCloudinary,
-} from "../../services/cloudinary.service.js";
 import { Order } from "../../model/order.model.js";
 import { LIMIT } from "../../utils/Constant.js";
 import { generateURL } from "../../utils/GenerateURL.js";
 import sendMail from "../../services/mail.service.js";
 import { errorTemplate } from "../../template/ErrorMailTemplate.js";
+import {
+  uploadMediaOnImageKit,
+  deleteBulkMediaOnImageKit,
+} from "../../services/imageKit.service.js";
 
 export const addProduct = async (req, res) => {
   const {
@@ -32,14 +32,18 @@ export const addProduct = async (req, res) => {
 
   const productPictures = [];
   for (const file of req.files) {
-    const result = await uploadMediaOnCloudinary(file.path, {
-      upload_preset: "shop-now-product-images",
-      allowed_formats: ["png", "jpg", "jpeg", "webp", "ico", "avif", "svg"],
+    const result = await uploadMediaOnImageKit({
+      file: file.buffer,
+      fileName: file.originalname,
+      folder: "/ShopNow_Products",
+      tags: ["product", "shopnow", "cloths", "men", "women"],
+      transformation: { pre: "quality: 80" },
+      checks: `"file.size" < "1mb"`,
     });
 
     productPictures.push({
-      img: result?.secure_url,
-      public_id: result.public_id,
+      img: result?.url,
+      fileId: result.fileId,
     });
   }
 
@@ -59,7 +63,7 @@ export const addProduct = async (req, res) => {
 
     const product = await Product.findById(newProduct._id)
       .select(
-        "_id productName actualPrice sellingPrice stocks categoryId targetAudience description productPictures"
+        "_id productName actualPrice sellingPrice stocks categoryId targetAudience description productPictures totalSales"
       )
       .populate({ path: "categoryId", select: "_id categoryName" });
 
@@ -210,7 +214,7 @@ export const productSalesDetails = async (req, res) => {
 
 export const deleteProduct = async (req, res) => {
   try {
-    // first find product so i can get productPictures public_id
+    // first find product so i can get productPictures fileId
     const deletedProduct = await Product.findOne({ _id: req.body.productId });
 
     if (!deleteProduct) {
@@ -219,13 +223,14 @@ export const deleteProduct = async (req, res) => {
         .json({ error: "Product not found please check again" });
     }
 
-    // then i am deleting productPictures from cloudinary
+    // return console.log("deletedProduct:", deletedProduct);
+
+    // then i am deleting productPictures from ImageKit
     const productImages = deletedProduct.productPictures;
-    productImages &&
-      productImages.length > 0 &&
-      productImages.forEach(
-        async (image) => await await deleteMediaOnCloudinary(image.public_id)
-      );
+    if (productImages && productImages.length > 0) {
+      const fileIds = productImages.map((img) => img.fileId);
+      await deleteBulkMediaOnImageKit(fileIds);
+    }
 
     // finally i am deleting product from mongodb
     await Product.findByIdAndDelete({
@@ -280,25 +285,28 @@ export const editProduct = async (req, res) => {
   if (req.files && req.files.length > 0) {
     const product = await Product.findById(_id);
 
-    // first removing previous productPictures from cloudinary
+    // first removing previous productPictures from ImageKit
     const productImages = product.productPictures;
-    productImages &&
-      productImages.length > 0 &&
-      productImages.forEach(
-        async (image) => await await deleteMediaOnCloudinary(image.public_id)
-      );
+    if (productImages && productImages.length > 0) {
+      const fileIds = productImages.map((img) => img.fileId);
+      await deleteBulkMediaOnImageKit(fileIds);
+    }
 
     // then uploading new product pictures
     const productPictures = [];
     for (const file of req.files) {
-      const result = await uploadMediaOnCloudinary(file.path, {
-        upload_preset: "shop-now-product-images",
-        allowed_formats: ["png", "jpg", "jpeg", "webp", "ico", "avif", "svg"],
+      const result = await uploadMediaOnImageKit({
+        file: file.buffer,
+        fileName: file.originalname,
+        folder: "/ShopNow_Products",
+        tags: ["product", "shopnow", "cloths", "men", "women"],
+        transformation: { pre: "quality: 80" },
+        checks: `"file.size" < "1mb"`,
       });
 
       productPictures.push({
-        img: result?.secure_url,
-        public_id: result.public_id,
+        img: result?.url,
+        fileId: result.fileId,
       });
     }
 
@@ -317,7 +325,7 @@ export const editProduct = async (req, res) => {
       new: true,
     })
       .select(
-        "_id productName actualPrice sellingPrice stocks categoryId targetAudience description productPictures"
+        "_id productName actualPrice sellingPrice stocks categoryId targetAudience description productPictures totalSales"
       )
       .populate({ path: "categoryId", select: "_id categoryName" });
 
