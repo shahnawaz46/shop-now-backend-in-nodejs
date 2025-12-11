@@ -72,7 +72,7 @@ export const getCartItem = async (req, res) => {
         select: "productName sellingPrice productPictures",
       });
 
-    if (!userCart) return res.status(401).json({ msg: "Not Item in Cart" });
+    if (!userCart) return res.status(404).json({ msg: "Not Item in Cart" });
 
     const cartItem = filterCartItems(userCart.cartItems);
     return res.status(200).json({ allCartItem: cartItem });

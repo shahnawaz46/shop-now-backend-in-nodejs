@@ -293,16 +293,13 @@ export const userProfile = async (req, res) => {
     const user = await User.findOne({
       _id: req.data._id,
     }).select("firstName lastName email phoneNo profilePicture location");
-    const address = await Address.find({ userId: req.data._id }).select(
-      "name mobileNumber pinCode state address locality cityDistrictTown landmark alternatePhone addressType"
-    );
 
     const userDetail = {
       ...user._doc,
       profilePicture: user.profilePicture?.URL || null,
     };
 
-    return res.status(200).json({ userDetail, address });
+    return res.status(200).json({ userDetail });
   } catch (error) {
     // send error to email
     if (process.env.NODE_ENV === "production") {
