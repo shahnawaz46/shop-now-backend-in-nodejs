@@ -3,7 +3,6 @@ import jwt from "jsonwebtoken";
 
 // internal
 import { User } from "../../model/user.model.js";
-import { Address } from "../../model/address.model.js";
 import { Otp } from "../../model/otp.model.js";
 import sendMail from "../../services/mail.service.js";
 import { generateURL } from "../../utils/GenerateURL.js";
@@ -17,6 +16,20 @@ import {
   uploadMediaOnImageKit,
 } from "../../services/imageKit.service.js";
 
+// common functions
+const getUserProfile = (user) => {
+  return {
+    _id: user._id,
+    email: user.email,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    location: user.location,
+    phoneNo: user.phoneNo,
+    profilePicture: user.profilePicture?.URL || null,
+  };
+};
+
+// controllers
 export const signup = async (req, res) => {
   const {
     firstName,
@@ -251,6 +264,9 @@ export const signin = async (req, res) => {
         .json({ error: "User not verified, Please verify" });
     }
 
+    // extract userdata
+    const userDetail = getUserProfile(user);
+
     const token = jwt.sign(
       { _id: user._id, role: user.role },
       process.env.JWT_SECRET,
@@ -267,7 +283,7 @@ export const signin = async (req, res) => {
 
     return res
       .status(200)
-      .json({ msg: "Login Successfully", userId: user._id });
+      .json({ msg: "Login Successfully", userId: user._id, userDetail });
   } catch (error) {
     // send error to email
     if (process.env.NODE_ENV === "production") {
@@ -292,12 +308,9 @@ export const userProfile = async (req, res) => {
     // returning logged in user personal details and address
     const user = await User.findOne({
       _id: req.data._id,
-    }).select("firstName lastName email phoneNo profilePicture location");
+    });
 
-    const userDetail = {
-      ...user._doc,
-      profilePicture: user.profilePicture?.URL || null,
-    };
+    const userDetail = getUserProfile(user);
 
     return res.status(200).json({ userDetail });
   } catch (error) {
