@@ -44,6 +44,14 @@ const userSchema = new mongoose.Schema(
       URL: { type: String, default: null },
       fileId: { type: String, default: null },
     },
+    refreshToken: {
+      type: String,
+      default: null,
+    },
+    sessionExpiresAt: {
+      type: Date,
+      default: null,
+    },
     location: {
       type: String,
       default: null,

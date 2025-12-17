@@ -18,6 +18,7 @@ export const migration = async () => {
     // await Product.updateMany({}, { $set: { reviews: [] } });
     // await User.updateMany({}, { $set: { dob: '2000-09-22' } });
     // await User.updateMany({}, { $set: { isEmailVerified: true } });
+    // await User.updateMany({}, { $set: { refreshToken: null } });
     // await User.updateMany(
     //   {},
     //   {
@@ -96,8 +97,6 @@ export const updateOrderModel = async () => {
     console.log(err);
   }
 };
-
-import { promises as fs } from "fs";
 
 // Function to migrate images from Cloudinary to ImageKit
 export const migrateProfilePicturesToImageKit = async () => {

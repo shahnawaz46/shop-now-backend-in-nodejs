@@ -7,6 +7,7 @@ import mongoDBConnection from "./config/mongo.config.js";
 import redisConnection from "./config/redis.config.js";
 
 // user router
+import authRouter from "./routes/user/auth.routes.js";
 import userRouter from "./routes/user/user.routes.js";
 import userProductRouter from "./routes/user/product.routes.js";
 import userCategoryRouter from "./routes/user/category.routes.js";
@@ -16,12 +17,12 @@ import userOrderRouter from "./routes/user/order.routes.js";
 import userBannerRouter from "./routes/user/banner.routes.js";
 
 // admin router
-import adminUserRouter from "./routes/admin/admin.routes.js";
-import adminCategoryRouter from "./routes/admin/category.routes.js";
-import adminProductRouter from "./routes/admin/product.routes.js";
-import adminOrderRouter from "./routes/admin/order.routes.js";
-import adminBannerRouter from "./routes/admin/banner.routes.js";
-import userRouterForAdmin from "./routes/admin/user.routes.js";
+// import adminUserRouter from "./routes/admin/admin.routes.js";
+// import adminCategoryRouter from "./routes/admin/category.routes.js";
+// import adminProductRouter from "./routes/admin/product.routes.js";
+// import adminOrderRouter from "./routes/admin/order.routes.js";
+// import adminBannerRouter from "./routes/admin/banner.routes.js";
+// import userRouterForAdmin from "./routes/admin/user.routes.js";
 
 // script file
 import { allScript } from "./script/AllScript.js";
@@ -56,14 +57,15 @@ app.use((req, res, next) => {
 // app.use('/api', tokenBucket);
 
 // admin routes
-app.use("/api/admin", adminUserRouter);
-app.use("/api/admin", adminCategoryRouter);
-app.use("/api/admin", adminProductRouter);
-app.use("/api/admin", adminOrderRouter);
-app.use("/api/admin", adminBannerRouter);
-app.use("/api/admin", userRouterForAdmin);
+// app.use("/api/admin", adminUserRouter);
+// app.use("/api/admin", adminCategoryRouter);
+// app.use("/api/admin", adminProductRouter);
+// app.use("/api/admin", adminOrderRouter);
+// app.use("/api/admin", adminBannerRouter);
+// app.use("/api/admin", userRouterForAdmin);
 
 // user routes
+app.use("/api/user", authRouter);
 app.use("/api/user", userRouter);
 app.use("/api/user", userProductRouter);
 app.use("/api/user", userCategoryRouter);

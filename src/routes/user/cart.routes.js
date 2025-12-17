@@ -1,7 +1,10 @@
 import { Router } from "express";
 
 // internal
-import { verification, userMiddleware } from "../../middleware/middleware.js";
+import {
+  verification,
+  userMiddleware,
+} from "../../middleware/authMiddleware.js";
 import {
   addToCart,
   getCartItem,
@@ -11,14 +14,9 @@ import {
 
 const router = Router();
 
-router.post("/cart", verification("_f_id"), userMiddleware, addToCart);
-router.get("/cart", verification("_f_id"), userMiddleware, getCartItem);
-router.delete("/cart", verification("_f_id"), userMiddleware, removeCartItem);
-router.post(
-  "/cart/merge",
-  verification("_f_id"),
-  userMiddleware,
-  mergeCartItems
-);
+router.post("/cart", verification, userMiddleware, addToCart);
+router.get("/cart", verification, userMiddleware, getCartItem);
+router.delete("/cart", verification, userMiddleware, removeCartItem);
+router.post("/cart/merge", verification, userMiddleware, mergeCartItems);
 
 export default router;
