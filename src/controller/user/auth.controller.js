@@ -1,11 +1,10 @@
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
 
 // internal
-import { User } from "../../model/user.model.js";
+import { getUserProfile } from "../../dtos/user.dto.js";
 import { Otp } from "../../model/otp.model.js";
+import { User } from "../../model/user.model.js";
 import sendMail from "../../services/mail.service.js";
-import { generateURL } from "../../utils/GenerateURL.js";
 import { errorTemplate } from "../../template/ErrorMailTemplate.js";
 import {
   registrationVerificationEmail,
@@ -16,7 +15,7 @@ import {
   generateRefreshToken,
   verifyRefreshToken,
 } from "../../utils/generateToken.js";
-import { getUserProfile } from "../../dtos/user.dto.js";
+import { generateURL } from "../../utils/GenerateURL.js";
 
 const getSessionExpiryDate = () => {
   const tokenExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days from now
@@ -74,21 +73,21 @@ export const signup = async (req, res) => {
           password: hashPassword,
           lastLogin: { date: Date.now(), device, browser, ipAddress },
         },
-        { new: true }
+        { new: true },
       );
 
       // after the account is updated now sending otp to the mail
       await sendMail(
         email,
         "Account Verification",
-        registrationVerificationEmail(otp)
+        registrationVerificationEmail(otp),
       );
 
       // then updating OTP document
       await Otp.findOneAndUpdate(
         { user: userUpdated._id },
         { otp },
-        { upsert: true } // if document exist then update else create new document
+        { upsert: true }, // if document exist then update else create new document
       );
 
       return res
@@ -111,7 +110,7 @@ export const signup = async (req, res) => {
     await sendMail(
       email,
       "Account Verification",
-      registrationVerificationEmail(otp)
+      registrationVerificationEmail(otp),
     );
 
     // and creating otp document
@@ -126,7 +125,7 @@ export const signup = async (req, res) => {
       sendMail(
         process.env.ADMIN_EMAIL,
         "Error in Signup",
-        errorTemplate(generateURL(req), error.message)
+        errorTemplate(generateURL(req), error.message),
       );
     } else {
       console.log(error);
@@ -199,7 +198,7 @@ export const otpVerification = async (req, res) => {
     await sendMail(
       email,
       "Registration Successfully",
-      thankForRegistration(`${user.firstName} ${user.lastName}`)
+      thankForRegistration(`${user.firstName} ${user.lastName}`),
     );
   } catch (error) {
     // send error to email
@@ -207,7 +206,7 @@ export const otpVerification = async (req, res) => {
       sendMail(
         process.env.ADMIN_EMAIL,
         "Error in OTP Verification",
-        errorTemplate(generateURL(req), error.message)
+        errorTemplate(generateURL(req), error.message),
       );
     } else {
       console.log(error);
@@ -238,7 +237,7 @@ export const signin = async (req, res) => {
     // comparing login password with hash password
     const isPasswordCorrect = await bcrypt.compare(password, user.password);
     if (!isPasswordCorrect) {
-      return res.status(401).json({ error: "Wrong credentials" });
+      return res.status(400).json({ error: "Wrong credentials" });
     }
 
     // save user login info
@@ -253,7 +252,7 @@ export const signin = async (req, res) => {
       await sendMail(
         email,
         "Account Verification",
-        registrationVerificationEmail(otp)
+        registrationVerificationEmail(otp),
       );
 
       // if document exist then update else create new document
@@ -293,7 +292,7 @@ export const signin = async (req, res) => {
       sendMail(
         process.env.ADMIN_EMAIL,
         "Error in Signin",
-        errorTemplate(generateURL(req), error.message)
+        errorTemplate(generateURL(req), error.message),
       );
     } else {
       console.log(error);
@@ -385,7 +384,7 @@ export const refreshToken = async (req, res) => {
       sendMail(
         process.env.ADMIN_EMAIL,
         "Error in Refresh Token",
-        errorTemplate(generateURL(req), error.message)
+        errorTemplate(generateURL(req), error.message),
       );
     } else {
       console.log(error, error?.message);
