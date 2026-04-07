@@ -1,6 +1,6 @@
 // internal
 import { User } from "../../model/user.model.js";
-import sendMail from "../../services/mail.service.js";
+import sendMail from "../../services/resend-mail.service.js";
 import { errorTemplate } from "../../template/ErrorMailTemplate.js";
 import { generateURL } from "../../utils/GenerateURL.js";
 
@@ -25,7 +25,7 @@ export const userProfile = async (req, res) => {
     // send error to email
     if (process.env.NODE_ENV === "production") {
       sendMail(
-        process.env.ADMIN_EMAIL,
+        process.env.ADMIN_MAIL,
         "Error in Get User Profile",
         errorTemplate(generateURL(req), error.message),
       );
@@ -83,7 +83,7 @@ export const updateProfilePic = async (req, res) => {
     // send error to email
     if (process.env.NODE_ENV === "production") {
       sendMail(
-        process.env.ADMIN_EMAIL,
+        process.env.ADMIN_MAIL,
         "Error in Update Profile Pic",
         errorTemplate(generateURL(req), error.message),
       );
@@ -122,7 +122,7 @@ export const editUserProfileDetail = async (req, res) => {
     // send error to email
     if (process.env.NODE_ENV === "production") {
       sendMail(
-        process.env.ADMIN_EMAIL,
+        process.env.ADMIN_MAIL,
         "Error in Update User Profile Details",
         errorTemplate(generateURL(req), error.message),
       );

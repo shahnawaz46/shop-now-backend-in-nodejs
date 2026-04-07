@@ -1,11 +1,10 @@
-import slugify from 'slugify';
+import slugify from "slugify";
 
 // internal
-import { Category } from '../../model/category.model.js';
-import { getAllCategory } from '../../utils/Category.js';
-import sendMail from '../../services/mail.service.js';
-import { errorTemplate } from '../../template/ErrorMailTemplate.js';
-import { generateURL } from '../../utils/GenerateURL.js';
+import { Category } from "../../model/category.model.js";
+import sendMail from "../../services/resend-mail.service.js";
+import { errorTemplate } from "../../template/ErrorMailTemplate.js";
+import { generateURL } from "../../utils/GenerateURL.js";
 
 export const createCategory = async (req, res) => {
   try {
@@ -23,21 +22,21 @@ export const createCategory = async (req, res) => {
       if (error) {
         return res
           .status(400)
-          .json({ error: 'Category Already Exist Please Use Another Name' });
+          .json({ error: "Category Already Exist Please Use Another Name" });
       }
       if (product) {
         return res
           .status(200)
-          .json({ message: 'Category Created Successfully' });
+          .json({ message: "Category Created Successfully" });
       }
     });
   } catch (error) {
     // send error to email
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === "production") {
       sendMail(
-        process.env.ADMIN_EMAIL,
-        '(Admin Panel) Error in Create Category',
-        errorTemplate(generateURL(req, '', true), error.message)
+        process.env.ADMIN_MAIL,
+        "(Admin Panel) Error in Create Category",
+        errorTemplate(generateURL(req, "", true), error.message),
       );
     } else {
       console.log(error);
@@ -56,24 +55,24 @@ export const getCategory = async (req, res) => {
       categoryName: {
         $nin: ["Men's Wardrobe", "Women's Wardrobe"],
       },
-    }).select('categoryName');
+    }).select("categoryName");
     if (allCategory) {
       // const categoryList = getAllCategory(allCategory);
 
       return res.status(200).json({
         categories: allCategory,
-        targetAudience: [{ name: 'Men' }, { name: 'Women' }],
+        targetAudience: [{ name: "Men" }, { name: "Women" }],
       });
     }
 
-    return res.status(404).json({ error: 'No Category Found' });
+    return res.status(404).json({ error: "No Category Found" });
   } catch (error) {
     // send error to email
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === "production") {
       sendMail(
-        process.env.ADMIN_EMAIL,
-        '(Admin Panel) Error in Get Category',
-        errorTemplate(generateURL(req, '', true), error.message)
+        process.env.ADMIN_MAIL,
+        "(Admin Panel) Error in Get Category",
+        errorTemplate(generateURL(req, "", true), error.message),
       );
     } else {
       console.log(error);
@@ -89,14 +88,14 @@ export const getCategory = async (req, res) => {
 export const deleteCategory = async (req, res) => {
   try {
     await Category.findByIdAndDelete({ _id: req.body.categoryId });
-    return res.status(200).json({ message: 'Category Deleted Successfully' });
+    return res.status(200).json({ message: "Category Deleted Successfully" });
   } catch (error) {
     // send error to email
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === "production") {
       sendMail(
-        process.env.ADMIN_EMAIL,
-        '(Admin Panel) Error in Delete Category',
-        errorTemplate(generateURL(req, '', true), error.message)
+        process.env.ADMIN_MAIL,
+        "(Admin Panel) Error in Delete Category",
+        errorTemplate(generateURL(req, "", true), error.message),
       );
     } else {
       console.log(error);
@@ -122,14 +121,14 @@ export const editCategory = async (req, res) => {
     await Category.findByIdAndUpdate({ _id }, categoryObj, {
       new: true,
     });
-    return res.status(200).json({ message: 'Category Edit Successfully' });
+    return res.status(200).json({ message: "Category Edit Successfully" });
   } catch (error) {
     // send error to email
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === "production") {
       sendMail(
-        process.env.ADMIN_EMAIL,
-        '(Admin Panel) Error in Edit/Update Category',
-        errorTemplate(generateURL(req, '', true), error.message)
+        process.env.ADMIN_MAIL,
+        "(Admin Panel) Error in Edit/Update Category",
+        errorTemplate(generateURL(req, "", true), error.message),
       );
     } else {
       console.log(error);

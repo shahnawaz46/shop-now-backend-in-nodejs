@@ -1,15 +1,15 @@
 // internal
 import { Category } from "../../model/category.model.js";
-import { generateURL } from "../../utils/GenerateURL.js";
-import { getAllCategory, getParentCategory } from "../../utils/Category.js";
-import sendMail from "../../services/mail.service.js";
+import sendMail from "../../services/resend-mail.service.js";
 import { errorTemplate } from "../../template/ErrorMailTemplate.js";
+import { getAllCategory, getParentCategory } from "../../utils/Category.js";
+import { generateURL } from "../../utils/GenerateURL.js";
 
 export const getCategory = async (req, res) => {
   const { slug } = req.params;
   try {
     const allCategory = await Category.find({}).select(
-      "-createdAt -updatedAt -__v -gender"
+      "-createdAt -updatedAt -__v -gender",
     );
     if (allCategory) {
       let categoryList = [];
@@ -28,9 +28,9 @@ export const getCategory = async (req, res) => {
     // send error to email
     if (process.env.NODE_ENV === "production") {
       sendMail(
-        process.env.ADMIN_EMAIL,
+        process.env.ADMIN_MAIL,
         "Error in Get Category",
-        errorTemplate(generateURL(req), error.message)
+        errorTemplate(generateURL(req), error.message),
       );
     } else {
       console.log(error);
@@ -60,9 +60,9 @@ export const searchCategory = async (req, res) => {
     // send error to email
     if (process.env.NODE_ENV === "production") {
       sendMail(
-        process.env.ADMIN_EMAIL,
+        process.env.ADMIN_MAIL,
         "Error in Search Category",
-        errorTemplate(generateURL(req), error.message)
+        errorTemplate(generateURL(req), error.message),
       );
     } else {
       console.log(error);

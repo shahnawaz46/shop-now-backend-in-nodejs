@@ -4,7 +4,7 @@ import bcrypt from "bcryptjs";
 import { getUserProfile } from "../../dtos/user.dto.js";
 import { Otp } from "../../model/otp.model.js";
 import { User } from "../../model/user.model.js";
-import sendMail from "../../services/mail.service.js";
+import sendMail from "../../services/resend-mail.service.js";
 import { errorTemplate } from "../../template/ErrorMailTemplate.js";
 import {
   registrationVerificationEmail,
@@ -123,7 +123,7 @@ export const signup = async (req, res) => {
     // send error to email
     if (process.env.NODE_ENV === "production") {
       sendMail(
-        process.env.ADMIN_EMAIL,
+        process.env.ADMIN_MAIL,
         "Error in Signup",
         errorTemplate(generateURL(req), error.message),
       );
@@ -204,7 +204,7 @@ export const otpVerification = async (req, res) => {
     // send error to email
     if (process.env.NODE_ENV === "production") {
       sendMail(
-        process.env.ADMIN_EMAIL,
+        process.env.ADMIN_MAIL,
         "Error in OTP Verification",
         errorTemplate(generateURL(req), error.message),
       );
@@ -290,7 +290,7 @@ export const signin = async (req, res) => {
     // send error to email
     if (process.env.NODE_ENV === "production") {
       sendMail(
-        process.env.ADMIN_EMAIL,
+        process.env.ADMIN_MAIL,
         "Error in Signin",
         errorTemplate(generateURL(req), error.message),
       );
@@ -382,7 +382,7 @@ export const refreshToken = async (req, res) => {
     // send error to email
     if (process.env.NODE_ENV === "production") {
       sendMail(
-        process.env.ADMIN_EMAIL,
+        process.env.ADMIN_MAIL,
         "Error in Refresh Token",
         errorTemplate(generateURL(req), error.message),
       );

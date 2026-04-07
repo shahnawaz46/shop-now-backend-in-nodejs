@@ -7,7 +7,7 @@ import {
   deleteBulkMediaOnImageKit,
   uploadMediaOnImageKit,
 } from "../../services/imageKit.service.js";
-import sendMail from "../../services/mail.service.js";
+import sendMail from "../../services/resend-mail.service.js";
 import { errorTemplate } from "../../template/ErrorMailTemplate.js";
 import { LIMIT } from "../../utils/Constant.js";
 import { generateURL } from "../../utils/GenerateURL.js";
@@ -94,7 +94,7 @@ export const addProduct = async (req, res) => {
     // send error to email
     if (process.env.NODE_ENV === "production") {
       sendMail(
-        process.env.ADMIN_EMAIL,
+        process.env.ADMIN_MAIL,
         "(Admin Panel) Error in Add Product",
         errorTemplate(generateURL(req, "", true), error.message),
       );
@@ -133,7 +133,7 @@ export const getAllProducts = async (req, res) => {
     // send error to email
     if (process.env.NODE_ENV === "production") {
       sendMail(
-        process.env.ADMIN_EMAIL,
+        process.env.ADMIN_MAIL,
         "(Admin Panel) Error in Get All Products",
         errorTemplate(generateURL(req, "", true), error.message),
       );
@@ -197,7 +197,7 @@ export const productSalesDetails = async (req, res) => {
     // send error to email
     if (process.env.NODE_ENV === "production") {
       sendMail(
-        process.env.ADMIN_EMAIL,
+        process.env.ADMIN_MAIL,
         "(Admin Panel) Error in Get Product Sales Details",
         errorTemplate(generateURL(req, "", true), error.message),
       );
@@ -261,7 +261,7 @@ export const deleteProduct = async (req, res) => {
     // send error to email
     if (process.env.NODE_ENV === "production") {
       sendMail(
-        process.env.ADMIN_EMAIL,
+        process.env.ADMIN_MAIL,
         "(Admin Panel) Error in Delete Product",
         errorTemplate(generateURL(req, "", true), error.message),
       );
@@ -362,7 +362,7 @@ export const editProduct = async (req, res) => {
     // send error to email
     if (process.env.NODE_ENV === "production") {
       sendMail(
-        process.env.ADMIN_EMAIL,
+        process.env.ADMIN_MAIL,
         "(Admin Panel) Error in Edit/update Product",
         errorTemplate(generateURL(req, "", true), error.message),
       );
@@ -391,7 +391,7 @@ export const getSingleProductById = async (req, res) => {
     // send error to email
     if (process.env.NODE_ENV === "production") {
       sendMail(
-        process.env.ADMIN_EMAIL,
+        process.env.ADMIN_MAIL,
         "(Admin Panel) Error in Get Single Product By Id",
         errorTemplate(generateURL(req, "", true), error.message),
       );
@@ -430,7 +430,7 @@ export const searchProducts = async (req, res) => {
     // send error to email
     if (process.env.NODE_ENV === "production") {
       sendMail(
-        process.env.ADMIN_EMAIL,
+        process.env.ADMIN_MAIL,
         "(Admin Panel) Error in Search Products",
         errorTemplate(generateURL(req, "", true), error.message),
       );

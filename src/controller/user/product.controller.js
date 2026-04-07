@@ -1,12 +1,12 @@
 // internal
-import { Product, sizeDescription } from "../../model/product.model.js";
 import { Category } from "../../model/category.model.js";
 import { Order } from "../../model/order.model.js";
+import { Product, sizeDescription } from "../../model/product.model.js";
 import { TrendingProduct } from "../../model/trendingProduct.model.js";
+import sendMail from "../../services/resend-mail.service.js";
+import { errorTemplate } from "../../template/ErrorMailTemplate.js";
 import { LIMIT } from "../../utils/Constant.js";
 import { generateURL } from "../../utils/GenerateURL.js";
-import sendMail from "../../services/mail.service.js";
-import { errorTemplate } from "../../template/ErrorMailTemplate.js";
 
 // find method in Mongoose takes three arguments:
 // 1st -> filter
@@ -30,7 +30,7 @@ export const getAllProducts = async (req, res) => {
         productPictures: { $slice: 1 }, // Get the first element using projection operator
         actualPrice: 1,
         sellingPrice: 1,
-      }
+      },
     )
       .skip((page - 1) * LIMIT)
       .limit(LIMIT);
@@ -48,9 +48,9 @@ export const getAllProducts = async (req, res) => {
     // send error to email
     if (process.env.NODE_ENV === "production") {
       sendMail(
-        process.env.ADMIN_EMAIL,
+        process.env.ADMIN_MAIL,
         "Error in Get All Products",
-        errorTemplate(generateURL(req), error.message)
+        errorTemplate(generateURL(req), error.message),
       );
     } else {
       console.log(error);
@@ -98,7 +98,7 @@ export const getFilteredProducts = async (req, res) => {
           req,
           `category=${category}&price=${price}&targetAudience=${targetAudience}&page=${
             Number(page) + 1
-          }`
+          }`,
         );
 
         return res.status(200).json({
@@ -123,7 +123,7 @@ export const getFilteredProducts = async (req, res) => {
         req,
         `price=${price}&targetAudience=${targetAudience}&page=${
           Number(page) + 1
-        }`
+        }`,
       );
 
       return res.status(200).json({
@@ -149,7 +149,7 @@ export const getFilteredProducts = async (req, res) => {
         req,
         `category=${category}&targetAudience=${targetAudience}&page=${
           Number(page) + 1
-        }`
+        }`,
       );
 
       return res.status(200).json({
@@ -163,9 +163,9 @@ export const getFilteredProducts = async (req, res) => {
     // send error to email
     if (process.env.NODE_ENV === "production") {
       sendMail(
-        process.env.ADMIN_EMAIL,
+        process.env.ADMIN_MAIL,
         "Error in Get Filtered Products",
-        errorTemplate(generateURL(req), error.message)
+        errorTemplate(generateURL(req), error.message),
       );
     } else {
       console.log(error);
@@ -186,7 +186,7 @@ export const getSingleProductById = async (req, res) => {
       _id: productId,
     })
       .select(
-        "productName actualPrice sellingPrice description productPictures reviews size slug stocks targetAudience totalSales"
+        "productName actualPrice sellingPrice description productPictures reviews size slug stocks targetAudience totalSales",
       )
       .populate("reviews.userId", "firstName lastName profilePicture");
 
@@ -197,7 +197,7 @@ export const getSingleProductById = async (req, res) => {
     // update size key
     const sizeWithDescription = {};
     product.size.forEach(
-      (item) => (sizeWithDescription[item] = sizeDescription.get(item))
+      (item) => (sizeWithDescription[item] = sizeDescription.get(item)),
     );
 
     const updatedProduct = {
@@ -217,9 +217,9 @@ export const getSingleProductById = async (req, res) => {
     // send error to email
     if (process.env.NODE_ENV === "production") {
       sendMail(
-        process.env.ADMIN_EMAIL,
+        process.env.ADMIN_MAIL,
         "Error in Get Single Product",
-        errorTemplate(generateURL(req), error.message)
+        errorTemplate(generateURL(req), error.message),
       );
     } else {
       console.log(error);
@@ -249,9 +249,9 @@ export const getSingleProductByIdDuringCheckout = async (req, res) => {
     // send error to email
     if (process.env.NODE_ENV === "production") {
       sendMail(
-        process.env.ADMIN_EMAIL,
+        process.env.ADMIN_MAIL,
         "Error in Get Single Product during Checkout/Buy",
-        errorTemplate(generateURL(req), error.message)
+        errorTemplate(generateURL(req), error.message),
       );
     } else {
       console.log(error);
@@ -275,7 +275,7 @@ export const updateTopTrendingProduct = async (req, res) => {
     await TrendingProduct.findOneAndUpdate(
       { productId, userId },
       { $set: { productId, userId, eventType } },
-      { upsert: true }
+      { upsert: true },
     );
 
     return res.status(200).json({ msg: "successfully" });
@@ -283,9 +283,9 @@ export const updateTopTrendingProduct = async (req, res) => {
     // send error to email
     if (process.env.NODE_ENV === "production") {
       sendMail(
-        process.env.ADMIN_EMAIL,
+        process.env.ADMIN_MAIL,
         "Error in Update Top Trending Product",
-        errorTemplate(generateURL(req), error.message)
+        errorTemplate(generateURL(req), error.message),
       );
     } else {
       console.log(error);
@@ -382,9 +382,9 @@ export const getTopTrendingProducts = async (req, res) => {
     // send error to email
     if (process.env.NODE_ENV === "production") {
       sendMail(
-        process.env.ADMIN_EMAIL,
+        process.env.ADMIN_MAIL,
         "Error in Get Top Trending Products",
-        errorTemplate(generateURL(req), error.message)
+        errorTemplate(generateURL(req), error.message),
       );
     } else {
       console.log(error);
@@ -440,9 +440,9 @@ export const topRatingProducts = async (req, res) => {
     // send error to email
     if (process.env.NODE_ENV === "production") {
       sendMail(
-        process.env.ADMIN_EMAIL,
+        process.env.ADMIN_MAIL,
         "Error in Get Top Rating Products",
-        errorTemplate(generateURL(req), error.message)
+        errorTemplate(generateURL(req), error.message),
       );
     } else {
       console.log(error);
@@ -535,10 +535,10 @@ export const getTopSellingProducts = async (req, res) => {
       category && price
         ? `category=${category}&price=${price}&page=${Number(page) + 1}`
         : category
-        ? `category=${category}&page=${Number(page) + 1}`
-        : price
-        ? `price=${price}&page=${Number(page) + 1}`
-        : `page=${Number(page) + 1}`;
+          ? `category=${category}&page=${Number(page) + 1}`
+          : price
+            ? `price=${price}&page=${Number(page) + 1}`
+            : `page=${Number(page) + 1}`;
 
     // generate nextUrl for pagination
     const nextRoute = generateURL(req, isExist);
@@ -553,9 +553,9 @@ export const getTopSellingProducts = async (req, res) => {
     // send error to email
     if (process.env.NODE_ENV === "production") {
       sendMail(
-        process.env.ADMIN_EMAIL,
+        process.env.ADMIN_MAIL,
         "Error in Get Top Selling Products",
-        errorTemplate(generateURL(req), error.message)
+        errorTemplate(generateURL(req), error.message),
       );
     } else {
       console.log(error);
@@ -595,10 +595,10 @@ export const getNewestProducts = async (req, res) => {
       category && price
         ? { targetAudience: category, ...priceQuery }
         : category
-        ? { targetAudience: category }
-        : price
-        ? { ...priceQuery }
-        : {};
+          ? { targetAudience: category }
+          : price
+            ? { ...priceQuery }
+            : {};
 
     const newestProducts = await Product.find(
       filter,
@@ -608,7 +608,7 @@ export const getNewestProducts = async (req, res) => {
         actualPrice: 1,
         sellingPrice: 1,
       },
-      { sort: { createdAt: -1 } }
+      { sort: { createdAt: -1 } },
     )
       .skip((page - 1) * LIMIT)
       .limit(LIMIT);
@@ -618,10 +618,10 @@ export const getNewestProducts = async (req, res) => {
       category && price
         ? `category=${category}&price=${price}&page=${Number(page) + 1}`
         : category
-        ? `category=${category}&page=${Number(page) + 1}`
-        : price
-        ? `price=${price}&page=${Number(page) + 1}`
-        : `page=${Number(page) + 1}`;
+          ? `category=${category}&page=${Number(page) + 1}`
+          : price
+            ? `price=${price}&page=${Number(page) + 1}`
+            : `page=${Number(page) + 1}`;
 
     // generate nextUrl for pagination
     const nextRoute = generateURL(req, isQueryExist);
@@ -636,9 +636,9 @@ export const getNewestProducts = async (req, res) => {
     // send error to email
     if (process.env.NODE_ENV === "production") {
       sendMail(
-        process.env.ADMIN_EMAIL,
+        process.env.ADMIN_MAIL,
         "Error in Get Newest Products",
-        errorTemplate(generateURL(req), error.message)
+        errorTemplate(generateURL(req), error.message),
       );
     } else {
       console.log(error);
@@ -677,7 +677,7 @@ export const writeProductReview = async (req, res) => {
 
     // checking review is already added by user or not
     const reviewIsAlready = product.reviews.find(
-      (value) => value.userId == req.data._id
+      (value) => value.userId == req.data._id,
     );
 
     // if review is already added then i am updating review with new review
@@ -692,7 +692,7 @@ export const writeProductReview = async (req, res) => {
             "reviews.$.update_date": date,
           },
         },
-        { new: true }
+        { new: true },
       )
         .select("reviews")
         .populate("reviews.userId", "firstName lastName profilePicture");
@@ -717,7 +717,7 @@ export const writeProductReview = async (req, res) => {
             },
           },
         },
-        { new: true }
+        { new: true },
       )
         .select("reviews")
         .populate("reviews.userId", "firstName lastName profilePicture");
@@ -731,9 +731,9 @@ export const writeProductReview = async (req, res) => {
     // send error to email
     if (process.env.NODE_ENV === "production") {
       sendMail(
-        process.env.ADMIN_EMAIL,
+        process.env.ADMIN_MAIL,
         "Error in Write Product Review",
-        errorTemplate(generateURL(req), error.message)
+        errorTemplate(generateURL(req), error.message),
       );
     } else {
       console.log(error);

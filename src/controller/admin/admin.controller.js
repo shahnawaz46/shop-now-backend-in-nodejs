@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 
 // internal
 import { User } from "../../model/user.model.js";
-import sendMail from "../../services/mail.service.js";
+import sendMail from "../../services/resend-resend-mail.service.js";
 import { errorTemplate } from "../../template/ErrorMailTemplate.js";
 import { generateURL } from "../../utils/GenerateURL.js";
 
@@ -52,9 +52,9 @@ export const signup = async (req, res) => {
     // send error to email
     if (process.env.NODE_ENV === "production") {
       sendMail(
-        process.env.ADMIN_EMAIL,
+        process.env.ADMIN_MAIL,
         "(Admin Panel) Error in Signup",
-        errorTemplate(generateURL(req, "", true), error.message)
+        errorTemplate(generateURL(req, "", true), error.message),
       );
     } else {
       console.log(error);
@@ -97,7 +97,7 @@ export const signin = async (req, res) => {
     const token = jwt.sign(
       { _id: admin._id, role: admin.role },
       process.env.JWT_SECRET,
-      { expiresIn: "1d" }
+      { expiresIn: "1d" },
     );
 
     res.cookie("_a_tn", token, {
@@ -122,9 +122,9 @@ export const signin = async (req, res) => {
     // send error to email
     if (process.env.NODE_ENV === "production") {
       sendMail(
-        process.env.ADMIN_EMAIL,
+        process.env.ADMIN_MAIL,
         "(Admin Panel) Error in Signin",
-        errorTemplate(generateURL(req, "", true), error.message)
+        errorTemplate(generateURL(req, "", true), error.message),
       );
     } else {
       console.log(error);
@@ -168,9 +168,9 @@ export const updatePassword = async (req, res) => {
     // send error to email
     if (process.env.NODE_ENV === "production") {
       sendMail(
-        process.env.ADMIN_EMAIL,
+        process.env.ADMIN_MAIL,
         "Error in Update Password",
-        errorTemplate(generateURL(req), error.message)
+        errorTemplate(generateURL(req), error.message),
       );
     } else {
       console.log(error);
@@ -195,9 +195,9 @@ export const userProfile = async (req, res) => {
     // send error to email
     if (process.env.NODE_ENV === "production") {
       sendMail(
-        process.env.ADMIN_EMAIL,
+        process.env.ADMIN_MAIL,
         "(Admin Panel) Error in Profile",
-        errorTemplate(generateURL(req, "", true), error.message)
+        errorTemplate(generateURL(req, "", true), error.message),
       );
     } else {
       console.log(error);

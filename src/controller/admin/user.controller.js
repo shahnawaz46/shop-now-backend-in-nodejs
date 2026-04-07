@@ -1,17 +1,17 @@
-import moment from 'moment';
+import moment from "moment";
 
 // internal
-import { User } from '../../model/user.model.js';
-import { LIMIT } from '../../utils/Constant.js';
-import { generateURL } from '../../utils/GenerateURL.js';
-import sendMail from '../../services/mail.service.js';
-import { errorTemplate } from '../../template/ErrorMailTemplate.js';
+import { User } from "../../model/user.model.js";
+import sendMail from "../../services/resend-mail.service.js";
+import { errorTemplate } from "../../template/ErrorMailTemplate.js";
+import { LIMIT } from "../../utils/Constant.js";
+import { generateURL } from "../../utils/GenerateURL.js";
 
 export const getAllUsers = async (req, res) => {
   const { page = 1 } = req.query;
   try {
     const allUsers = await User.find({})
-      .select('firstName lastName email role isEmailVerified lastLogin.date')
+      .select("firstName lastName email role isEmailVerified lastLogin.date")
       .sort({ createdAt: -1 })
       .skip((page - 1) * LIMIT)
       .limit(LIMIT);
@@ -25,11 +25,11 @@ export const getAllUsers = async (req, res) => {
     });
   } catch (error) {
     // send error to email
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === "production") {
       sendMail(
-        process.env.ADMIN_EMAIL,
-        '(Admin Panel) Error in Get All Users',
-        errorTemplate(generateURL(req, '', true), error.message)
+        process.env.ADMIN_MAIL,
+        "(Admin Panel) Error in Get All Users",
+        errorTemplate(generateURL(req, "", true), error.message),
       );
     } else {
       console.log(error);
@@ -61,7 +61,7 @@ export const getUserStats = async (req, res) => {
               $cond: [
                 {
                   $gte: [
-                    '$createdAt',
+                    "$createdAt",
                     new Date(currentYear, currentMonth - 1, 1),
                   ],
                 },
@@ -72,7 +72,7 @@ export const getUserStats = async (req, res) => {
           },
           activeUsers: {
             $sum: {
-              $cond: [{ $gte: ['$lastLogin.date', thirtyDaysAgo] }, 1, 0],
+              $cond: [{ $gte: ["$lastLogin.date", thirtyDaysAgo] }, 1, 0],
             },
           },
         },
@@ -88,23 +88,23 @@ export const getUserStats = async (req, res) => {
     ]);
 
     if (userData.length === 0) {
-      return res.status(404).json({ error: 'No user stats found' });
+      return res.status(404).json({ error: "No user stats found" });
     }
 
     // second calculating UserDemographics
     const allUsers = await User.find({});
     const currentDate = moment();
     const userDemographics = [
-      { name: '<18', value: 0 },
-      { name: '18-24', value: 0 },
-      { name: '25-35', value: 0 },
-      { name: '36-50', value: 0 },
-      { name: '50+', value: 0 },
+      { name: "<18", value: 0 },
+      { name: "18-24", value: 0 },
+      { name: "25-35", value: 0 },
+      { name: "36-50", value: 0 },
+      { name: "50+", value: 0 },
     ];
 
     for (let i = 0; i < allUsers.length; i++) {
       const dobDate = moment(allUsers[i].dob);
-      const differenceInYears = currentDate.diff(dobDate, 'years');
+      const differenceInYears = currentDate.diff(dobDate, "years");
       if (differenceInYears < 18) {
         userDemographics[0].value++;
       } else if (differenceInYears >= 18 && differenceInYears <= 24) {
@@ -126,11 +126,11 @@ export const getUserStats = async (req, res) => {
     return res.status(200).json({ ...userStats });
   } catch (error) {
     // send error to email
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === "production") {
       sendMail(
-        process.env.ADMIN_EMAIL,
-        '(Admin Panel) Error in Get User Stats',
-        errorTemplate(generateURL(req, '', true), error.message)
+        process.env.ADMIN_MAIL,
+        "(Admin Panel) Error in Get User Stats",
+        errorTemplate(generateURL(req, "", true), error.message),
       );
     } else {
       console.log(error);
@@ -161,14 +161,14 @@ export const getUserGrowthGraph = async (req, res) => {
       },
       {
         $group: {
-          _id: { $month: '$createdAt' },
+          _id: { $month: "$createdAt" },
           users: { $sum: 1 },
         },
       },
       {
         $project: {
           _id: 0,
-          month: '$_id',
+          month: "$_id",
           users: 1,
         },
       },
@@ -176,18 +176,18 @@ export const getUserGrowthGraph = async (req, res) => {
 
     // graph with initial value
     const monthGraph = [
-      { month: 'Jan', users: 0 },
-      { month: 'Feb', users: 0 },
-      { month: 'Mar', users: 0 },
-      { month: 'Apr', users: 0 },
-      { month: 'May', users: 0 },
-      { month: 'Jun', users: 0 },
-      { month: 'Jul', users: 0 },
-      { month: 'Aug', users: 0 },
-      { month: 'Sep', users: 0 },
-      { month: 'Oct', users: 0 },
-      { month: 'Nov', users: 0 },
-      { month: 'Dec', users: 0 },
+      { month: "Jan", users: 0 },
+      { month: "Feb", users: 0 },
+      { month: "Mar", users: 0 },
+      { month: "Apr", users: 0 },
+      { month: "May", users: 0 },
+      { month: "Jun", users: 0 },
+      { month: "Jul", users: 0 },
+      { month: "Aug", users: 0 },
+      { month: "Sep", users: 0 },
+      { month: "Oct", users: 0 },
+      { month: "Nov", users: 0 },
+      { month: "Dec", users: 0 },
     ];
 
     userGrowthGraph.forEach((data) => {
@@ -198,11 +198,11 @@ export const getUserGrowthGraph = async (req, res) => {
     return res.status(200).json({ monthGraph });
   } catch (error) {
     // send error to email
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === "production") {
       sendMail(
-        process.env.ADMIN_EMAIL,
-        '(Admin Panel) Error in Get Users Growth Graph',
-        errorTemplate(generateURL(req, '', true), error.message)
+        process.env.ADMIN_MAIL,
+        "(Admin Panel) Error in Get Users Growth Graph",
+        errorTemplate(generateURL(req, "", true), error.message),
       );
     } else {
       console.log(error);
@@ -222,12 +222,12 @@ export const searchUsers = async (req, res) => {
     // 'i': This option makes the regex search case-insensitive ex: PANT, Pant, pant
     const users = await User.find({
       $or: [
-        { firstName: { $regex: query, $options: 'i' } },
-        { lastName: { $regex: query, $options: 'i' } },
-        { email: { $regex: query, $options: 'i' } },
+        { firstName: { $regex: query, $options: "i" } },
+        { lastName: { $regex: query, $options: "i" } },
+        { email: { $regex: query, $options: "i" } },
       ],
     })
-      .select('firstName lastName email role isEmailVerified lastLogin.date')
+      .select("firstName lastName email role isEmailVerified lastLogin.date")
       .sort({ createdAt: -1 })
       .skip((page - 1) * LIMIT)
       .limit(LIMIT);
@@ -239,11 +239,11 @@ export const searchUsers = async (req, res) => {
       .json({ next: users.length < LIMIT ? null : nextURL, users });
   } catch (error) {
     // send error to email
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === "production") {
       sendMail(
-        process.env.ADMIN_EMAIL,
-        '(Admin Panel) Error in Search Users',
-        errorTemplate(generateURL(req, '', true), error.message)
+        process.env.ADMIN_MAIL,
+        "(Admin Panel) Error in Search Users",
+        errorTemplate(generateURL(req, "", true), error.message),
       );
     } else {
       console.log(error);
@@ -263,19 +263,19 @@ export const deleteUser = async (req, res) => {
     if (!user) {
       return res
         .status(200)
-        .json({ msg: 'User already deleted or User Not found' });
+        .json({ msg: "User already deleted or User Not found" });
     }
 
     await User.findByIdAndDelete(id);
 
-    return res.status(200).json({ msg: 'User deleted Successfully' });
+    return res.status(200).json({ msg: "User deleted Successfully" });
   } catch (error) {
     // send error to email
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === "production") {
       sendMail(
-        process.env.ADMIN_EMAIL,
-        '(Admin Panel) Error in Delete Users',
-        errorTemplate(generateURL(req, '', true), error.message)
+        process.env.ADMIN_MAIL,
+        "(Admin Panel) Error in Delete Users",
+        errorTemplate(generateURL(req, "", true), error.message),
       );
     } else {
       console.log(error);

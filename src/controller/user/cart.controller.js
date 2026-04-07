@@ -1,6 +1,6 @@
 // internal
 import { Cart } from "../../model/cart.model.js";
-import sendMail from "../../services/mail.service.js";
+import sendMail from "../../services/resend-mail.service.js";
 import { errorTemplate } from "../../template/ErrorMailTemplate.js";
 import { filterCartItems } from "../../utils/Carts.js";
 import { generateURL } from "../../utils/GenerateURL.js";
@@ -46,7 +46,7 @@ export const addToCart = async (req, res) => {
     // send error to email
     if (process.env.NODE_ENV === "production") {
       sendMail(
-        process.env.ADMIN_EMAIL,
+        process.env.ADMIN_MAIL,
         "Error in Add to Cart",
         errorTemplate(generateURL(req), error.message),
       );
@@ -78,7 +78,7 @@ export const getCartItem = async (req, res) => {
     // send error to email
     if (process.env.NODE_ENV === "production") {
       sendMail(
-        process.env.ADMIN_EMAIL,
+        process.env.ADMIN_MAIL,
         "Error in Get Cart Items",
         errorTemplate(generateURL(req), error.message),
       );
@@ -107,7 +107,7 @@ export const removeCartItem = async (req, res) => {
     // send error to email
     if (process.env.NODE_ENV === "production") {
       sendMail(
-        process.env.ADMIN_EMAIL,
+        process.env.ADMIN_MAIL,
         "Error in Remove Cart Items",
         errorTemplate(generateURL(req), error.message),
       );
@@ -181,7 +181,7 @@ export const mergeCartItems = async (req, res) => {
     // send error to email
     if (process.env.NODE_ENV === "production") {
       sendMail(
-        process.env.ADMIN_EMAIL,
+        process.env.ADMIN_MAIL,
         "Error in Add to Cart",
         errorTemplate(generateURL(req), error.message),
       );

@@ -1,23 +1,23 @@
-import { v4 as uuidv4 } from 'uuid';
-import crypto from 'crypto';
-import puppeteer from 'puppeteer';
-import ejs from 'ejs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import crypto from "crypto";
+import ejs from "ejs";
+import path from "path";
+import puppeteer from "puppeteer";
+import { fileURLToPath } from "url";
+import { v4 as uuidv4 } from "uuid";
 
 // internal
-import { Order } from '../../model/order.model.js';
-import { Cart } from '../../model/cart.model.js';
-import sendMail from '../../services/mail.service.js';
-import { errorTemplate } from '../../template/ErrorMailTemplate.js';
-import { generateURL } from '../../utils/GenerateURL.js';
 import {
   key_id,
   key_secret,
   razorpayInstance,
-} from '../../config/razorpay.config.js';
-import { Product } from '../../model/product.model.js';
-import { DELIVERY_CHARGE } from '../../utils/Constant.js';
+} from "../../config/razorpay.config.js";
+import { Cart } from "../../model/cart.model.js";
+import { Order } from "../../model/order.model.js";
+import { Product } from "../../model/product.model.js";
+import sendMail from "../../services/resend-mail.service.js";
+import { errorTemplate } from "../../template/ErrorMailTemplate.js";
+import { DELIVERY_CHARGE } from "../../utils/Constant.js";
+import { generateURL } from "../../utils/GenerateURL.js";
 
 export const createOrder = async (req, res) => {
   const userId = req.data._id;
@@ -51,10 +51,10 @@ export const createOrder = async (req, res) => {
     const order = await Order.create(orderDetails); // creating order to the database
 
     // if paymentMethod is card then creating order with the help of razor pay to proceed payment
-    if (paymentMethod === 'card') {
+    if (paymentMethod === "card") {
       const options = {
         amount: totalPrice * 100, // Convert totalPrice to paisa
-        currency: 'INR',
+        currency: "INR",
         receipt: orderDetails.orderId,
       };
 
@@ -69,29 +69,29 @@ export const createOrder = async (req, res) => {
     }
 
     // if paymentMethod is cod then creating order with the help of razor pay to proceed payment
-    if (paymentMethod === 'cod') {
-      order.orderStatus = 'order confirmed';
+    if (paymentMethod === "cod") {
+      order.orderStatus = "order confirmed";
       await order.save();
 
       // if customer place order through cart then the cart will be emptied after a successful order.
-      if (process === 'checkout') {
+      if (process === "checkout") {
         await Cart.findOneAndUpdate(
           { userId: req.data._id },
-          { $set: { cartItems: [] } }
+          { $set: { cartItems: [] } },
         );
       }
 
-      return res.status(201).json({ msg: 'Order Done' });
+      return res.status(201).json({ msg: "Order Done" });
     }
 
-    return res.status(400).json({ error: 'Not Allowed' });
+    return res.status(400).json({ error: "Not Allowed" });
   } catch (error) {
     // send error to email
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === "production") {
       sendMail(
-        process.env.ADMIN_EMAIL,
-        'Error in Create Order',
-        errorTemplate(generateURL(req), error.message)
+        process.env.ADMIN_MAIL,
+        "Error in Create Order",
+        errorTemplate(generateURL(req), error.message),
       );
     } else {
       console.log(error);
@@ -114,19 +114,19 @@ export const paymentVerification = async (req, res) => {
 
   // generating signature as razorpay mention for verify payment
   const generated_signature = crypto
-    .createHmac('sha256', key_secret)
+    .createHmac("sha256", key_secret)
     .update(`${razorpay_order_id}|${razorpay_payment_id}`)
-    .digest('hex');
+    .digest("hex");
 
   try {
     // if signature matched then updating order document (paymentStatus and paymentDetails)
     if (generated_signature === razorpay_signature) {
       // if customer place order through  checkout cart then the cart will be emptied after a successful order.
       // otherwise it means user have purchased product directly so cart will be remain same
-      if (process === 'checkout') {
+      if (process === "checkout") {
         await Cart.findOneAndUpdate(
           { userId: req.data._id },
-          { $set: { cartItems: [] } }
+          { $set: { cartItems: [] } },
         );
       }
 
@@ -134,42 +134,42 @@ export const paymentVerification = async (req, res) => {
         { orderId: req.params.orderId },
         {
           $set: {
-            paymentStatus: 'success',
-            orderStatus: 'order confirmed',
+            paymentStatus: "success",
+            orderStatus: "order confirmed",
             paymentDetails: {
               razorpay_payment_id,
               razorpay_order_id,
               razorpay_signature,
             },
           },
-        }
+        },
       );
-      return res.status(200).json({ msg: 'Payment successfull' });
+      return res.status(200).json({ msg: "Payment successfull" });
     } else {
       // if payment not verified then updating paymentStatus to failed
       await Order.findOneAndUpdate(
         { orderId: req.params.orderId },
         {
           $set: {
-            paymentStatus: 'failed',
-            orderStatus: 'failed',
+            paymentStatus: "failed",
+            orderStatus: "failed",
             paymentDetails: {
               razorpay_payment_id,
               razorpay_order_id,
               razorpay_signature,
             },
           },
-        }
+        },
       );
-      return res.status(400).json({ error: 'Payment Not Verified' });
+      return res.status(400).json({ error: "Payment Not Verified" });
     }
   } catch (error) {
     // send error to email
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === "production") {
       sendMail(
-        process.env.ADMIN_EMAIL,
-        'Error in Payment Verification For Order',
-        errorTemplate(generateURL(req), error.message)
+        process.env.ADMIN_MAIL,
+        "Error in Payment Verification For Order",
+        errorTemplate(generateURL(req), error.message),
       );
     } else {
       console.log(error);
@@ -190,20 +190,20 @@ export const paymentFailed = async (req, res) => {
       { orderId },
       {
         $set: {
-          paymentStatus: 'failed',
-          orderStatus: 'failed',
+          paymentStatus: "failed",
+          orderStatus: "failed",
           paymentDetails: { razorpay_order_id, razorpay_payment_id },
         },
-      }
+      },
     );
-    return res.status(201).json({ msg: 'payment failed' });
+    return res.status(201).json({ msg: "payment failed" });
   } catch (error) {
     // send error to email
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === "production") {
       sendMail(
-        process.env.ADMIN_EMAIL,
-        'Error in Payment Failed For Order',
-        errorTemplate(generateURL(req), error.message)
+        process.env.ADMIN_MAIL,
+        "Error in Payment Failed For Order",
+        errorTemplate(generateURL(req), error.message),
       );
     } else {
       console.log(error);
@@ -220,21 +220,21 @@ export const getOrder = async (req, res) => {
   try {
     const orders = await Order.find({
       customer: req.data._id,
-      orderStatus: { $ne: 'pending' },
+      orderStatus: { $ne: "pending" },
     })
       .select("-createdAt -updatedAt -__v -paymentDetails")
-      .populate('items.product', 'productName productPictures')
-      .populate('address', 'address locality cityDistrictTown pinCode state')
+      .populate("items.product", "productName productPictures")
+      .populate("address", "address locality cityDistrictTown pinCode state")
       .sort({ createdAt: -1 });
 
     return res.status(200).json({ orders });
   } catch (error) {
     // send error to email
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === "production") {
       sendMail(
-        process.env.ADMIN_EMAIL,
-        'Error in Get Order',
-        errorTemplate(generateURL(req), error.message)
+        process.env.ADMIN_MAIL,
+        "Error in Get Order",
+        errorTemplate(generateURL(req), error.message),
       );
     } else {
       console.log(error);
@@ -249,7 +249,7 @@ export const getOrder = async (req, res) => {
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const invoicePath = path.join(__dirname, '../../template/Invoice.ejs');
+const invoicePath = path.join(__dirname, "../../template/Invoice.ejs");
 
 export const generateInvoice = async (req, res) => {
   try {
@@ -257,18 +257,18 @@ export const generateInvoice = async (req, res) => {
     if (!orderId) {
       return res
         .status(400)
-        .json({ error: 'Order not found, Please try again later' });
+        .json({ error: "Order not found, Please try again later" });
     }
 
     const order = await Order.findOne({ orderId })
-      .populate('items.product', 'productName')
+      .populate("items.product", "productName")
       .populate(
-        'address',
-        'name mobileNumber address locality cityDistrictTown state pinCode'
+        "address",
+        "name mobileNumber address locality cityDistrictTown state pinCode",
       );
 
     // extract required data
-    const invoice = order.orderId.split('-');
+    const invoice = order.orderId.split("-");
     const orderDate = new Date(order.orderDate).toDateString();
     const updatedData = {
       orderDate,
@@ -288,22 +288,22 @@ export const generateInvoice = async (req, res) => {
     // create a browser instance
     const browser = await puppeteer.launch({
       headless: true,
-      ignoreDefaultArgs: ['--disable-extensions'],
+      ignoreDefaultArgs: ["--disable-extensions"],
     });
 
     // Create a new page
     const page = await browser.newPage();
 
-    await page.setContent(htmlContent, { waitUntil: 'domcontentloaded' });
+    await page.setContent(htmlContent, { waitUntil: "domcontentloaded" });
 
     // Optional: Debug styles with a screenshot
     // await page.screenshot({ path: 'debug.png', fullPage: true });
 
     // Downlaod the PDF
     const pdf = await page.pdf({
-      margin: { top: '100px', right: '50px', bottom: '100px', left: '50px' },
+      margin: { top: "100px", right: "50px", bottom: "100px", left: "50px" },
       printBackground: true,
-      format: 'A4',
+      format: "A4",
     });
 
     // Close the browser instance
@@ -311,19 +311,19 @@ export const generateInvoice = async (req, res) => {
 
     // Set the response headers for PDF download
     res.set({
-      'Content-Type': 'application/pdf',
-      'Content-Disposition': 'attachment; filename="invoice.pdf"',
-      'Content-Length': pdf.length, // Ensures accurate content length
+      "Content-Type": "application/pdf",
+      "Content-Disposition": 'attachment; filename="invoice.pdf"',
+      "Content-Length": pdf.length, // Ensures accurate content length
     });
 
     res.end(pdf); // Send the PDF buffer as response
   } catch (error) {
     // send error to email
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === "production") {
       sendMail(
-        process.env.ADMIN_EMAIL,
-        'Error in Generate Invoice',
-        errorTemplate(generateURL(req), error.message)
+        process.env.ADMIN_MAIL,
+        "Error in Generate Invoice",
+        errorTemplate(generateURL(req), error.message),
       );
     } else {
       console.log(error);

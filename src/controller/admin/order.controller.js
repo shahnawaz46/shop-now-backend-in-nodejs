@@ -1,7 +1,7 @@
 // internal
 import { Order } from "../../model/order.model.js";
 import { Product } from "../../model/product.model.js";
-import sendMail from "../../services/mail.service.js";
+import sendMail from "../../services/resend-mail.service.js";
 import { errorTemplate } from "../../template/ErrorMailTemplate.js";
 import { LIMIT } from "../../utils/Constant.js";
 import { generateURL } from "../../utils/GenerateURL.js";
@@ -29,7 +29,7 @@ export const getAllOrders = async (req, res) => {
     // send error to email
     if (process.env.NODE_ENV === "production") {
       sendMail(
-        process.env.ADMIN_EMAIL,
+        process.env.ADMIN_MAIL,
         "(Admin Panel) Error in Get All Orders",
         errorTemplate(generateURL(req, "", true), error.message),
       );
@@ -53,7 +53,7 @@ export const deleteOrder = async (req, res) => {
     // send error to email
     if (process.env.NODE_ENV === "production") {
       sendMail(
-        process.env.ADMIN_EMAIL,
+        process.env.ADMIN_MAIL,
         "(Admin Panel) Error in Get All Orders",
         errorTemplate(generateURL(req, "", true), error.message),
       );
@@ -181,7 +181,7 @@ export const getOrderStats = async (req, res) => {
     // send error to email
     if (process.env.NODE_ENV === "production") {
       sendMail(
-        process.env.ADMIN_EMAIL,
+        process.env.ADMIN_MAIL,
         "(Admin Panel) Error in Get Order Stats",
         errorTemplate(generateURL(req, "", true), error.message),
       );
@@ -257,7 +257,7 @@ export const getOrderGraph = async (req, res) => {
     // send error to email
     if (process.env.NODE_ENV === "production") {
       sendMail(
-        process.env.ADMIN_EMAIL,
+        process.env.ADMIN_MAIL,
         "(Admin Panel) Error in Get Order Graph",
         errorTemplate(generateURL(req, "", true), error.message),
       );
@@ -282,7 +282,7 @@ export const getOrderById = async (req, res) => {
     // send error to email
     if (process.env.NODE_ENV === "production") {
       sendMail(
-        process.env.ADMIN_EMAIL,
+        process.env.ADMIN_MAIL,
         "(Admin Panel) Error in Get Order By Id",
         errorTemplate(generateURL(req, "", true), error.message),
       );
@@ -384,7 +384,7 @@ export const updateOrderStatus = async (req, res) => {
     // send error to email
     if (process.env.NODE_ENV === "production") {
       sendMail(
-        process.env.ADMIN_EMAIL,
+        process.env.ADMIN_MAIL,
         "(Admin Panel) Error in Update Order Status",
         errorTemplate(generateURL(req, "", true), error.message),
       );
@@ -422,7 +422,7 @@ export const searchOrders = async (req, res) => {
     // send error to email
     if (process.env.NODE_ENV === "production") {
       sendMail(
-        process.env.ADMIN_EMAIL,
+        process.env.ADMIN_MAIL,
         "(Admin Panel) Error in Search Order",
         errorTemplate(generateURL(req, "", true), error.message),
       );
