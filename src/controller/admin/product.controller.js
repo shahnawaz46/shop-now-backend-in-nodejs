@@ -1,16 +1,16 @@
 import slugify from "slugify";
 
 // internal
-import { Product } from "../../model/product.model.js";
 import { Order } from "../../model/order.model.js";
-import { LIMIT } from "../../utils/Constant.js";
-import { generateURL } from "../../utils/GenerateURL.js";
+import { Product } from "../../model/product.model.js";
+import {
+  deleteBulkMediaOnImageKit,
+  uploadMediaOnImageKit,
+} from "../../services/imageKit.service.js";
 import sendMail from "../../services/mail.service.js";
 import { errorTemplate } from "../../template/ErrorMailTemplate.js";
-import {
-  uploadMediaOnImageKit,
-  deleteBulkMediaOnImageKit,
-} from "../../services/imageKit.service.js";
+import { LIMIT } from "../../utils/Constant.js";
+import { generateURL } from "../../utils/GenerateURL.js";
 
 export const addProduct = async (req, res) => {
   const {
@@ -63,7 +63,7 @@ export const addProduct = async (req, res) => {
 
     const product = await Product.findById(newProduct._id)
       .select(
-        "_id productName actualPrice sellingPrice stocks categoryId targetAudience description productPictures totalSales"
+        "_id productName actualPrice sellingPrice stocks categoryId targetAudience description productPictures totalSales",
       )
       .populate({ path: "categoryId", select: "_id categoryName" });
 
@@ -96,7 +96,7 @@ export const addProduct = async (req, res) => {
       sendMail(
         process.env.ADMIN_EMAIL,
         "(Admin Panel) Error in Add Product",
-        errorTemplate(generateURL(req, "", true), error.message)
+        errorTemplate(generateURL(req, "", true), error.message),
       );
     } else {
       console.log(error);
@@ -115,7 +115,7 @@ export const getAllProducts = async (req, res) => {
   try {
     const allProducts = await Product.find({})
       .select(
-        "_id productName actualPrice sellingPrice stocks categoryId targetAudience description productPictures totalSales"
+        "_id productName actualPrice sellingPrice stocks categoryId targetAudience description productPictures totalSales",
       )
       .populate({ path: "categoryId", select: "_id categoryName" })
       .sort({ createdAt: -1 })
@@ -135,7 +135,7 @@ export const getAllProducts = async (req, res) => {
       sendMail(
         process.env.ADMIN_EMAIL,
         "(Admin Panel) Error in Get All Products",
-        errorTemplate(generateURL(req, "", true), error.message)
+        errorTemplate(generateURL(req, "", true), error.message),
       );
     } else {
       console.log(error);
@@ -199,7 +199,7 @@ export const productSalesDetails = async (req, res) => {
       sendMail(
         process.env.ADMIN_EMAIL,
         "(Admin Panel) Error in Get Product Sales Details",
-        errorTemplate(generateURL(req, "", true), error.message)
+        errorTemplate(generateURL(req, "", true), error.message),
       );
     } else {
       console.log(error);
@@ -222,8 +222,6 @@ export const deleteProduct = async (req, res) => {
         .status(404)
         .json({ error: "Product not found please check again" });
     }
-
-    // return console.log("deletedProduct:", deletedProduct);
 
     // then i am deleting productPictures from ImageKit
     const productImages = deletedProduct.productPictures;
@@ -265,7 +263,7 @@ export const deleteProduct = async (req, res) => {
       sendMail(
         process.env.ADMIN_EMAIL,
         "(Admin Panel) Error in Delete Product",
-        errorTemplate(generateURL(req, "", true), error.message)
+        errorTemplate(generateURL(req, "", true), error.message),
       );
     } else {
       console.log(error);
@@ -325,7 +323,7 @@ export const editProduct = async (req, res) => {
       new: true,
     })
       .select(
-        "_id productName actualPrice sellingPrice stocks categoryId targetAudience description productPictures totalSales"
+        "_id productName actualPrice sellingPrice stocks categoryId targetAudience description productPictures totalSales",
       )
       .populate({ path: "categoryId", select: "_id categoryName" });
 
@@ -366,7 +364,7 @@ export const editProduct = async (req, res) => {
       sendMail(
         process.env.ADMIN_EMAIL,
         "(Admin Panel) Error in Edit/update Product",
-        errorTemplate(generateURL(req, "", true), error.message)
+        errorTemplate(generateURL(req, "", true), error.message),
       );
     } else {
       console.log(error);
@@ -395,7 +393,7 @@ export const getSingleProductById = async (req, res) => {
       sendMail(
         process.env.ADMIN_EMAIL,
         "(Admin Panel) Error in Get Single Product By Id",
-        errorTemplate(generateURL(req, "", true), error.message)
+        errorTemplate(generateURL(req, "", true), error.message),
       );
     } else {
       console.log(error);
@@ -417,7 +415,7 @@ export const searchProducts = async (req, res) => {
       $or: [{ productName: { $regex: query, $options: "i" } }],
     })
       .select(
-        "_id productName actualPrice sellingPrice stocks categoryId targetAudience description productPictures"
+        "_id productName actualPrice sellingPrice stocks categoryId targetAudience description productPictures",
       )
       .populate("categoryId", "_id categoryName")
       .skip((page - 1) * LIMIT)
@@ -434,7 +432,7 @@ export const searchProducts = async (req, res) => {
       sendMail(
         process.env.ADMIN_EMAIL,
         "(Admin Panel) Error in Search Products",
-        errorTemplate(generateURL(req, "", true), error.message)
+        errorTemplate(generateURL(req, "", true), error.message),
       );
     } else {
       console.log(error);

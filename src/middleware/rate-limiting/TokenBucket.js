@@ -5,7 +5,6 @@ let token = TOKEN_SIZE;
 let timeInterval = new Date().getTime() + time;
 
 export const tokenBucket = (req, res, next) => {
-  // console.log('tokenBucket: ', token);
   const currentTime = new Date().getTime();
 
   // if token is present and timeInterval is greater than currentTime

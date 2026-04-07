@@ -1,14 +1,14 @@
 // internal
 import { User } from "../../model/user.model.js";
 import sendMail from "../../services/mail.service.js";
-import { generateURL } from "../../utils/GenerateURL.js";
 import { errorTemplate } from "../../template/ErrorMailTemplate.js";
+import { generateURL } from "../../utils/GenerateURL.js";
 
+import { getUserProfile } from "../../dtos/user.dto.js";
 import {
   deleteMediaOnImageKit,
   uploadMediaOnImageKit,
 } from "../../services/imageKit.service.js";
-import { getUserProfile } from "../../dtos/user.dto.js";
 
 // controllers
 export const userProfile = async (req, res) => {
@@ -27,7 +27,7 @@ export const userProfile = async (req, res) => {
       sendMail(
         process.env.ADMIN_EMAIL,
         "Error in Get User Profile",
-        errorTemplate(generateURL(req), error.message)
+        errorTemplate(generateURL(req), error.message),
       );
     } else {
       console.log(error);
@@ -52,7 +52,7 @@ export const updateProfilePic = async (req, res) => {
 
       // here i am uploading profile picture to ImageKit and getting url in res
       const image = await uploadMediaOnImageKit({
-        file: req.file.buffer,
+        file: new File([req.file.buffer], "file"),
         fileName: req.file.originalname,
         folder: "/ShopNow_Profile",
         tags: ["shopnow", "profile pic", "image"],
@@ -66,7 +66,7 @@ export const updateProfilePic = async (req, res) => {
         {
           profilePicture: { URL: image.url, fileId: image.fileId },
         },
-        { new: true }
+        { new: true },
       ).select("firstName lastName email phoneNo profilePicture location");
 
       const userDetails = {
@@ -85,7 +85,7 @@ export const updateProfilePic = async (req, res) => {
       sendMail(
         process.env.ADMIN_EMAIL,
         "Error in Update Profile Pic",
-        errorTemplate(generateURL(req), error.message)
+        errorTemplate(generateURL(req), error.message),
       );
     } else {
       console.log(error);
@@ -124,7 +124,7 @@ export const editUserProfileDetail = async (req, res) => {
       sendMail(
         process.env.ADMIN_EMAIL,
         "Error in Update User Profile Details",
-        errorTemplate(generateURL(req), error.message)
+        errorTemplate(generateURL(req), error.message),
       );
     } else {
       console.log(error);

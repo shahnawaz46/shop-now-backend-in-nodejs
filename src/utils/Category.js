@@ -3,7 +3,7 @@
 export const getAllCategoryRecursive = (
   categories,
   parentId = null,
-  slug = null
+  slug = null,
 ) => {
   const categoryList = [];
   let filterCategory;
@@ -14,15 +14,14 @@ export const getAllCategoryRecursive = (
         ? categories.filter((value) => value.parentCategoryId === undefined)
         : categories.filter(
             (value) =>
-              value.parentCategoryId === undefined && value.slug === slug
+              value.parentCategoryId === undefined && value.slug === slug,
           );
   } else {
     filterCategory = categories.filter(
-      (value) => value.parentCategoryId == parentId
+      (value) => value.parentCategoryId == parentId,
     );
   }
 
-  // console.log(filterCategory);
   for (let item of filterCategory) {
     categoryList.push({
       _id: item._id,
@@ -39,7 +38,7 @@ export const getAllCategoryRecursive = (
 export const getAllCategory = (categories, slug = null) => {
   const parentCategory = categories.find(
     (category) =>
-      category.parentCategoryId === undefined && category.slug === slug
+      category.parentCategoryId === undefined && category.slug === slug,
   );
 
   const childCategories = categories.filter((category) => {
@@ -61,7 +60,7 @@ const CategoryType = {
 
 export const getParentCategory = (categories) => {
   const filterCategory = categories.filter(
-    (category) => category.parentCategoryId === undefined
+    (category) => category.parentCategoryId === undefined,
   );
 
   const updatedCategory = filterCategory.map((category) => ({

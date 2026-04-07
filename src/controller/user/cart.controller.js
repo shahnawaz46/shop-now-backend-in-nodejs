@@ -1,14 +1,13 @@
 // internal
 import { Cart } from "../../model/cart.model.js";
-import { generateURL } from "../../utils/GenerateURL.js";
 import sendMail from "../../services/mail.service.js";
 import { errorTemplate } from "../../template/ErrorMailTemplate.js";
 import { filterCartItems } from "../../utils/Carts.js";
+import { generateURL } from "../../utils/GenerateURL.js";
 
 export const addToCart = async (req, res) => {
   try {
     const cartItem = req.body;
-    // console.log(cartItem)
     const isCartCreated = await Cart.findOne({ userId: req.data._id });
 
     if (isCartCreated) {
@@ -20,9 +19,8 @@ export const addToCart = async (req, res) => {
             $elemMatch: { productId: cartItem.productId, size: cartItem.size },
           },
         },
-        { $inc: { "cartItems.$.qty": cartItem.qty } }
+        { $inc: { "cartItems.$.qty": cartItem.qty } },
       );
-      // console.log(isItemAlreadyExist)
 
       if (isItemAlreadyExist) {
         return res
@@ -34,7 +32,7 @@ export const addToCart = async (req, res) => {
         { userId: req.data._id },
         {
           $push: { cartItems: cartItem },
-        }
+        },
       );
       return res.status(200).json({ msg: "Item Added in Cart Successfully" });
     }
@@ -50,7 +48,7 @@ export const addToCart = async (req, res) => {
       sendMail(
         process.env.ADMIN_EMAIL,
         "Error in Add to Cart",
-        errorTemplate(generateURL(req), error.message)
+        errorTemplate(generateURL(req), error.message),
       );
     } else {
       console.log(error);
@@ -82,7 +80,7 @@ export const getCartItem = async (req, res) => {
       sendMail(
         process.env.ADMIN_EMAIL,
         "Error in Get Cart Items",
-        errorTemplate(generateURL(req), error.message)
+        errorTemplate(generateURL(req), error.message),
       );
     } else {
       console.log(error);
@@ -102,7 +100,7 @@ export const removeCartItem = async (req, res) => {
       { userId: req.data._id },
       {
         $pull: { cartItems: { productId, size } },
-      }
+      },
     );
     return res.status(200).json({ msg: "Cart Item deleted Successfully" });
   } catch (error) {
@@ -111,7 +109,7 @@ export const removeCartItem = async (req, res) => {
       sendMail(
         process.env.ADMIN_EMAIL,
         "Error in Remove Cart Items",
-        errorTemplate(generateURL(req), error.message)
+        errorTemplate(generateURL(req), error.message),
       );
     } else {
       console.log(error);
@@ -156,7 +154,7 @@ export const mergeCartItems = async (req, res) => {
               },
             },
           },
-          { $inc: { "cartItems.$.qty": cartItem.qty } } // We can use the $ operator to update the first element that matches the query document
+          { $inc: { "cartItems.$.qty": cartItem.qty } }, // We can use the $ operator to update the first element that matches the query document
         );
 
         if (!isItemAlreadyExist) {
@@ -164,7 +162,7 @@ export const mergeCartItems = async (req, res) => {
             { userId: req.data._id },
             {
               $push: { cartItems: cartItem },
-            }
+            },
           );
         }
       }
@@ -185,7 +183,7 @@ export const mergeCartItems = async (req, res) => {
       sendMail(
         process.env.ADMIN_EMAIL,
         "Error in Add to Cart",
-        errorTemplate(generateURL(req), error.message)
+        errorTemplate(generateURL(req), error.message),
       );
     } else {
       console.log(error);

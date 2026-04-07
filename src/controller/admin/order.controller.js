@@ -1,10 +1,10 @@
 // internal
 import { Order } from "../../model/order.model.js";
 import { Product } from "../../model/product.model.js";
-import { generateURL } from "../../utils/GenerateURL.js";
-import { LIMIT } from "../../utils/Constant.js";
 import sendMail from "../../services/mail.service.js";
 import { errorTemplate } from "../../template/ErrorMailTemplate.js";
+import { LIMIT } from "../../utils/Constant.js";
+import { generateURL } from "../../utils/GenerateURL.js";
 
 export const getAllOrders = async (req, res) => {
   const { page = 1 } = req.query;
@@ -31,7 +31,7 @@ export const getAllOrders = async (req, res) => {
       sendMail(
         process.env.ADMIN_EMAIL,
         "(Admin Panel) Error in Get All Orders",
-        errorTemplate(generateURL(req, "", true), error.message)
+        errorTemplate(generateURL(req, "", true), error.message),
       );
     } else {
       console.log(error);
@@ -55,7 +55,7 @@ export const deleteOrder = async (req, res) => {
       sendMail(
         process.env.ADMIN_EMAIL,
         "(Admin Panel) Error in Get All Orders",
-        errorTemplate(generateURL(req, "", true), error.message)
+        errorTemplate(generateURL(req, "", true), error.message),
       );
     } else {
       console.log(error);
@@ -183,7 +183,7 @@ export const getOrderStats = async (req, res) => {
       sendMail(
         process.env.ADMIN_EMAIL,
         "(Admin Panel) Error in Get Order Stats",
-        errorTemplate(generateURL(req, "", true), error.message)
+        errorTemplate(generateURL(req, "", true), error.message),
       );
     } else {
       console.log(error);
@@ -259,7 +259,7 @@ export const getOrderGraph = async (req, res) => {
       sendMail(
         process.env.ADMIN_EMAIL,
         "(Admin Panel) Error in Get Order Graph",
-        errorTemplate(generateURL(req, "", true), error.message)
+        errorTemplate(generateURL(req, "", true), error.message),
       );
     } else {
       console.log(error);
@@ -284,7 +284,7 @@ export const getOrderById = async (req, res) => {
       sendMail(
         process.env.ADMIN_EMAIL,
         "(Admin Panel) Error in Get Order By Id",
-        errorTemplate(generateURL(req, "", true), error.message)
+        errorTemplate(generateURL(req, "", true), error.message),
       );
     } else {
       console.log(error);
@@ -298,14 +298,13 @@ export const getOrderById = async (req, res) => {
 };
 
 export const updateOrderStatus = async (req, res) => {
-  // return console.log(req.body);
   try {
     const { orderId, orderStatus, deliveredDate } = req.body;
 
     // first updating order status
     const orderUpdated = await Order.findOneAndUpdate(
       { orderId },
-      { orderStatus, deliveredDate }
+      { orderStatus, deliveredDate },
     );
 
     // order status is delivered then i am updating product stock
@@ -387,7 +386,7 @@ export const updateOrderStatus = async (req, res) => {
       sendMail(
         process.env.ADMIN_EMAIL,
         "(Admin Panel) Error in Update Order Status",
-        errorTemplate(generateURL(req, "", true), error.message)
+        errorTemplate(generateURL(req, "", true), error.message),
       );
     } else {
       console.log(error);
@@ -425,7 +424,7 @@ export const searchOrders = async (req, res) => {
       sendMail(
         process.env.ADMIN_EMAIL,
         "(Admin Panel) Error in Search Order",
-        errorTemplate(generateURL(req, "", true), error.message)
+        errorTemplate(generateURL(req, "", true), error.message),
       );
     } else {
       console.log(error);

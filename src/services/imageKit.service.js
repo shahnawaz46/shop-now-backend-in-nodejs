@@ -1,45 +1,28 @@
 import imageKit from "../config/imagekit.config.js";
 
 export const uploadMediaOnImageKit = async (options) => {
-  return new Promise((resolve, reject) => {
-    imageKit.upload(
-      {
-        ...options,
-      },
-      function (error, result) {
-        if (result) {
-          resolve(result);
-        }
-        if (error) {
-          reject(error);
-        }
-      }
-    );
-  });
+  try {
+    const file = await imageKit.files.upload({
+      ...options,
+    });
+    return file;
+  } catch (err) {
+    console.log("uploadMediaOnImageKit Error: ", err);
+  }
 };
 
 export const deleteMediaOnImageKit = async (fileId) => {
-  return new Promise((resolve, reject) => {
-    imageKit.deleteFile(fileId, function (error, result) {
-      if (result) {
-        resolve(result);
-      }
-      if (error) {
-        reject(error);
-      }
-    });
-  });
+  try {
+    await imageKit.files.delete(fileId);
+  } catch (err) {
+    console.log("deleteMediaOnImageKit Error: ", err);
+  }
 };
 
 export const deleteBulkMediaOnImageKit = async (fileIds) => {
-  return new Promise((resolve, reject) => {
-    imageKit.bulkDeleteFiles(fileIds, function (error, result) {
-      if (result) {
-        resolve(result);
-      }
-      if (error) {
-        reject(error);
-      }
-    });
-  });
+  try {
+    await imageKit.files.bulk.delete({ fileIds });
+  } catch (err) {
+    console.log("deleteBulkMediaOnImageKit Error: ", err);
+  }
 };
