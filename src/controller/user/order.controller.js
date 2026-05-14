@@ -289,6 +289,7 @@ export const generateInvoice = async (req, res) => {
     const browser = await puppeteer.launch({
       headless: true,
       ignoreDefaultArgs: ["--disable-extensions"],
+      args: ["--no-sandbox"],
     });
 
     // Create a new page

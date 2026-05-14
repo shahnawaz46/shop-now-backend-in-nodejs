@@ -1,4 +1,4 @@
-import https from 'https';
+import https from "https";
 
 const time = 14 * 60 * 1000; // 14 minutes
 let totalNoOfTimePinged = 0;
@@ -10,17 +10,14 @@ export const wakeUpTheServer = () => {
   }
   timer = setInterval(() => {
     https
-      .get(
-        'https://ecommerce-server-1cz2.onrender.com/api/user/pinged',
-        (res) => {
-          totalNoOfTimePinged += 1;
-          console.log(
-            `Pinged server ${totalNoOfTimePinged}, status code: ${res.statusCode}`
-          );
-        }
-      )
-      .on('error', (err) => {
-        console.error('Error pinging server:', err.message);
+      .get(`${process.env.SERVER_URL}/api/user/pinged`, (res) => {
+        totalNoOfTimePinged += 1;
+        console.log(
+          `Pinged server ${totalNoOfTimePinged}, status code: ${res.statusCode}`,
+        );
+      })
+      .on("error", (err) => {
+        console.error("Error pinging server:", err.message);
       });
   }, time); // ping every 14 minutes
 };

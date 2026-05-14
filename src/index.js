@@ -1,20 +1,20 @@
-import express from "express";
-import dotenv from "dotenv";
-import cors from "cors";
 import cookieParser from "cookie-parser";
+import cors from "cors";
+import dotenv from "dotenv";
+import express from "express";
 
 import mongoDBConnection from "./config/mongo.config.js";
 import redisConnection from "./config/redis.config.js";
 
 // user router
-import authRouter from "./routes/user/auth.routes.js";
-import userRouter from "./routes/user/user.routes.js";
-import userProductRouter from "./routes/user/product.routes.js";
-import userCategoryRouter from "./routes/user/category.routes.js";
-import userCartRouter from "./routes/user/cart.routes.js";
 import userAddressRouter from "./routes/user/address.routes.js";
-import userOrderRouter from "./routes/user/order.routes.js";
+import authRouter from "./routes/user/auth.routes.js";
 import userBannerRouter from "./routes/user/banner.routes.js";
+import userCartRouter from "./routes/user/cart.routes.js";
+import userCategoryRouter from "./routes/user/category.routes.js";
+import userOrderRouter from "./routes/user/order.routes.js";
+import userProductRouter from "./routes/user/product.routes.js";
+import userRouter from "./routes/user/user.routes.js";
 
 // admin router
 // import adminUserRouter from "./routes/admin/admin.routes.js";
@@ -26,7 +26,6 @@ import userBannerRouter from "./routes/user/banner.routes.js";
 
 // script file
 import { allScript } from "./script/AllScript.js";
-import { wakeUpTheServer } from "./utils/WakeUpTheServer.js";
 // import { tokenBucket } from './middleware/rate-limiting/TokenBucket.js';
 
 const app = express();
@@ -37,10 +36,7 @@ redisConnection();
 
 const origin =
   process.env.NODE_ENV === "production"
-    ? [
-        "https://shop-now-reactjs.netlify.app",
-        "https://shop-now-admin-panel.vercel.app",
-      ]
+    ? [process.env.CLIENT_URL, process.env.ADMIN_CLIENT_URL]
     : true;
 
 // app.set('trust proxy', true);
@@ -81,4 +77,4 @@ app.listen(port, () => console.log(`Server is running at Port no ${port}`));
 allScript();
 
 // trying to wakeup the server
-process.env.NODE_ENV === "production" && wakeUpTheServer();
+// process.env.NODE_ENV === "production" && wakeUpTheServer();

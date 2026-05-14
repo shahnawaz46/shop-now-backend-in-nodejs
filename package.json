@@ -8,14 +8,14 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node ./src/index.js",
     "dev": "nodemon ./src/index.js",
-    "postinstall": "npx puppeteer browsers install",
+   "postinstall": "npx puppeteer browsers install",
     "audit-fix": "yarn audit && npm i --package-lock-only && npm audit fix && rm package-lock.json && rm yarn.lock && rm -rf node_modules && yarn"
   },
   "author": "shahnawaz",
   "license": "ISC",
   "dependencies": {
     "@imagekit/nodejs": "^7.4.0",
-    "axios": "^1.14.0",
+    "axios": "^1.16.1",
     "bcryptjs": "^3.0.3",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
@@ -28,7 +28,7 @@
     "mongoose": "^9.4.1",
     "multer": "^2.1.1",
     "pdfkit": "^0.18.0",
-    "puppeteer": "^24.40.0",
+    "puppeteer": "^24.43.1",
     "razorpay": "^2.9.6",
     "redis": "^5.11.0",
     "resend": "^6.10.0",
@@ -40,6 +40,6 @@
     "nodemon": "^3.1.0"
   },
   "engines": {
-    "node": ">=22.10.0"
+    "node": "22.19.0"
   }
 }
