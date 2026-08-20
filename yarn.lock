@@ -1398,10 +1398,10 @@ png-js@^1.0.0:
   dependencies:
     browserify-zlib "^0.2.0"
 
-postal-mime@2.7.4:
-  version "2.7.4"
-  resolved "https://registry.yarnpkg.com/postal-mime/-/postal-mime-2.7.4.tgz#3718d1f188357ed86f906f1db8d4ca455efa4927"
-  integrity sha512-0WdnFQYUrPGGTFu1uOqD2s7omwua8xaeYGdO6rb88oD5yJ/4pPHDA4sdWqfD8wQVfCny563n/HQS7zTFft+f/g==
+postal-mime@2.7.5:
+  version "2.7.5"
+  resolved "https://registry.yarnpkg.com/postal-mime/-/postal-mime-2.7.5.tgz#dd74073e301791a4e9d04d2b0797802e97d989a2"
+  integrity sha512-GNEXKvWFQnbgO5NlrGzVa0FmWzBZ24PersAWErttSg1Hjpf0ATxTwS5DOMGaOpTG6bUh5cTr7xi0jAD942wCJA==
 
 progress@^2.0.3:
   version "2.0.3"
@@ -1545,12 +1545,12 @@ require-directory@^2.1.1:
   integrity sha512-fGxEI7+wsG9xrvdjsrlmL22OMTTiHRwAMroiEeMgq8gzoLC/PQr7RsRDSTLUg/bZAZtF+TVIkHc6/4RIKrui+Q==
 
 resend@^6.10.0:
-  version "6.12.3"
-  resolved "https://registry.yarnpkg.com/resend/-/resend-6.12.3.tgz#d4e180f21c9edb21db074d48766e84866551313c"
-  integrity sha512-FkEi6YPnVL96/LvH8+QP7NaeaBy5brYXwlRqUCqZZeNL0/iyKij18IPmyPXYauT/2ODn1JG04qKz+qlJfzqzTw==
+  version "6.20.0"
+  resolved "https://registry.yarnpkg.com/resend/-/resend-6.20.0.tgz#89beb76733b5d961eae9b3750f58ed57cbbe756e"
+  integrity sha512-fXDFt7jVMuka6ruS79DzaQFKPyxOAUtoYUGSl3dTUyOnFK9klmUULxADQRzFFtHfHRipYyy62jYcm4cMKqvtjw==
   dependencies:
-    postal-mime "2.7.4"
-    svix "1.92.2"
+    postal-mime "2.7.5"
+    standardwebhooks "1.0.0"
 
 resolve-from@^4.0.0:
   version "4.0.0"
@@ -1774,13 +1774,6 @@ supports-color@^5.5.0:
   integrity sha512-QjVjwdXIt408MIiAqCX4oUKsgU2EqAGzs2Ppkm4aQYbjm+ZEWEcW4SfFNTr4uMNZma0ey4f5lgLrkB0aX0QMow==
   dependencies:
     has-flag "^3.0.0"
-
-svix@1.92.2:
-  version "1.92.2"
-  resolved "https://registry.yarnpkg.com/svix/-/svix-1.92.2.tgz#2982904b032e24347b701cab3d5219ea94d9e49c"
-  integrity sha512-ZmuA3UVvlnF9EgxlzmPtF7CKjQb64Z6OFlyfdDfU0sdcC7dJa+3aOYX5B9mA+RS6ch1AxBa4UP/l6KmqfGtWBQ==
-  dependencies:
-    standardwebhooks "1.0.0"
 
 tar-fs@^3.1.1:
   version "3.1.2"
