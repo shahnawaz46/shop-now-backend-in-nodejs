@@ -27,7 +27,7 @@
     "mongoose": "^9.9.3",
     "multer": "^2.2.0",
     "pdfkit": "^0.19.1",
-    "puppeteer": "^24.43.1",
+    "puppeteer": "^25.8.0",
     "razorpay": "^2.9.8",
     "redis": "^5.11.0",
     "resend": "^6.20.0",
