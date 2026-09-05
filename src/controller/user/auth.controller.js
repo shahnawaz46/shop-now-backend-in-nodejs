@@ -334,7 +334,7 @@ export const refreshToken = async (req, res) => {
     let decodedToken;
     try {
       decodedToken = verifyRefreshToken(token);
-    } catch (error) {
+    } catch {
       res.clearCookie("_r_t", {
         httpOnly: true,
         sameSite: "none",
