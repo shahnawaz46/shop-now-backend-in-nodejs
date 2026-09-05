@@ -12,7 +12,7 @@ export const verification = (req, res, next) => {
     const decodedToken = verifyAccessToken(token);
     req.data = decodedToken;
     next();
-  } catch (err) {
+  } catch {
     return res.status(403).json({ error: "Authentication required" });
   }
 };
