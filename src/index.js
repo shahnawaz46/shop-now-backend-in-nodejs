@@ -25,7 +25,6 @@ import userRouter from "./routes/user/user.routes.js";
 // import userRouterForAdmin from "./routes/admin/user.routes.js";
 
 // script file
-import { allScript } from "./script/AllScript.js";
 // import { tokenBucket } from './middleware/rate-limiting/TokenBucket.js';
 
 const app = express();
@@ -74,7 +73,7 @@ const port = process.env.PORT || 9000;
 app.listen(port, () => console.log(`Server is running at Port no ${port}`));
 
 // running script if i want to update any model
-allScript();
+// allScript();
 
 // trying to wakeup the server
 // process.env.NODE_ENV === "production" && wakeUpTheServer();
